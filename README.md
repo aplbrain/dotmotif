@@ -11,18 +11,14 @@ You can currently write motifs in one of two languages; either CSV (in edge-list
 
 The following two files are equivalent:
 
-```
-fourcycle.csv
-```
+`fourcycle.csv`
 ```
 A,B
 B,C
 C,A
 ```
 
-```
-fourcycle.motif
-```
+`fourcycle.motif`
 ```
 # A excites B
 A -+ B
