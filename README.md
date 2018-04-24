@@ -43,9 +43,9 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 
 | Argument | Type, Default | Behavior |
 |----------|------|----------|
-ignore_direction | (bool: False) | Whether to disregard direction when generating the database query |
-| limit | (int: None) | A limit (if any) to impose on the query results |
-| enforce_inequality | (bool: False) | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, A>B>C; if A!=C, then set to True |
+`ignore_direction` | `bool`: `False` | Whether to disregard direction when generating the database query |
+| `limit` | `int`: `None` | A limit (if any) to impose on the query results |
+| `enforce_inequality` | `bool`: `False` | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, A>B>C; if A!=C, then set to True |
 
 ## Generating the Query
 
