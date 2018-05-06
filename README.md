@@ -11,14 +11,14 @@ You can currently write motifs in one of two languages; either CSV (in edge-list
 
 The following two files are equivalent:
 
-`fourcycle.csv`
+`threecycle.csv`
 ```
 A,B
 B,C
 C,A
 ```
 
-`fourcycle.motif`
+`threecycle.motif`
 ```
 # A excites B
 A -+ B
@@ -33,10 +33,10 @@ C -? A
 ```python
 from dotmotif import dotmotif
 
-dm = dotmotif().from_csv("fourcycle.csv")
+dm = dotmotif().from_csv("threecycle.csv")
 
 # or:
-dm = dotmotif().from_motif("fourcycle.motif")
+dm = dotmotif().from_motif("threecycle.motif")
 ```
 
 You can also pass optional parameters into the constructor for the `dotmotif` object. Those arguments are:
@@ -58,5 +58,5 @@ dm.to_cypher() # "MATCH (A:Neuron)-[:SYN]-> ..."
 You can chain the entire operation into one single command using the chaining functionality of this library:
 
 ```python
-dm = dotmotif().from_motif("fourcycle.motif").to_cypher()
+dm = dotmotif().from_motif("threecycle.motif").to_cypher()
 ```
