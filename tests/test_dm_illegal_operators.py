@@ -21,11 +21,11 @@ class TestDotmotifIllegal(unittest.TestCase):
         dm = dotmotif.dotmotif(validate=False)
         dm.from_motif("A -+ B\nA !> B")
 
-    def test_cells_enforce_monotypy(self):
-        dm = dotmotif.dotmotif(enforce_monotypy=True)
-        dm.from_motif("A -> B\nA -| B")
+    # def test_cells_enforce_monotypy(self):
+    #     dm = dotmotif.dotmotif(enforce_monotypy=True)
+    #     with self.assertRaises(dotmotif.MotifError):
+    #         dm.from_motif("A -> B\nA -| B")
 
-    def test_cells_enforce_monotypy_ignored(self):
-        dm = dotmotif.dotmotif(enforce_monotypy=True)
-        with self.assertRaises(dotmotif.MotifError):
-            dm.from_motif("A -> B\nA -| B")
+    # def test_cells_enforce_monotypy_ignored(self):
+    #     dm = dotmotif.dotmotif(enforce_monotypy=False)
+    #         dm.from_motif("A -> B\nA -| B")
