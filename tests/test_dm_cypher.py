@@ -1,3 +1,7 @@
+"""
+Test Cypher conversion system.
+"""
+
 import unittest
 import dotmotif
 
