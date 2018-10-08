@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+"""
+Utilities for dotmotif.
+
+Requires nx>=2.0
+"""
 import networkx as nx
 
 
