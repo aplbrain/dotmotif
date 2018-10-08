@@ -3,15 +3,13 @@
 import os
 from distutils.core import setup
 
-import dotmotif
-
 """
 git tag {VERSION}
 git push --tags
 python setup.py sdist upload -r pypi
 """
 
-VERSION = dotmotif.__version__
+VERSION = "0.2.0"
 
 setup(
     name="dotmotif",
