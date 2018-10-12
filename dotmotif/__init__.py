@@ -40,7 +40,7 @@ class dotmotif:
     }
 
     ACTIONS = {
-        ">": "EXCITES",
+        ">": "SYNAPSES",
         "~": "INHIBITS",
         "|": "INHIBITS",
         "+": "EXCITES",
@@ -156,11 +156,11 @@ class dotmotif:
             action=self.ACTIONS[action]
         )
 
-    def _parse_dm_line(self, line: str):
+    def _parse_dm_line(self, _line: str):
         # Tokenize:
-        if len(line.strip()) and line.strip()[0] == "#":
+        if len(_line.strip()) and _line.strip()[0] == "#":
             return None
-        line = [t for t in line.split() if len(t)]
+        line = [t for t in _line.split() if len(t)]
         if len(line) is 0:
             return None
 

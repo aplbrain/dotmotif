@@ -7,5 +7,8 @@ name = "pypi"
 pytest = "*"
 networkx = "*"
 "e1839a8" = {path = ".", editable = true}
+python-cypher = "*"
+"py2neo" = "*"
+docker = "*"
 
 [dev-packages]

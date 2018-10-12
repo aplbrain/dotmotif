@@ -20,8 +20,8 @@ docker run -it -e NEO4J_AUTH=neo4j1/neo4j1 -p 7474:7474 -p 7687:7687 \
 You may need:
 ```
 docker run -it -e NEO4J_dbms_security_procedures_unrestricted=\* \
--e NEO4J_AUTH=neo4j1/neo4j1 -p 7474:7474 -p 7687:7687 -v /$(pwd) \
-/import/:/_import_csv/ -v $(pwd)/plugins/:/plugins neo4j:3.4 /bin/bash
+-e NEO4J_AUTH=neo4j1/neo4j1 -p 7474:7474 -p 7687:7687 -v \
+/$(pwd)/import/:/_import_csv/ -v $(pwd)/plugins/:/plugins neo4j:3.4 /bin/bash
 ```
 
 From inside the container:
