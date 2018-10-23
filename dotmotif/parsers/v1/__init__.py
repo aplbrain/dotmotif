@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+from typing import List
+
+
 from .. import Parser
+from ...validators import Validator
 
 import networkx as nx
 
@@ -7,18 +11,37 @@ class ParserDMv1(Parser):
     """
     """
 
-    def __init__(self):
-        pass
+    _LOOKUP = {
+        "INHIBITS": "INH",
+        "EXCITES":  "EXC",
+        "SYNAPSES": "SYN",
+    }
 
-    def parse(self, dm: str) -> nx.DiGraph:
+    ACTIONS = {
+        ">": "SYNAPSES",
+        "~": "INHIBITS",
+        "|": "INHIBITS",
+        "+": "EXCITES",
+        "?": "SYNAPSES",
+        "-": "SYNAPSES",
+    }
+
+
+    def __init__(self, validators: List[Validator]) -> None:
+        self.validators = validators
+
+    def parse(self, dm: str) -> nx.MultiDiGraph:
         """
         """
-        G = nx.DiGraph()
+        G = nx.MultiDiGraph()
         for line in dm.split('\n'):
             res = self._parse_dm_line(line.strip())
             if res:
-                u, v, exists, action = res
+                u, v, action, exists = res
+                for val in self.validators:
+                    val.validate(G, u, v, action, exists)
                 G.add_edge(u, v, exists=exists, action=action)
+        return G
 
     def _parse_dm_line(self, _line: str):
         _line = _line.strip()

@@ -29,7 +29,7 @@ class TestDotmotif_DM(unittest.TestCase):
         self.assertEqual([
             e[2]['action']
             for e in dm._g.edges(data=True)
-        ], ['EXCITES'] * 3)
+        ], ['SYNAPSES'] * 3)
 
         dm = dotmotif.dotmotif()
         dm.from_motif(_THREE_CYCLE_INH)
@@ -61,52 +61,6 @@ class TestDotmotif_DM(unittest.TestCase):
         ], [False] * 3)
 
 
-class TestDotmotif_CSV(unittest.TestCase):
-
-    def test_sanity(self):
-        self.assertEqual(1, 1)
-
-    def test_csv_parser(self):
-        dm = dotmotif.dotmotif(validate=False)
-        dm.from_csv(_THREE_CYCLE_CSV, _THREE_CYCLE_NEG_CSV)
-        self.assertEqual(len(dm._g.edges()), 6)
-
-    def test_csv_parser_default_actions(self):
-        dm = dotmotif.dotmotif()
-        dm.from_csv(_THREE_CYCLE_CSV)
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['SYNAPSES'] * 3)
-
-    def test_csv_parser_set_action(self):
-        dm = dotmotif.dotmotif()
-        dm.from_csv(_THREE_CYCLE_CSV, action="EXCITES")
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['EXCITES'] * 3)
-
-    def test_csv_parser_reject_invalid_action(self):
-        dm = dotmotif.dotmotif()
-        with self.assertRaises(ValueError):
-            dm.from_csv(_THREE_CYCLE_CSV, action="cabbage")
-
-    def test_csv_parser_edge_exists(self):
-        dm = dotmotif.dotmotif()
-        dm.from_csv(_THREE_CYCLE_CSV)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [True] * 3)
-
-        dm = dotmotif.dotmotif()
-        dm.from_csv("\n", _THREE_CYCLE_NEG_CSV)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [False] * 3)
-
 class TestDotmotif_DM(unittest.TestCase):
 
     def test_sanity(self):
@@ -124,7 +78,7 @@ class TestDotmotif_DM(unittest.TestCase):
         self.assertEqual([
             e[2]['action']
             for e in dm._g.edges(data=True)
-        ], ['EXCITES'] * 3)
+        ], ['SYNAPSES'] * 3)
 
         dm = dotmotif.dotmotif()
         dm.from_motif(_THREE_CYCLE_INH)

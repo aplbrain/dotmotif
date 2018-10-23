@@ -19,7 +19,8 @@ from itertools import product
 
 import networkx as nx
 
-from parsers.v1 import ParserDMv1
+from .parsers.v1 import ParserDMv1
+from .validators import DisagreeingEdgesValidator
 
 __version__ = "0.2.0"
 
@@ -36,21 +37,6 @@ class dotmotif:
     See __init__ documentation for more details.
     """
 
-    _LOOKUP = {
-        "INHIBITS": "INH",
-        "EXCITES":  "EXC",
-        "SYNAPSES": "SYN",
-    }
-
-    ACTIONS = {
-        ">": "SYNAPSES",
-        "~": "INHIBITS",
-        "|": "INHIBITS",
-        "+": "EXCITES",
-        "?": "SYNAPSES",
-        "-": "SYNAPSES",
-    }
-
     def __init__(self, **kwargs):
         """
         Create a new dotmotif object.
@@ -65,11 +51,18 @@ class dotmotif:
 
         """
         self.ignore_direction = kwargs.get("ignore_direction", False)
-        self.validate = kwargs.get("validate", True)
         self.limit = kwargs.get("limit", None)
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.motif_parser = kwargs.get("motif_parser", DEFAULT_MOTIF_PARSER)
+        self.validators = kwargs.get("validators", [
+            DisagreeingEdgesValidator()
+        ])
+        self._LOOKUP = {
+            "INHIBITS": "INH",
+            "EXCITES":  "EXC",
+            "SYNAPSES": "SYN",
+        }
         self._g = nx.MultiDiGraph()
 
     def from_motif(self, cmd: str):
@@ -87,7 +80,7 @@ class dotmotif:
             cmd = open(cmd, 'r').read()
 
         self.cmd = cmd
-        self._g = self.motif_parser.parse(self.cmd)
+        self._g = self.motif_parser(validators=self.validators).parse(self.cmd)
 
         return self
 

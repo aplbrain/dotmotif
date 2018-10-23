@@ -9,16 +9,14 @@ class TestDotmotifIllegal(unittest.TestCase):
 
     def test_disagreeing_edges(self):
         dm = dotmotif.dotmotif()
-        with self.assertRaises(dotmotif.MotifError):
+        with self.assertRaises(
+            dotmotif.validators.DisagreeingEdgesValidatorError
+        ):
             dm.from_motif("A -- B\nA !- B")
 
-    def test_disagreeing_edges_notational(self):
-        dm = dotmotif.dotmotif()
-        with self.assertRaises(dotmotif.MotifError):
-            dm.from_motif("A -+ B\nA !> B")
 
     def test_disagreeing_edges_ignored(self):
-        dm = dotmotif.dotmotif(validate=False)
+        dm = dotmotif.dotmotif(validators=[])
         dm.from_motif("A -+ B\nA !> B")
 
     # def test_cells_enforce_monotypy(self):
