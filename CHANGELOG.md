@@ -1,3 +1,6 @@
+- **0.2.1**
+    - Remove CSV support
+    - Abstract parser syntax to `dotmotif.parsers`
 - **0.2.0** (May 7 2018)
     - Negative-edge support
 - **0.1.0**
