@@ -41,16 +41,16 @@ Note that comments, prefixed with a `#` character, are valid syntax.
 
 ```
 S -> T                                  # Start
-T -> R       | TDT   | TDT | c  | ε     # Term, multiple terms, comment, or empty
+T -> R       | TDT   | TDT   | c | ε    # Term, multiple terms, comment, or empty
 R -> nERn    | nERnK                    # v1.0 term, or conditioned (K) term
 K -> wV                                 # A 'where' (:) followed by one or more conditions
 V -> V       | VdV    | nEEn            # One or more key-value clauses (i.e. "foo=bar")
-R -> >       | +     | ~    | ? | B     # Edge type
+R -> >       | +      | ~    | ? | B    # Edge type
 B -> /\[n\]/                            # Edge type in bracket-form
-E -> -       | !     | ?    | G         # Existance or equality
-G -> Q | Qg                             # Comparison
-Q -> =  | ε                             # Equality test
-g -> <> | ! | > | < | =                 # Comparator tests
+E -> -       | !      | ?    | G        # Existance or equality
+G -> Q       | Qg                       # Comparison
+Q -> =       | ε                        # Equality test
+g -> <>      | !      | >    | < | =    # Comparator tests
 D -> d       | \n                       # Term delimiter
 d -> ;                                  # Semicolon delimiter
 w -> :                                  # Condition prefix
