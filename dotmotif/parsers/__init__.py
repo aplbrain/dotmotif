@@ -6,5 +6,5 @@ import networkx as nx
 class Parser(abc.ABC):
     ...
 
-    def parse(self, dm: str, validators) -> nx.MultiDiGraph:
+    def parse(self, dm: str) -> nx.MultiDiGraph:
         ...

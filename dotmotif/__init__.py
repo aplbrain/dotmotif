@@ -19,12 +19,12 @@ from itertools import product
 
 import networkx as nx
 
-from .parsers.v1 import ParserDMv1
+from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
 __version__ = "0.2.0"
 
-DEFAULT_MOTIF_PARSER = ParserDMv1
+DEFAULT_MOTIF_PARSER = ParserV2
 
 class MotifError(ValueError):
     pass
@@ -54,7 +54,7 @@ class dotmotif:
         self.limit = kwargs.get("limit", None)
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
-        self.motif_parser = kwargs.get("motif_parser", DEFAULT_MOTIF_PARSER)
+        self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.validators = kwargs.get("validators", [
             DisagreeingEdgesValidator()
         ])
@@ -62,6 +62,9 @@ class dotmotif:
             "INHIBITS": "INH",
             "EXCITES":  "EXC",
             "SYNAPSES": "SYN",
+            "INH":      "INH",
+            "EXC":      "EXC",
+            "SYN":      "SYN",
         }
         self._g = nx.MultiDiGraph()
 
@@ -80,7 +83,7 @@ class dotmotif:
             cmd = open(cmd, 'r').read()
 
         self.cmd = cmd
-        self._g = self.motif_parser(validators=self.validators).parse(self.cmd)
+        self._g = self.parser(validators=self.validators).parse(self.cmd)
 
         return self
 
