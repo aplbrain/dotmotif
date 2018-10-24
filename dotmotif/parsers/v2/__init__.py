@@ -37,10 +37,12 @@ block           : edge
 // is the same as:
 //     A -> B
 // While this is a simple case, this is an immensely powerful tool.
-macro           : word "(" arglist ")" "{" edge_macro+ "}"
+macro           : word "(" arglist ")" "{" macro_rules "}"
 
 // A series of arguments to a macro
-arglist         : word ("," word)*
+?arglist         : word ("," word)*
+
+macro_rules     : edge_macro+
 
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro      : node_id relation node_id
@@ -48,6 +50,7 @@ edge_macro      : node_id relation node_id
 
 
 
+// A macro is called like a function: foo(args).
 macro_call      : word "(" arglist ")"
 
 
@@ -96,10 +99,17 @@ class DotMotifTransformer(Transformer):
     """
     This transformer converts a parsed Lark tree into a networkx.MultiGraph.
     """
-    def __init__(self, validators: List[Validator] = None, *args, **kwargs) -> None:
-        self.validators = validators if validators else []
+    def __init__(
+            self, validators: List[Validator] = None, *args, **kwargs
+    ) -> None:
+        self.validators = validators if validators else[]
+        self.macros = {}
         self.G = nx.MultiDiGraph()
         super().__init__(*args, **kwargs)
+
+    def transform(self, tree):
+        self._transform_tree(tree)
+        return self.G
 
     def comment(self, words):
         pass
@@ -123,17 +133,11 @@ class DotMotifTransformer(Transformer):
     def word(self, word):
         return str(word)
 
-    def transform(self, tree):
-        self._transform_tree(tree)
-        return self.G
-
-
     def rel_exist(self, _):
         return True
 
     def rel_nexist(self, _):
         return False
-
 
     def rel_def(self, _):
         return "SYN"
@@ -143,6 +147,43 @@ class DotMotifTransformer(Transformer):
 
     def rel_pos(self, _):
         return "EXC"
+
+    # Macros
+    def macro(self, arg):
+        name, args, rules = arg
+        self.macros[name] = {
+            "args": args,
+            "rules": rules
+        }
+
+    def arglist(self, args):
+        return [str(s) for s in args]
+
+    def edge_macro(self, tup):
+        u, rel, v = tup
+        return (str(u), rel, str(v))
+
+    def macro_rules(self, rules):
+        return list(rules)
+
+    def macro_call(self, tup):
+        callname, args = tup
+        if callname not in self.macros:
+            raise ValueError(
+                f"Tried to invoke macro '{callname}' but "
+                f"macro {callname} does not exist."
+            )
+        macro = self.macros[callname]
+        macro_args = macro["args"]
+        if len(macro_args) != len(args):
+            raise ValueError(
+                f"Tried to invoke macro '{callname}' with "
+                f"{len(args)} arguments, but {callname} takes "
+                f"{len(macro_args)} arguments."
+            )
+
+        # Else, append the macro to the graph:
+        print(macro["rules"])
 
 
 class ParserV2(Parser):

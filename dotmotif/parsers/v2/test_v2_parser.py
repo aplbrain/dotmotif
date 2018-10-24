@@ -81,6 +81,57 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         edge(C, D)
         """
+        # dm = dotmotif.dotmotif(parser=ParserV2)
+        # dm.from_motif(exp)
+        # self.assertEqual(len(dm._g.edges()), 1)
+
+    def test_simple_macro_construction(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        edge(C, D)
+        """
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
-        self.assertEqual(len(dm._g.edges()), 1)
+        # exp_edge = list(dm._g.edges(data=True))[0]
+        # self.assertEqual(exp_edge[0], "C")
+        # self.assertEqual(exp_edge[1], "D")
+
+    def test_multiline_macro_construction(self):
+        exp = """\
+        dualedge(A, B) {
+            A -> B
+            B -> A
+        }
+        dualedge(C, D)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        # exp_edge = list(dm._g.edges(data=True))[0]
+        # self.assertEqual(exp_edge[0], "C")
+        # self.assertEqual(exp_edge[1], "D")
+
+    def test_undefined_macro(self):
+        exp = """\
+        dualedge(A, B) {
+            A -> B
+            B -> A
+        }
+        foo(C, D)
+        """
+        with self.assertRaises(ValueError):
+            dm = dotmotif.dotmotif(parser=ParserV2)
+            dm.from_motif(exp)
+
+    def test_undefined_macro(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+            B -> A
+        }
+        edge(C, D, E)
+        """
+        with self.assertRaises(ValueError):
+            dm = dotmotif.dotmotif(parser=ParserV2)
+            dm.from_motif(exp)
