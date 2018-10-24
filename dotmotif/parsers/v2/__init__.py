@@ -183,7 +183,15 @@ class DotMotifTransformer(Transformer):
             )
 
         # Else, append the macro to the graph:
-        print(macro["rules"])
+        for rule in macro["rules"]:
+            # Get the arguments in-place. For example, if left is A,
+            # and A is the first arg in macro["args"], then replace
+            # all instances of A in the rules with the first arg
+            # from the macro call.
+            left, rel, right = rule
+            left = args[macro_args.index(left)]
+            right = args[macro_args.index(right)]
+            self.edge((left, rel, right))
 
 
 class ParserV2(Parser):
