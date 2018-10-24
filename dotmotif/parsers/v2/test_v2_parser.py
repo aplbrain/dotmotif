@@ -108,9 +108,9 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         """
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
-        # exp_edge = list(dm._g.edges(data=True))[0]
-        # self.assertEqual(exp_edge[0], "C")
-        # self.assertEqual(exp_edge[1], "D")
+        exp_edge = list(dm._g.edges(data=True))[0]
+        self.assertEqual(exp_edge[0], "C")
+        self.assertEqual(exp_edge[1], "D")
 
     def test_undefined_macro(self):
         exp = """\
@@ -124,7 +124,7 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
 
-    def test_undefined_macro(self):
+    def test_wrong_args_macro(self):
         exp = """\
         edge(A, B) {
             A -> B
@@ -135,3 +135,56 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         with self.assertRaises(ValueError):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
+
+
+    def test_more_complex_macro(self):
+        exp = """\
+        tri(A, B, C) {
+            A -> B
+            B -> C
+            C -> A
+        }
+        tri(C, D, E)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 3)
+
+    def test_macro_reuse(self):
+        exp = """\
+        tri(A, B, C) {
+            A -> B
+            B -> C
+            C -> A
+        }
+        tri(C, D, E)
+        tri(F, G, H)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 6)
+
+    def test_conflicting_macro_invalid_edge_throws(self):
+        exp = """\
+        tri(A, B, C) {
+            A -> B
+            B -> C
+            C -> A
+        }
+
+        nontri(A, B, C) {
+            A !> B
+            B !> C
+            C !> A
+        }
+        tri(C, D, E)
+        nontri(D, E, F)
+        """
+        with self.assertRaises(
+            dotmotif.validators.DisagreeingEdgesValidatorError
+        ):
+            dm = dotmotif.dotmotif(parser=ParserV2)
+            dm.from_motif(exp)
+            print(dm.to_nx().edges(data=True))
