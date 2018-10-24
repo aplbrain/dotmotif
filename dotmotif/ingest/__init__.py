@@ -35,10 +35,23 @@ class Ingester:
 
 
 class PrincetonIngester(Ingester):
+    """
+    An Ingester that reads data in the Princeton CSV file format.
+
+    The Princeton data are an edge-list, with extra columns that are currently
+    ignored after ingest.
+    """
+
     def __init__(self, path: str, export_dir: str) -> None:
-        super().__init__(self)
+        """
+        Create a new ingester.
+        """
+        super().__init__(path, export_dir)
 
     def ingest(self) -> List[str]:
+        """
+        Ingest using dask and pandas.
+        """
         df = dd.read_csv(self.path).dropna()
         export_df = df.copy()
         export_df[":START_ID(Neuron)"] = df["cleft_segid"].astype('int')
@@ -72,9 +85,15 @@ class PrincetonIngester(Ingester):
 class HarvardIngester(Ingester):
 
     def __init__(self, path: str, export_dir: str) -> None:
-        super().__init__(self, path, export_dir)
+        """
+        Create a new ingester.
+        """
+        super().__init__(path, export_dir)
 
     def ingest(self) -> List[str]:
+        """
+        Ingest using dask and pandas.
+        """
         data = json.load(open(self.path, 'r'))
         export_df = pd.DataFrame({
             ":START_ID(Neuron)": data["neuron_1"],
