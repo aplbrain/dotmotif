@@ -13,10 +13,10 @@ B !~ A
 C !> D
 """
 _DEMO_G_MIN_CYPHER = """
-MATCH (A:Neuron)-[:EXC]->(B:Neuron)
-MATCH (C:Neuron)-[:EXC]->(A:Neuron)
+MATCH (A:Neuron)-[:SYN]->(B:Neuron)
+MATCH (C:Neuron)-[:SYN]->(A:Neuron)
 WHERE NOT (B:Neuron)-[:INH]->(A:Neuron)
-WHERE NOT (C:Neuron)-[:EXC]->(D:Neuron)
+WHERE NOT (C:Neuron)-[:SYN]->(D:Neuron)
 RETURN A,B,C,D
 """
 

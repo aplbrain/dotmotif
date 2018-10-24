@@ -19,8 +19,12 @@ from itertools import product
 
 import networkx as nx
 
+from .parsers.v1 import ParserDMv1
+from .validators import DisagreeingEdgesValidator
+
 __version__ = "0.2.0"
 
+DEFAULT_MOTIF_PARSER = ParserDMv1
 
 class MotifError(ValueError):
     pass
@@ -32,21 +36,6 @@ class dotmotif:
 
     See __init__ documentation for more details.
     """
-
-    _LOOKUP = {
-        "INHIBITS": "INH",
-        "EXCITES":  "EXC",
-        "SYNAPSES": "SYN",
-    }
-
-    ACTIONS = {
-        ">": "SYNAPSES",
-        "~": "INHIBITS",
-        "|": "INHIBITS",
-        "+": "EXCITES",
-        "?": "SYNAPSES",
-        "-": "SYNAPSES",
-    }
 
     def __init__(self, **kwargs):
         """
@@ -62,10 +51,18 @@ class dotmotif:
 
         """
         self.ignore_direction = kwargs.get("ignore_direction", False)
-        self.validate = kwargs.get("validate", True)
         self.limit = kwargs.get("limit", None)
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
+        self.motif_parser = kwargs.get("motif_parser", DEFAULT_MOTIF_PARSER)
+        self.validators = kwargs.get("validators", [
+            DisagreeingEdgesValidator()
+        ])
+        self._LOOKUP = {
+            "INHIBITS": "INH",
+            "EXCITES":  "EXC",
+            "SYNAPSES": "SYN",
+        }
         self._g = nx.MultiDiGraph()
 
     def from_motif(self, cmd: str):
@@ -83,102 +80,9 @@ class dotmotif:
             cmd = open(cmd, 'r').read()
 
         self.cmd = cmd
-        for line in self.cmd.split('\n'):
-            self._parse_dm_line(line.strip(";"))
+        self._g = self.motif_parser(validators=self.validators).parse(self.cmd)
 
         return self
-
-    def from_csv(self, csv: str, negative_csv: str = "", action="SYNAPSES"):
-        """
-        Ingest a CSV-format string.
-
-        Arguments:
-            cmd (str): A string in CSV form, or a .csv filename on disk
-
-        Returns:
-            A pointer to this dotmotif object, for chaining
-
-        """
-        if len(csv.split("\n")) is 1:
-            csv = open(csv, 'r').read()
-
-        self.csv = csv
-        for line in self.csv.split('\n'):
-            self._parse_csv_line(line, action=action)
-
-        self.neg_csv = negative_csv
-        for line in self.neg_csv.split('\n'):
-            self._parse_csv_line(line, exists=False, action=action)
-
-        return self
-
-    def _add_edge(self, u, v, exists=True, action="SYNAPSES"):
-        if self.validate:
-            candidate_edges = self._g.get_edge_data(u, v, None)
-            if candidate_edges:
-                for _, e in candidate_edges.items():
-                    print(e)
-                    if e['exists'] != exists:
-                        raise MotifError(
-                            "Error adding <{}-{} exists={}, action={}>, {} already exists.".format(
-                                u, v, exists, action, e
-                            )
-                        )
-        self._g.add_edge(
-            u, v,
-            exists=exists,
-            action=action
-        )
-
-
-    def _parse_csv_line(self, line: str, exists=True, action="SYNAPSES"):
-        # Check that the action is valid
-        if action not in self.ACTIONS:
-            _reverse_actions = { v: k for k, v in self.ACTIONS.items() }
-            if action not in _reverse_actions:
-                raise ValueError(
-                    "Invalid action. Options: {}".format(self.ACTIONS.keys())
-                )
-            else:
-                action = _reverse_actions[action]
-
-        # Tokenize:
-        if len(line) is 0 or line[0] == "#":
-            return None
-        tokens = line.split(",")
-        if len(tokens) != 2:
-            raise ValueError(
-                "Must be of the form 'pre,post', but got {}".format(line))
-
-        self._add_edge(
-            tokens[0], tokens[1],
-            exists=exists,
-            action=self.ACTIONS[action]
-        )
-
-    def _parse_dm_line(self, _line: str):
-        # Tokenize:
-        if len(_line.strip()) and _line.strip()[0] == "#":
-            return None
-        line = [t for t in _line.split() if len(t)]
-        if len(line) is 0:
-            return None
-
-        # Format should be [NEURON_ID, ACTION, NEURON_ID]
-        try:
-            u, action, v = line
-        except ValueError:
-            raise ValueError(
-                "Line must be of the form [NEURON_ID, ACTION, NEURON_ID], but got {}.".format(
-                    line)
-            )
-        edge_exists = (action[0] != "!")
-
-        self._add_edge(
-            u, v,
-            action=self.ACTIONS[action[-1]],
-            exists=edge_exists
-        )
 
     def to_cypher(self) -> str:
         """
