@@ -43,6 +43,7 @@ macro           : word "(" arglist ")" "{" macro_rules "}"
 ?arglist         : word ("," word)*
 
 macro_rules     : edge_macro+
+                | macro_call_re+
 
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro      : node_id relation node_id
@@ -52,6 +53,7 @@ edge_macro      : node_id relation node_id
 
 // A macro is called like a function: foo(args).
 macro_call      : word "(" arglist ")"
+?macro_call_re  : word "(" arglist ")"
 
 
 
@@ -118,6 +120,19 @@ class DotMotifTransformer(Transformer):
         u, rel, v = tup
         for val in self.validators:
             val.validate(self.G, u, v, rel["type"], rel["exists"])
+        if (
+            self.G.has_edge(u, v)
+        ):
+            # There are existing edges. Only add a new one if it's unique
+            # from all existing ones.
+            candidate_edges = self.G.get_edge_data(u, v)
+            # There are many of these because this is a multidigraph.
+            for i, edge in candidate_edges.items():
+                if (
+                    edge["exists"] == rel["exists"] and
+                    edge["action"] == rel["type"]
+                ):
+                    return
         self.G.add_edge(u, v, exists=rel["exists"], action=rel["type"])
 
     def relation(self, tup):
@@ -183,7 +198,15 @@ class DotMotifTransformer(Transformer):
             )
 
         # Else, append the macro to the graph:
+        all_rules = []
         for rule in macro["rules"]:
+            if isinstance(rule, tuple):
+                all_rules.append(rule)
+            else:
+                for r in rule:
+                    all_rules.append(r)
+
+        for rule in all_rules:
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg
@@ -192,6 +215,37 @@ class DotMotifTransformer(Transformer):
             left = args[macro_args.index(left)]
             right = args[macro_args.index(right)]
             self.edge((left, rel, right))
+
+    def macro_call_re(self, tup):
+        callname, args = tup
+        if callname not in self.macros:
+            raise ValueError(
+                f"Tried to invoke macro '{callname}' but "
+                f"macro {callname} does not exist."
+            )
+        macro = self.macros[callname]
+        macro_args = macro["args"]
+        if len(macro_args) != len(args):
+            raise ValueError(
+                f"Tried to invoke macro '{callname}' with "
+                f"{len(args)} arguments, but {callname} takes "
+                f"{len(macro_args)} arguments."
+            )
+        all_rules = []
+        for rule in macro["rules"]:
+            if isinstance(rule, tuple):
+                all_rules.append(rule)
+            else:
+                for r in rule:
+                    all_rules.append(r)
+        return [
+            (
+                args[macro_args.index(rule[0])],
+                rule[1],
+                args[macro_args.index(rule[2])]
+            )
+            for rule in all_rules
+        ]
 
 
 class ParserV2(Parser):

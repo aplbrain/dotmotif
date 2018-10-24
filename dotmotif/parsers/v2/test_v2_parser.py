@@ -187,4 +187,66 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         ):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
-            print(dm.to_nx().edges(data=True))
+
+    def test_nested_macros(self):
+        exp = """\
+        dualedge(A, B) {
+            A -> B
+            B -> A
+        }
+        dualtri(A, B, C) {
+            dualedge(A, B)
+            dualedge(B, C)
+            dualedge(C, A)
+        }
+        dualtri(foo, bar, baz)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 6)
+
+    def test_deeply_nested_macros(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        dualedge(A, B) {
+            edge(A, B)
+            edge(B, A)
+        }
+        dualtri(A, B, C) {
+            dualedge(A, B)
+            dualedge(B, C)
+            dualedge(C, A)
+        }
+        dualtri(foo, bar, baz)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 6)
+
+    def test_clustercuss_macros_no_repeats(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        dualedge(A, B) {
+            edge(A, B)
+            edge(B, A)
+        }
+
+        dualtri(A, B, C) {
+            dualedge(A, B)
+            dualedge(B, C)
+            dualedge(C, A)
+        }
+
+        dualtri(foo, bar, baz)
+        dualtri(foo, bar, baf)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 10)
