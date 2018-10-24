@@ -29,14 +29,14 @@ class TestDotmotif_DM(unittest.TestCase):
         self.assertEqual([
             e[2]['action']
             for e in dm._g.edges(data=True)
-        ], ['SYNAPSES'] * 3)
+        ], ['SYN'] * 3)
 
         dm = dotmotif.dotmotif()
         dm.from_motif(_THREE_CYCLE_INH)
         self.assertEqual([
             e[2]['action']
             for e in dm._g.edges(data=True)
-        ], ['INHIBITS'] * 3)
+        ], ['INH'] * 3)
 
     def test_dm_parser_edge_exists(self):
         dm = dotmotif.dotmotif()
@@ -60,51 +60,3 @@ class TestDotmotif_DM(unittest.TestCase):
             for e in dm._g.edges(data=True)
         ], [False] * 3)
 
-
-class TestDotmotif_DM(unittest.TestCase):
-
-    def test_sanity(self):
-        self.assertEqual(1, 1)
-
-    def test_dm_parser(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE)
-        self.assertEqual(len(dm._g.edges()), 3)
-        self.assertEqual(len(dm._g.nodes()), 3)
-
-    def test_dm_parser_actions(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE)
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['SYNAPSES'] * 3)
-
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE_INH)
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['INHIBITS'] * 3)
-
-    def test_dm_parser_edge_exists(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [True] * 3)
-
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE_NEG)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [False] * 3)
-
-        dm = dotmotif.dotmotif()
-        dm.from_motif(_THREE_CYCLE_NEG_INH)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [False] * 3)

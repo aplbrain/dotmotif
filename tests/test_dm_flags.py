@@ -5,7 +5,7 @@ import dotmotif
 _DEMO_G_MIN = """
 A -> B
 C -> A
-B !~ A
+B !- A
 C !> D
 """
 _DEMO_G_MIN_CYPHER = """
