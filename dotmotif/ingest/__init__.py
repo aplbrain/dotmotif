@@ -10,18 +10,36 @@ import pandas as pd
 from typing import List
 
 class Ingester:
-    ...
+    """
+    Base ingester class
+    """
 
+    def __init__(self, path: str, export_dir: str) -> None:
+        """
+        Store the path and export directory of this ingester.
 
-class PrincetonIngester(Ingester):
-    def __init__(self, csvpath: str, export_dir: str) -> None:
-        self.csvpath = csvpath
+        All ingesters must have an input file(s) and an output directory which
+        can be used by the dotmotif class for input to, say, a Neo4j docker
+        container, among other platforms.
+        """
+        self.path = path
         self.export_dir = export_dir.rstrip("/") + "/"
         if not os.path.isdir(self.export_dir):
             os.makedirs(self.export_dir)
 
     def ingest(self) -> List[str]:
-        df = dd.read_csv(self.csvpath).dropna()
+        """
+        Ingest the data and output a list of files where the data were saved.
+        """
+        ...
+
+
+class PrincetonIngester(Ingester):
+    def __init__(self, path: str, export_dir: str) -> None:
+        super().__init__(self)
+
+    def ingest(self) -> List[str]:
+        df = dd.read_csv(self.path).dropna()
         export_df = df.copy()
         export_df[":START_ID(Neuron)"] = df["cleft_segid"].astype('int')
         export_df[":END_ID(Neuron)"] = df["postsyn_segid"].astype('int')
@@ -53,14 +71,11 @@ class PrincetonIngester(Ingester):
 
 class HarvardIngester(Ingester):
 
-    def __init__(self, json_path: str, export_dir: str) -> None:
-        self.json_path = json_path
-        self.export_dir = export_dir.rstrip("/") + "/"
-        if not os.path.isdir(self.export_dir):
-            os.makedirs(self.export_dir)
+    def __init__(self, path: str, export_dir: str) -> None:
+        super().__init__(self, path, export_dir)
 
     def ingest(self) -> List[str]:
-        data = json.load(open(self.json_path, 'r'))
+        data = json.load(open(self.path, 'r'))
         export_df = pd.DataFrame({
             ":START_ID(Neuron)": data["neuron_1"],
             ":END_ID(Neuron)":   data["neuron_2"]
