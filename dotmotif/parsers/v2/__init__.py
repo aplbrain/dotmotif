@@ -12,6 +12,8 @@ GRAMMAR = """
 // See Extended Backus-Naur Form for more details.
 start: comment_or_block+
 
+
+
 // Contents may be either comment or block.
 comment_or_block: comment
                 | block
@@ -20,9 +22,36 @@ comment_or_block: comment
 // a comment hash is thrown away.
 comment         : "#" word*
 
-// A block may consist of either an edge ("A -> B") or a "component", which is
-// essentially an alias capability. This is not yet implemented.
+// A block may consist of either an edge ("A -> B") or a "macro", which is
+// essentially an alias capability.
 block           : edge
+                | macro
+                | macro_call
+
+
+
+
+// A macro can be considered a "function" definition that can be used in the
+// rest of the file to define complex structure. For example,
+//     foo(a, b) { a -> b }; foo(A, B);
+// is the same as:
+//     A -> B
+// While this is a simple case, this is an immensely powerful tool.
+macro           : word "(" arglist ")" "{" edge_macro+ "}"
+
+// A series of arguments to a macro
+arglist         : word ("," word)*
+
+// A "hypothetical" edge that forms a subgraph structure.
+edge_macro      : node_id relation node_id
+
+
+
+
+macro_call      : word "(" arglist ")"
+
+
+
 
 // Edges are currently composed of a node, a relation, and a node. In other
 // words, an arbitrary word, a relation between them, and then another node.

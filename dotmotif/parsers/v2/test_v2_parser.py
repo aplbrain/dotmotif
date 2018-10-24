@@ -61,3 +61,26 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
             for e in dm._g.edges(data=True)
         ], [False] * 3)
 
+
+class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
+
+    def test_macro_not_added(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 0)
+
+    def test_simple_macro(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        edge(C, D)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
