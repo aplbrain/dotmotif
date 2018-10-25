@@ -40,22 +40,96 @@ Note that comments, prefixed with a `#` character, are valid syntax.
 # v2.0 (Under Development)
 
 ```
-S -> T                                  # Start
-T -> R       | TDT   | TDT   | c | ε    # Term, multiple terms, comment, or empty
-R -> nERn    | nERnK                    # v1.0 term, or conditioned (K) term
-K -> wV                                 # A 'where' (:) followed by one or more conditions
-V -> V       | VdV    | nEEn            # One or more key-value clauses (i.e. "foo=bar")
-R -> >       | +      | ~    | ? | B    # Edge type
-B -> /\[n\]/                            # Edge type in bracket-form
-E -> -       | !      | ?    | G        # Existance or equality
-G -> Q       | Qg                       # Comparison
-Q -> =       | ε                        # Equality test
-g -> <>      | !      | >    | < | =    # Comparator tests
-D -> d       | \n                       # Term delimiter
-d -> ;                                  # Semicolon delimiter
-w -> :                                  # Condition prefix
-n -> /\S+/                              # Non-space unicode
-c -> /\#.*/                             # Comment-form
+// See Extended Backus-Naur Form for more details.
+start: comment_or_block+
+
+
+
+// Contents may be either comment or block.
+comment_or_block: block
+
+// Comments are signified by a hash followed by anything. Any line that follows
+// a comment hash is thrown away.
+
+?comment        : "#" COMMENT
+
+// A block may consist of either an edge ("A -> B") or a "macro", which is
+// essentially an alias capability.
+block           : edge
+                | macro
+                | macro_call
+                | comment
+
+
+
+
+// A macro can be considered a "function" definition that can be used in the
+// rest of the file to define complex structure. For example,
+//     foo(a, b) { a -> b }; foo(A, B);
+// is the same as:
+//     A -> B
+// While this is a simple case, this is an immensely powerful tool.
+macro           : word "(" arglist ")" "{" macro_rules "}"
+
+// A series of arguments to a macro
+?arglist        : word ("," word)*
+
+macro_rules     : macro_block+
+
+?macro_block    : edge_macro
+                | macro_call_re
+                | comment
+
+// A "hypothetical" edge that forms a subgraph structure.
+edge_macro      : node_id relation node_id
+
+
+
+
+// A macro is called like a function: foo(args).
+macro_call      : word "(" arglist ")"
+?macro_call_re  : word "(" arglist ")"
+
+
+
+
+// Edges are currently composed of a node, a relation, and a node. In other
+// words, an arbitrary word, a relation between them, and then another node.
+edge            : node_id relation node_id
+
+// A Node ID is any contiguous (that is, no whitespace) word.
+?node_id        : word
+
+// A relation is a bipartite: The first character is an indication of whether
+// the relation exists or not. The following characters indicate if a relation
+// has a type other than the default, positive, and negative types offered
+// by default.
+relation        : relation_exist relation_type
+
+// A "-" means the relation exists; "~" means the relation does not exist.
+relation_exist  : "-"                               -> rel_exist
+                | "~"                               -> rel_nexist
+                | "!"                               -> rel_nexist
+
+// The valid types of relation are single-character, except for the custom
+// relation type which is user-defined and lives inside square brackets.
+relation_type   : ">"                               -> rel_def
+                | "+"                               -> rel_pos
+                | "-"                               -> rel_neg
+                | "|"                               -> rel_neg
+                | "[" word "]"                      -> rel_typ
+
+
+?word           : WORD
+
+
+COMMENT         : /\#[^\\n]+/
+%ignore COMMENT
+
+%import common.WORD
+%import common.SIGNED_NUMBER  -> NUMBER
+%import common.WS
+%ignore WS
 ```
 
 For example, the following two lines may be considered to be the same:
@@ -65,22 +139,31 @@ A -> B
 A -[SYN] B
 ```
 
-As may these:
-
-```
-A -> B : A.type='inhibitory'; B.type='excitatory'
-A -> B : B.type='excitatory'; A.type='inhibitory'
-```
-
-Conditions may also be set on the edge's attributes. The `-` character aliases the edge entity.
-
-```
-A -> B : -.weight>=0.5; -.weight<=1.0
-```
-
 Likewise, bracket-form is equivalent to inline type aliases:
 
 ```
 C !+ D
 C ![EXCITES] D
+```
+
+## Macros
+
+Macros enable simple motif construction from simpler subcomponents:
+
+```
+# Nodes that are connected in only one direction:
+unidirectional(n, m) {
+    n -> m
+    m ~> n
+}
+
+# All triangles for which edges exist in only one direction:
+unidirectionalTriangle(x, y, z) {
+    unidirectional(x, y)
+    unidirectional(y, z)
+    unidirectional(z, x)
+}
+
+unidirectionalTriangle(A, B, C)
+unidirectionalTriangle(C, D, E)
 ```
