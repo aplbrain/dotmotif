@@ -8,25 +8,14 @@
 
 ## Writing a motif
 
-You can currently write motifs in one of two languages; either CSV (in edge-list notation), or dotmotif form, which provides extra specificity when searching a graph (such as synapse polarity).
-
-The following two files are equivalent:
-
-`threecycle.csv`
-```
-A,B
-B,C
-C,A
-```
+You can currently write motifs in dotmotif form, which is a DSL that specializes in subgraph query notation.
 
 `threecycle.motif`
 ```
 # A excites B
 A -+ B
 # B inhibits C
-B -~ C
-# We do not know how C influences A
-C -? A
+B -| C
 ```
 
 ## Ingesting the motif into dotmotif
@@ -62,3 +51,4 @@ You can chain the entire operation into one single command using the chaining fu
 dm = dotmotif().from_motif("threecycle.motif").to_cypher()
 ```
 
+For more details on how to write a query, see [Getting Started](docs/start.md).
