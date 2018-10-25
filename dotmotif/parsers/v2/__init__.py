@@ -15,18 +15,19 @@ start: comment_or_block+
 
 
 // Contents may be either comment or block.
-comment_or_block: comment
-                | block
+comment_or_block: block
 
 // Comments are signified by a hash followed by anything. Any line that follows
 // a comment hash is thrown away.
-comment         : "#" word*
+
+?comment        : "#" COMMENT
 
 // A block may consist of either an edge ("A -> B") or a "macro", which is
 // essentially an alias capability.
 block           : edge
                 | macro
                 | macro_call
+                | comment
 
 
 
@@ -40,10 +41,13 @@ block           : edge
 macro           : word "(" arglist ")" "{" macro_rules "}"
 
 // A series of arguments to a macro
-?arglist         : word ("," word)*
+?arglist        : word ("," word)*
 
-macro_rules     : edge_macro+
-                | macro_call_re+
+macro_rules     : macro_block+
+
+?macro_block    : edge_macro
+                | macro_call_re
+                | comment
 
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro      : node_id relation node_id
@@ -63,7 +67,7 @@ macro_call      : word "(" arglist ")"
 edge            : node_id relation node_id
 
 // A Node ID is any contiguous (that is, no whitespace) word.
-?node_id         : word
+?node_id        : word
 
 // A relation is a bipartite: The first character is an indication of whether
 // the relation exists or not. The following characters indicate if a relation
@@ -85,8 +89,11 @@ relation_type   : ">"                               -> rel_def
                 | "[" word "]"                      -> rel_typ
 
 
-?word            : WORD
+?word           : WORD
 
+
+COMMENT         : /\#[^\\n]+/
+%ignore COMMENT
 
 %import common.WORD
 %import common.SIGNED_NUMBER  -> NUMBER
@@ -113,8 +120,8 @@ class DotMotifTransformer(Transformer):
         self._transform_tree(tree)
         return self.G
 
-    def comment(self, words):
-        pass
+    # def comment(self, words):
+    #     pass
 
     def edge(self, tup):
         u, rel, v = tup

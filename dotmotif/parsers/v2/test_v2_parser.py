@@ -250,3 +250,61 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         dm.from_motif(exp)
         edges = list(dm._g.edges(data=True))
         self.assertEqual(len(edges), 10)
+
+    def test_comment_in_macro(self):
+        exp = """\
+        # Outside comment
+        edge(A, B) {
+            # Inside comment
+            A -> B
+        }
+        dualedge(A, B) {
+            # Nested-inside comment
+            edge(A, B)
+            edge(B, A)
+        }
+
+        dualedge(foo, bar)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 2)
+
+    def test_combo_macro(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        dualedge(A, B) {
+            # Nested-inside comment!
+            edge(A, B)
+            B -> A
+        }
+
+        dualedge(foo, bar)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 2)
+
+    def test_comment_macro_inline(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        dualedge(A, B) {
+            # Nested-inside comment!
+            edge(A, B) # inline comment
+            B -> A
+        }
+
+        dualedge(foo, bar) # inline comment
+        # standalone comment
+        foo -> bar # inline comment
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 2)
