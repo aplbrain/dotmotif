@@ -72,51 +72,14 @@ class Neo4jExecutor:
             # We must export this to a set of CSV files, drop them to disk,
             # and then we can use the same strategy as `import_directory` to
             # run a container.
-            NetworkXIngester(graph, export_dir)
+            nxi = NetworkXIngester(graph, export_dir)
+            try:
+                nxi.ingest()
+            except Exception as e:
+                raise ValueError("Could not export graph: {e}")
 
-            # Create a docker container:
-            self.docker_client = docker.from_env()
-            self._running_container = self.docker_client.containers.run(
-                "neo4j:3.4",
-                # auto_remove=True,
-                detach=True,
-                volumes={
-                    f"{os.getcwd()}/{export_dir}": {
-                        "bind": "/import",
-                        "mode": "ro"
-                    }
-                },
-                ports={
-                    7474: 7474,
-                    7687: 7687
-                }
-            )
-            self._created_container = True
-            # TODO: wait for running
-            container_is_ready = False
-            while not container_is_ready:
-                try:
-                    res = requests.get("http://localhost:7474")
-                    if res.status_code == 200:
-                        container_is_ready = True
-                except:
-                    pass
-                else:
-                    time.sleep(2)
-            self.G = Graph(password="neo4j")
-            self.G.run("CALL dbms.changePassword('neo4jpw')").to_table()
-            # self.G.run("""
-            # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
-            # CREATE (:Neuron { id: line.neuronId })
-            # """)
-            self.G.run("""
-            LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
-            MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
-            WITH line, n
-            MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
-            WITH m,n
-            MERGE (n)-[:SYN]->(m);
-            """)
+            self._create_container(export_dir)
+
         else:
             raise ValueError(
                 "You must supply either an existing db or a graph to load."
@@ -126,16 +89,66 @@ class Neo4jExecutor:
         if self._created_container:
             self._teardown_container()
 
-    def _connect_to_existing_graph(db_bolt_uri: str, password: str) -> None:
+    def _connect_to_existing_graph(
+        self, db_bolt_uri: str, password: str
+    ) -> None:
         try:
             self.G = Graph(db_bolt_uri, password=password)
         except:
             raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
 
+    def _create_container(self, import_dir: str):
+        # Create a docker container:
+        self.docker_client = docker.from_env()
+        self._running_container = self.docker_client.containers.run(
+            "neo4j:3.4",
+            # auto_remove=True,
+            detach=True,
+            volumes={
+                f"{os.getcwd()}/{import_dir}": {
+                    "bind": "/import",
+                    "mode": "ro"
+                }
+            },
+            ports={
+                7474: 7474,
+                7687: 7687
+            }
+        )
+        self._created_container = True
+        container_is_ready = False
+        while not container_is_ready:
+            try:
+                res = requests.get("http://localhost:7474")
+                if res.status_code == 200:
+                    container_is_ready = True
+            except:
+                pass
+            else:
+                time.sleep(2)
+        self.G = Graph(password="neo4j")
+        self.G.run("CALL dbms.changePassword('neo4jpw')").to_table()
+        self._ingest_data()
+
+    def _ingest_data(self):
+        if not self._created_container:
+            raise ValueError("Cannot ingest data until database is running.")
+        # self.G.run("""
+        # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
+        # CREATE (:Neuron { id: line.neuronId })
+        # """)
+        self.G.run("""
+        LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
+        MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
+        WITH line, n
+        MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
+        WITH m,n
+        MERGE (n)-[:SYN]->(m);
+        """)
+
     def _teardown_container(self):
         self._running_container.stop()
         self._running_container.remove()
-
 
     def run(self, cypher: str) -> Table:
         return self.G.run(cypher).to_table()
