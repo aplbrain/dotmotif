@@ -45,6 +45,10 @@ class Neo4jExecutor:
 
         If there is no existing database, you can pass in a graph to ingest
         and the executor will connect to it automatically.
+
+        If there is no existing database and you do not pass in a graph, you
+        must pass an `import_directory`, which the container will mount as an
+        importable CSV resource.
         """
 
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
@@ -52,32 +56,20 @@ class Neo4jExecutor:
         password: str = kwargs.get("password", None)
 
         graph: nx.Graph = kwargs.get("graph", None)
+        import_directory: str = kwargs.get("import_directory", None)
 
         if db_bolt_uri and password:
-            try:
-                self.G = Graph(db_bolt_uri, password=password)
-            except:
-                raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
-        elif graph:
-            # Export the graph to CSV (nodes and edges):
-            nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join([
-                i for i, n in
-                graph.nodes(True)
-            ])
-            edges_csv = ":START_ID(Neuron),:END_ID(Neuron)\n" + "\n".join([
-                f"{u},{v}" for u, v in
-                graph.edges()
-            ])
+            # Authentication information was provided. Use this to log in and
+            # connect to the existing database.
+            self._connect_to_existing_graph(db_bolt_uri, password)
 
-            # Export the files:
-            try:
-                os.makedirs("export-custom-graph")
-            except:
-                pass
-            with open("export-custom-graph/export-neurons-0.csv", 'w') as fh:
-                fh.write(nodes_csv)
-            with open("export-custom-graph/export-synapses-0.csv", 'w') as fh:
-                fh.write(edges_csv)
+        elif graph:
+            export_dir = "export-custom-graph"
+            # A networkx graph was provided.
+            # We must export this to a set of CSV files, drop them to disk,
+            # and then we can use the same strategy as `import_directory` to
+            # run a container.
+            NetworkXIngester(graph, export_dir)
 
             # Create a docker container:
             self.docker_client = docker.from_env()
@@ -86,7 +78,7 @@ class Neo4jExecutor:
                 # auto_remove=True,
                 detach=True,
                 volumes={
-                    f"{os.getcwd()}/export-custom-graph": {
+                    f"{os.getcwd()}/{export_dir}": {
                         "bind": "/import",
                         "mode": "ro"
                     }
@@ -130,6 +122,12 @@ class Neo4jExecutor:
     def __del__(self):
         if self._created_container:
             self._teardown_container()
+
+    def _connect_to_existing_graph(db_bolt_uri: str, password: str) -> None:
+        try:
+            self.G = Graph(db_bolt_uri, password=password)
+        except:
+            raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
 
     def _teardown_container(self):
         self._running_container.stop()

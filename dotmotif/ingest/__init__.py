@@ -8,13 +8,23 @@ import pandas as pd
 
 # Types only:
 from typing import List
+import networkx as nx
+
 
 class Ingester:
     """
     Base ingester class
     """
 
-    def __init__(self, path: str, export_dir: str) -> None:
+    def ingest(self) -> List[str]:
+        """
+        Ingest the data and output a list of files where the data were saved.
+        """
+        ...
+
+class FileIngester(Ingester):
+
+   def __init__(self, path: str, export_dir: str) -> None:
         """
         Store the path and export directory of this ingester.
 
@@ -27,14 +37,42 @@ class Ingester:
         if not os.path.isdir(self.export_dir):
             os.makedirs(self.export_dir)
 
+
+class NetworkXIngester(Ingester):
+
+    def __init__(self, graph: nx.Graph, export_dir: str) -> None:
+        self.export_dir = export_dir.rstrip("/") + "/"
+        self.graph = graph
+
     def ingest(self) -> List[str]:
-        """
-        Ingest the data and output a list of files where the data were saved.
-        """
-        ...
+        # Export the graph to CSV (nodes and edges):
+        nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join([
+            i for i, n in
+            graph.nodes(True)
+        ])
+        edges_csv = ":START_ID(Neuron),:END_ID(Neuron)\n" + "\n".join([
+            f"{u},{v}" for u, v in
+            graph.edges()
+        ])
+
+        # Export the files:
+        try:
+            os.makedirs(f"{self.export_dir}")
+        except:
+            pass
+
+        with open(f"{self.export_dir}/export-neurons-0.csv", 'w') as fh:
+            fh.write(nodes_csv)
+        with open(f"{self.export_dir}/export-synapses-0.csv", 'w') as fh:
+            fh.write(edges_csv)
+
+        return [
+            f"{self.export_dir}/export-neurons-0.csv",
+            f"{self.export_dir}/export-synapses-0.csv"
+        ]
 
 
-class PrincetonIngester(Ingester):
+class PrincetonIngester(FileIngester):
     """
     An Ingester that reads data in the Princeton CSV file format.
 
@@ -82,7 +120,7 @@ class PrincetonIngester(Ingester):
         return node_fnames + [headerpath] + edge_fnames
 
 
-class HarvardIngester(Ingester):
+class HarvardIngester(FileIngester):
 
     def __init__(self, path: str, export_dir: str) -> None:
         """
