@@ -13,7 +13,7 @@ from py2neo.data import Table
 import networkx as nx
 
 # default Ingester
-from .ingest import NetworkXIngester
+from ..ingest import NetworkXIngester
 
 
 class NetworkXExecutor:
