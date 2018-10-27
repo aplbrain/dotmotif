@@ -1,0 +1,93 @@
+<html lang="en">
+
+<head>
+</head>
+
+<body>
+
+
+    <table style="
+    border-width: 1px !important;
+" contenteditable="">
+        <thead>
+            <tr>
+                <th>Syntax</th>
+                <th>Example</th>
+                <th>Explanation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <b>Edges.</b> Edges between nodes are notated with an arrow. Comments are prefixed with a <b>#</b>.</td>
+                <td>
+                    <pre># All edges:
+A -&gt; B<br></pre>
+                </td>
+                <td>A list of every edge in the haystack graph.
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Negated edges.</b> Edges that must not exist in the motif are notated with a negated arrow.
+                </td>
+                <td>
+                    <pre>A -&gt; B
+B ~&gt; A
+</pre>
+                </td>
+                <td>
+                    A list of every edge in the haystack graph for which the reciprocal edge does not exist.
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Edge types.</b> Edges may have "type" as well as an existence annotation. Edge type is indicated
+                    with square brackets:
+                </td>
+                <td>
+                    <pre>A -[inhibits] B
+B ~[excites] A
+</pre>
+                </td>
+                <td>
+                    Every two nodes <b><i>(A, B)</i></b> in the graph for which&nbsp;<b><i>A</i></b>&nbsp;inhibits <b><i>B</i></b>
+                    and&nbsp;<b><i>B</i></b>&nbsp;does not excite <b><i>A</i></b>.<br></td>
+            </tr>
+            <tr style="
+    /* border-bottom: 1px solid red; */
+">
+                <td style="
+    width: 24em;
+">
+                    <b>Macros.</b> Macros can be used to template repeated complex structure in a motif:
+                </td>
+                <td>
+                    <pre># Nodes that are connected in only one direction:
+unidirectional(n, m) {
+    n -&gt; m
+    m ~&gt; n
+}
+# All triangles for which edges exist in only one direction:
+unidirectionalTriangle(x, y, z) {
+    unidirectional(x, y)
+    unidirectional(y, z)
+    unidirectional(z, x)
+}
+
+unidirectionalTriangle(A, B, C)
+unidirectionalTriangle(C, D, E)
+</pre>
+                </td>
+                <td>
+                    Graphs with unidirectional triangles between <b><i>A, B, C</i></b> and <i><b>C, D, E</b></i>.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+
+</body>
+
+</html>

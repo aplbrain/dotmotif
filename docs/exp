@@ -1,0 +1,26 @@
+uniedge(A, B) {
+    A -> B
+    B !> A
+}
+
+fourcycle(x, y, z, a) {
+    uniedge(x, y)
+    uniedge(y, z)
+    uniedge(z, a)
+    uniedge(a, x)
+}
+
+fourcycle(x, y, z, a)
+fourcycle(x, y, z, b)
+
+-------------------------------------------------
+
+(_658409:Neuron {neuronId: '574556'})	(_962279:Neuron {neuronId: '60478363'})	(_10:Neuron {neuronId: '29972790'})	(_211:Neuron {neuronId: '30429930'})	(_211:Neuron {neuronId: '30429930'})
+
+(_658409:Neuron {neuronId: '574556'})	(_962279:Neuron {neuronId: '60478363'})	(_10:Neuron {neuronId: '29972790'})	(_211:Neuron {neuronId: '30429930'})	(_211:Neuron {neuronId: '30429930'})
+
+(_518861:Neuron {neuronId: '29490105'})	(_583460:Neuron {neuronId: '60478360'})	(_10:Neuron {neuronId: '29972790'})	(_211:Neuron {neuronId: '30429930'})	(_211:Neuron {neuronId: '30429930'})
+
+(_518861:Neuron {neuronId: '29490105'})	(_583460:Neuron {neuronId: '60478360'})	(_10:Neuron {neuronId: '29972790'})	(_211:Neuron {neuronId: '30429930'})	(_211:Neuron {neuronId: '30429930'})
+
+(_518861:Neuron {neuronId: '29490105'})	(_583460:Neuron {neuronId: '60478360'})	(_10:Neuron {neuronId: '29972790'})	(_573432:Neuron {neuronId: '32887523'})	(_211:Neuron {neuronId: '30429930'})

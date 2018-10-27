@@ -76,9 +76,12 @@ class Neo4jExecutor:
             try:
                 nxi.ingest()
             except Exception as e:
-                raise ValueError("Could not export graph: {e}")
+                raise ValueError(f"Could not export graph: {e}")
 
             self._create_container(export_dir)
+
+        elif import_directory:
+            self._create_container(import_directory)
 
         else:
             raise ValueError(
@@ -102,6 +105,11 @@ class Neo4jExecutor:
         self.docker_client = docker.from_env()
         self._running_container = self.docker_client.containers.run(
             "neo4j:3.4",
+            command="""
+            bash -c './bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" &&
+            ./bin/neo4j-admin set-initial-password neo4jpw &&
+            ./bin/neo4j start &&
+            tail -f /dev/null'""",
             # auto_remove=True,
             detach=True,
             volumes={
@@ -126,25 +134,27 @@ class Neo4jExecutor:
                 pass
             else:
                 time.sleep(2)
-        self.G = Graph(password="neo4j")
-        self.G.run("CALL dbms.changePassword('neo4jpw')").to_table()
-        self._ingest_data()
+        self.G = Graph(password="neo4jpw")
+        # self._ingest_data()
 
-    def _ingest_data(self):
-        if not self._created_container:
-            raise ValueError("Cannot ingest data until database is running.")
+    # def _ingest_data(self):
+    #     if not self._created_container:
+    #         raise ValueError("Cannot ingest data until database is running.")
         # self.G.run("""
         # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
         # CREATE (:Neuron { id: line.neuronId })
         # """)
-        self.G.run("""
-        LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
-        MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
-        WITH line, n
-        MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
-        WITH m,n
-        MERGE (n)-[:SYN]->(m);
-        """)
+        # print(self._running_container.exec_run("""
+        # rm -rf /var/lib/neo4j/data/databases/graph.db && ./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" && ./bin/neo4j start
+        # """))
+        # self.G.run("""
+        # LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
+        # MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
+        # WITH line, n
+        # MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
+        # WITH m,n
+        # MERGE (n)-[:SYN]->(m);
+        # """)
 
     def _teardown_container(self):
         self._running_container.stop()

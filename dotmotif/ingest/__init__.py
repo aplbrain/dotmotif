@@ -48,11 +48,11 @@ class NetworkXIngester(Ingester):
         # Export the graph to CSV (nodes and edges):
         nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join([
             i for i, n in
-            graph.nodes(True)
+            self.graph.nodes(True)
         ])
         edges_csv = ":START_ID(Neuron),:END_ID(Neuron)\n" + "\n".join([
             f"{u},{v}" for u, v in
-            graph.edges()
+            self.graph.edges()
         ])
 
         # Export the files:
@@ -63,12 +63,12 @@ class NetworkXIngester(Ingester):
 
         with open(f"{self.export_dir}/export-neurons-0.csv", 'w') as fh:
             fh.write(nodes_csv)
-        with open(f"{self.export_dir}/export-synapses-0.csv", 'w') as fh:
+        with open(f"{self.export_dir}/export-synapses-zdata.csv", 'w') as fh:
             fh.write(edges_csv)
 
         return [
             f"{self.export_dir}/export-neurons-0.csv",
-            f"{self.export_dir}/export-synapses-0.csv"
+            f"{self.export_dir}/export-synapses-zdata.csv"
         ]
 
 
@@ -109,12 +109,12 @@ class PrincetonIngester(FileIngester):
         # This is absurd, but neo4j can't tolerate file headers in every CSV,
         # and dask can't NOT.
         # So We print off a header file first.
-        headerpath = self.export_dir + "export-synapses-00.csv"
+        headerpath = self.export_dir + "export-synapses-header.csv"
         with open(headerpath, 'w') as headerfile:
             headerfile.write(":START_ID(Neuron),:END_ID(Neuron)")
 
         edge_fnames = export_df.to_csv(
-            self.export_dir + "export-synapses-*.csv", index=False, header=False
+            self.export_dir + "export-synapses-zdata-*.csv", index=False, header=False
         )
 
         return node_fnames + [headerpath] + edge_fnames
@@ -155,12 +155,12 @@ class HarvardIngester(FileIngester):
         # and dask can't NOT.
         # So We print off a header file first.
         export_df_dd = dd.from_pandas(export_df, npartitions=1)
-        headerpath = self.export_dir + "export-synapses-00.csv"
+        headerpath = self.export_dir + "export-synapses-header.csv"
         with open(headerpath, 'w') as headerfile:
             headerfile.write(":START_ID(Neuron),:END_ID(Neuron)")
 
         edge_fnames = export_df_dd.to_csv(
-            self.export_dir + "export-synapses-*.csv", index=False, header=False
+            self.export_dir + "export-synapses-zdata-*.csv", index=False, header=False
         )
 
         return node_fnames + [headerpath] + edge_fnames
