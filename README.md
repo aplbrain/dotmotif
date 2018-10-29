@@ -23,9 +23,6 @@ B -| C
 ```python
 from dotmotif import dotmotif
 
-dm = dotmotif().from_csv("threecycle.csv")
-
-# or:
 dm = dotmotif().from_motif("threecycle.motif")
 ```
 
