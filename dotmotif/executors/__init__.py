@@ -12,6 +12,9 @@ import requests
 from py2neo.data import Table
 import networkx as nx
 
+# default Ingester
+from ..ingest import NetworkXIngester
+
 
 class NetworkXExecutor:
 
@@ -45,6 +48,10 @@ class Neo4jExecutor:
 
         If there is no existing database, you can pass in a graph to ingest
         and the executor will connect to it automatically.
+
+        If there is no existing database and you do not pass in a graph, you
+        must pass an `import_directory`, which the container will mount as an
+        importable CSV resource.
         """
 
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
@@ -52,76 +59,30 @@ class Neo4jExecutor:
         password: str = kwargs.get("password", None)
 
         graph: nx.Graph = kwargs.get("graph", None)
+        import_directory: str = kwargs.get("import_directory", None)
 
         if db_bolt_uri and password:
-            try:
-                self.G = Graph(db_bolt_uri, password=password)
-            except:
-                raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
+            # Authentication information was provided. Use this to log in and
+            # connect to the existing database.
+            self._connect_to_existing_graph(db_bolt_uri, password)
+
         elif graph:
-            # Export the graph to CSV (nodes and edges):
-            nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join([
-                i for i, n in
-                graph.nodes(True)
-            ])
-            edges_csv = ":START_ID(Neuron),:END_ID(Neuron)\n" + "\n".join([
-                f"{u},{v}" for u, v in
-                graph.edges()
-            ])
-
-            # Export the files:
+            export_dir = "export-custom-graph"
+            # A networkx graph was provided.
+            # We must export this to a set of CSV files, drop them to disk,
+            # and then we can use the same strategy as `import_directory` to
+            # run a container.
+            nxi = NetworkXIngester(graph, export_dir)
             try:
-                os.makedirs("export-custom-graph")
-            except:
-                pass
-            with open("export-custom-graph/export-neurons-0.csv", 'w') as fh:
-                fh.write(nodes_csv)
-            with open("export-custom-graph/export-synapses-0.csv", 'w') as fh:
-                fh.write(edges_csv)
+                nxi.ingest()
+            except Exception as e:
+                raise ValueError(f"Could not export graph: {e}")
 
-            # Create a docker container:
-            self.docker_client = docker.from_env()
-            self._running_container = self.docker_client.containers.run(
-                "neo4j:3.4",
-                # auto_remove=True,
-                detach=True,
-                volumes={
-                    f"{os.getcwd()}/export-custom-graph": {
-                        "bind": "/import",
-                        "mode": "ro"
-                    }
-                },
-                ports={
-                    7474: 7474,
-                    7687: 7687
-                }
-            )
-            self._created_container = True
-            # TODO: wait for running
-            container_is_ready = False
-            while not container_is_ready:
-                try:
-                    res = requests.get("http://localhost:7474")
-                    if res.status_code == 200:
-                        container_is_ready = True
-                except:
-                    pass
-                else:
-                    time.sleep(2)
-            self.G = Graph(password="neo4j")
-            self.G.run("CALL dbms.changePassword('neo4jpw')").to_table()
-            # self.G.run("""
-            # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
-            # CREATE (:Neuron { id: line.neuronId })
-            # """)
-            self.G.run("""
-            LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
-            MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
-            WITH line, n
-            MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
-            WITH m,n
-            MERGE (n)-[:SYN]->(m);
-            """)
+            self._create_container(export_dir)
+
+        elif import_directory:
+            self._create_container(import_directory)
+
         else:
             raise ValueError(
                 "You must supply either an existing db or a graph to load."
@@ -131,10 +92,73 @@ class Neo4jExecutor:
         if self._created_container:
             self._teardown_container()
 
+    def _connect_to_existing_graph(
+        self, db_bolt_uri: str, password: str
+    ) -> None:
+        try:
+            self.G = Graph(db_bolt_uri, password=password)
+        except:
+            raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
+
+    def _create_container(self, import_dir: str):
+        # Create a docker container:
+        self.docker_client = docker.from_env()
+        self._running_container = self.docker_client.containers.run(
+            "neo4j:3.4",
+            command="""
+            bash -c './bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" &&
+            ./bin/neo4j-admin set-initial-password neo4jpw &&
+            ./bin/neo4j start &&
+            tail -f /dev/null'""",
+            # auto_remove=True,
+            detach=True,
+            volumes={
+                f"{os.getcwd()}/{import_dir}": {
+                    "bind": "/import",
+                    "mode": "ro"
+                }
+            },
+            ports={
+                7474: 7474,
+                7687: 7687
+            }
+        )
+        self._created_container = True
+        container_is_ready = False
+        while not container_is_ready:
+            try:
+                res = requests.get("http://localhost:7474")
+                if res.status_code == 200:
+                    container_is_ready = True
+            except:
+                pass
+            else:
+                time.sleep(2)
+        self.G = Graph(password="neo4jpw")
+        # self._ingest_data()
+
+    # def _ingest_data(self):
+    #     if not self._created_container:
+    #         raise ValueError("Cannot ingest data until database is running.")
+        # self.G.run("""
+        # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
+        # CREATE (:Neuron { id: line.neuronId })
+        # """)
+        # print(self._running_container.exec_run("""
+        # rm -rf /var/lib/neo4j/data/databases/graph.db && ./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" && ./bin/neo4j start
+        # """))
+        # self.G.run("""
+        # LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
+        # MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
+        # WITH line, n
+        # MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
+        # WITH m,n
+        # MERGE (n)-[:SYN]->(m);
+        # """)
+
     def _teardown_container(self):
         self._running_container.stop()
         self._running_container.remove()
-
 
     def run(self, cypher: str) -> Table:
         return self.G.run(cypher).to_table()

@@ -109,7 +109,7 @@ class dotmotif:
                 )
             else:
                 es_neg.append(
-                    "WHERE NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
+                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
                         u, action,
                         "" if self.ignore_direction else ">",
                         v
@@ -118,7 +118,7 @@ class dotmotif:
 
         delim = "\n" if self.pretty_print else " "
 
-        q_match = delim.join([delim.join(es), delim.join(es_neg)])
+        q_match = delim.join([delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
         q_return = "RETURN " + ",".join(list(self._g.nodes()))
 
         if self.limit:
