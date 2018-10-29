@@ -1,3 +1,14 @@
+- **0.3.0**
+    - Overhaul of DotMotif Parsers
+        - Implement EBNF spec of language, and complete parser (lark)
+        - Support for macros (templating engine)
+        - Inline validation
+    - Faster motif construction
+    - `Executor`s (`dotmotif.executors`)
+        - Neo4jExecutor automatically spins up/down docker containers for out-of-RAM search
+        - NetworkXExecutor for small-scale subgraph isomorphism
+    - Comprehensive test suite
+    - Base implementations of `Validator`s
 - **0.2.1**
     - Remove CSV support
     - Abstract parser syntax to `dotmotif.parsers`

@@ -22,7 +22,7 @@ import networkx as nx
 from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
