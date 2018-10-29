@@ -9,7 +9,7 @@ git push --tags
 python setup.py sdist upload -r pypi
 """
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 setup(
     name="dotmotif",
