@@ -61,6 +61,8 @@ class Neo4jExecutor:
         graph: nx.Graph = kwargs.get("graph", None)
         import_directory: str = kwargs.get("import_directory", None)
 
+        self._created_container = False
+
         if db_bolt_uri and password:
             # Authentication information was provided. Use this to log in and
             # connect to the existing database.

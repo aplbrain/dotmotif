@@ -118,7 +118,11 @@ class dotmotif:
 
         delim = "\n" if self.pretty_print else " "
 
-        q_match = delim.join([delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
+        if len(es_neg):
+            q_match = delim.join([delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
+        else:
+            q_match = delim.join([delim.join(es)])
+
         q_return = "RETURN " + ",".join(list(self._g.nodes()))
 
         if self.limit:
