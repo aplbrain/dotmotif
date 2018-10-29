@@ -14,12 +14,34 @@ import networkx as nx
 
 # default Ingester
 from ..ingest import NetworkXIngester
+from .. import dotmotif
 
 
-class NetworkXExecutor:
+class Executor:
+    ...
+
+    def find(self, motif, limit=None):
+        ...
+
+
+class NetworkXExecutor(Executor):
+    """
+    A query executor that runs inside RAM.
+
+    Uses NetworkX's built-in (VF2) subgraph isomorphism algo. Good for very
+    small graphs, since this won't scale particularly well.
+    """
 
     def __init__(self, **kwargs) -> None:
         """
+        Create a new NetworkXExecutor.
+
+        Arguments:
+            graph (networkx.Graph)
+
+        Returns:
+            None
+
         """
         if 'graph' in kwargs:
             self.graph = kwargs.get('graph')
@@ -29,12 +51,19 @@ class NetworkXExecutor:
             )
 
     def find(self, motif, limit=None):
+        """
+        Find a motif in a larger graph.
+
+        Arguments:
+            motif (dotmotif.dotmotif)
+
+        """
         gm = nx.algorithms.isomorphism.GraphMatcher(self.graph, motif.to_nx())
         res = gm.subgraph_isomorphisms_iter()
         return pd.DataFrame([{v:k for k, v in r.items()} for r in res])
 
 
-class Neo4jExecutor:
+class Neo4jExecutor(Executor):
     """
     A Neo4j executor that runs Cypher queries against a running Neo4j database.
     """
@@ -55,7 +84,7 @@ class Neo4jExecutor:
         """
 
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
-        username: str = kwargs.get("username", None)
+        username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
 
         graph: nx.Graph = kwargs.get("graph", None)
@@ -66,7 +95,7 @@ class Neo4jExecutor:
         if db_bolt_uri and password:
             # Authentication information was provided. Use this to log in and
             # connect to the existing database.
-            self._connect_to_existing_graph(db_bolt_uri, password)
+            self._connect_to_existing_graph(db_bolt_uri, username, password)
 
         elif graph:
             export_dir = "export-custom-graph"
@@ -95,10 +124,10 @@ class Neo4jExecutor:
             self._teardown_container()
 
     def _connect_to_existing_graph(
-        self, db_bolt_uri: str, password: str
+        self, db_bolt_uri: str, username: str, password: str
     ) -> None:
         try:
-            self.G = Graph(db_bolt_uri, password=password)
+            self.G = Graph(db_bolt_uri, username=username, password=password)
         except:
             raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
 
@@ -137,35 +166,27 @@ class Neo4jExecutor:
             else:
                 time.sleep(2)
         self.G = Graph(password="neo4jpw")
-        # self._ingest_data()
-
-    # def _ingest_data(self):
-    #     if not self._created_container:
-    #         raise ValueError("Cannot ingest data until database is running.")
-        # self.G.run("""
-        # LOAD CSV WITH HEADERS FROM "file:/export-neurons-0.csv" AS line
-        # CREATE (:Neuron { id: line.neuronId })
-        # """)
-        # print(self._running_container.exec_run("""
-        # rm -rf /var/lib/neo4j/data/databases/graph.db && ./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" && ./bin/neo4j start
-        # """))
-        # self.G.run("""
-        # LOAD CSV WITH HEADERS FROM "file:/export-synapses-0.csv" AS line
-        # MERGE (n:Neuron {id : line.`:START_ID(Neuron)`})
-        # WITH line, n
-        # MERGE (m:Neuron {id : line.`:END_ID(Neuron)`})
-        # WITH m,n
-        # MERGE (n)-[:SYN]->(m);
-        # """)
 
     def _teardown_container(self):
         self._running_container.stop()
         self._running_container.remove()
 
     def run(self, cypher: str) -> Table:
+        """
+        Run an arbitrary cypher command.
+
+        You should usually ignore this, and use .find() instead.
+
+        Arguments:
+            cypher (str): The command to run
+
+        Returns:
+            The result of the cypher query
+
+        """
         return self.G.run(cypher).to_table()
 
-    def find(self, motif: 'dotmotif', limit=None) -> Table:
+    def find(self, motif: dotmotif, limit=None) -> Table:
         """
         Find a motif in a larger graph.
 
