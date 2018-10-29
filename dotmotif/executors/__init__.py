@@ -1,6 +1,8 @@
 # Standard imports
-import time
+from itertools import product
 import os
+import time
+
 
 # Non-standard Imports
 import docker
@@ -20,7 +22,7 @@ from .. import dotmotif
 class Executor:
     ...
 
-    def find(self, motif, limit=None):
+    def find(self, motif: dotmotif, limit: int=None):
         ...
 
 
@@ -50,7 +52,7 @@ class NetworkXExecutor(Executor):
                 "You must pass a graph to the NetworkXExecutor constructor."
             )
 
-    def find(self, motif, limit=None):
+    def find(self, motif, limit: int=None):
         """
         Find a motif in a larger graph.
 
@@ -194,7 +196,65 @@ class Neo4jExecutor(Executor):
             motif (dotmotif.dotmotif)
 
         """
-        qry = motif.to_cypher()
+        qry = self.motif_to_cypher(motif)
         if limit:
             qry += f" LIMIT {limit}"
         return self.G.run(qry).to_table()
+
+    @staticmethod
+    def motif_to_cypher(motif: dotmotif) -> str:
+        """
+        Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
+
+        Returns:
+            str: A Cypher query
+
+        """
+        es = []
+        es_neg = []
+
+        motif_graph = motif.to_nx()
+
+        for u, v, a in motif_graph.edges(data=True):
+            action = motif._LOOKUP[a['action']]
+            if a['exists']:
+                es.append(
+                    "MATCH ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
+                        u, action,
+                        "" if motif.ignore_direction else ">",
+                        v
+                    )
+                )
+            else:
+                es_neg.append(
+                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
+                        u, action,
+                        "" if motif.ignore_direction else ">",
+                        v
+                    )
+                )
+
+        delim = "\n" if motif.pretty_print else " "
+
+        if len(es_neg):
+            q_match = delim.join([delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
+        else:
+            q_match = delim.join([delim.join(es)])
+
+        q_return = "RETURN " + ",".join(list(motif_graph.nodes()))
+
+        if motif.limit:
+            q_limit = " LIMIT {}".format(motif.limit)
+        else:
+            q_limit = ""
+
+        if motif.enforce_inequality:
+            q_not_eqs = "WHERE " + " AND ".join(set([
+                "<>".join(sorted(a))
+                for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
+                if a[0] != a[1]
+            ]))
+        else:
+            return "{}".format(delim.join([q_match, q_return, q_limit]))
+
+        return "{}".format(delim.join([q_match, q_not_eqs, q_return, q_limit]))

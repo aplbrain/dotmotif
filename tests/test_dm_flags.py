@@ -1,5 +1,6 @@
 import unittest
 import dotmotif
+from dotmotif.executors import Neo4jExecutor
 
 
 _DEMO_G_MIN = """
@@ -25,13 +26,13 @@ class TestDotmotifFlags(unittest.TestCase):
     def test_dm_parser_defaults(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
-        self.assertEqual(dm.to_cypher().strip(), _DEMO_G_MIN_CYPHER.strip())
+        self.assertEqual(Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip())
 
     def test_dm_parser_no_pretty_print(self):
         dm = dotmotif.dotmotif(pretty_print=False)
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
-            dm.to_cypher().strip(),
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
             _DEMO_G_MIN_CYPHER.strip().replace("\n", " ")
         )
 
@@ -39,7 +40,7 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif(ignore_direction=True)
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
-            dm.to_cypher().strip(),
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
             _DEMO_G_MIN_CYPHER.strip().replace("->", "-")
         )
 
@@ -47,26 +48,26 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif(enforce_inequality=True)
         dm.from_motif(_DEMO_G_MIN)
         self.assertTrue(
-            "A<>B" in dm.to_cypher().strip() or
-            "B<>A" in dm.to_cypher().strip()
+            "A<>B" in Neo4jExecutor.motif_to_cypher(dm).strip() or
+            "B<>A" in Neo4jExecutor.motif_to_cypher(dm).strip()
         )
         self.assertTrue(
-            "B<>C" in dm.to_cypher().strip() or
-            "C<>B" in dm.to_cypher().strip()
+            "B<>C" in Neo4jExecutor.motif_to_cypher(dm).strip() or
+            "C<>B" in Neo4jExecutor.motif_to_cypher(dm).strip()
         )
         self.assertTrue(
-            "A<>C" in dm.to_cypher().strip() or
-            "C<>A" in dm.to_cypher().strip()
+            "A<>C" in Neo4jExecutor.motif_to_cypher(dm).strip() or
+            "C<>A" in Neo4jExecutor.motif_to_cypher(dm).strip()
         )
 
     def test_dm_parser_limit(self):
         dm = dotmotif.dotmotif(limit=3)
         dm.from_motif(_DEMO_G_MIN)
         self.assertTrue(
-            "LIMIT 3" in dm.to_cypher().strip()
+            "LIMIT 3" in Neo4jExecutor.motif_to_cypher(dm).strip()
         )
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertFalse(
-            "LIMIT" in dm.to_cypher().strip()
+            "LIMIT" in Neo4jExecutor.motif_to_cypher(dm).strip()
         )

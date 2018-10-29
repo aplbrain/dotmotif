@@ -4,6 +4,7 @@ Test Cypher conversion system.
 
 import unittest
 import dotmotif
+from dotmotif.executors import Neo4jExecutor
 
 
 _DEMO_G_MIN = """
@@ -28,4 +29,8 @@ class TestDotmotif_Cypher(unittest.TestCase):
     def test_cypher(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
-        self.assertEqual(dm.to_cypher().strip(), _DEMO_G_MIN_CYPHER.strip())
+
+        self.assertEqual(
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
+            _DEMO_G_MIN_CYPHER.strip()
+        )

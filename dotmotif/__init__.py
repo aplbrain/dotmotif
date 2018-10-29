@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from itertools import product
-
 import networkx as nx
 
 from .parsers.v2 import ParserV2
@@ -86,60 +84,6 @@ class dotmotif:
         self._g = self.parser(validators=self.validators).parse(self.cmd)
 
         return self
-
-    def to_cypher(self) -> str:
-        """
-        Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
-
-        Returns:
-            str: A Cypher query
-
-        """
-        es = []
-        es_neg = []
-        for u, v, a in self._g.edges(data=True):
-            action = self._LOOKUP[a['action']]
-            if a['exists']:
-                es.append(
-                    "MATCH ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action,
-                        "" if self.ignore_direction else ">",
-                        v
-                    )
-                )
-            else:
-                es_neg.append(
-                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action,
-                        "" if self.ignore_direction else ">",
-                        v
-                    )
-                )
-
-        delim = "\n" if self.pretty_print else " "
-
-        if len(es_neg):
-            q_match = delim.join([delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
-        else:
-            q_match = delim.join([delim.join(es)])
-
-        q_return = "RETURN " + ",".join(list(self._g.nodes()))
-
-        if self.limit:
-            q_limit = " LIMIT {}".format(self.limit)
-        else:
-            q_limit = ""
-
-        if self.enforce_inequality:
-            q_not_eqs = "WHERE " + " AND ".join(set([
-                "<>".join(sorted(a))
-                for a in list(product(self._g.nodes(), self._g.nodes()))
-                if a[0] != a[1]
-            ]))
-        else:
-            return "{}".format(delim.join([q_match, q_return, q_limit]))
-
-        return "{}".format(delim.join([q_match, q_not_eqs, q_return, q_limit]))
 
     def to_nx(self) -> nx.DiGraph:
         """
