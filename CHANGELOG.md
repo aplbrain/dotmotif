@@ -9,6 +9,7 @@
         - NetworkXExecutor for small-scale subgraph isomorphism
     - Comprehensive test suite
     - Base implementations of `Validator`s
+    - Move query generators to the appropriate `Executor`s for separation of responsibility
 - **0.2.1**
     - Remove CSV support
     - Abstract parser syntax to `dotmotif.parsers`
