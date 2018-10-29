@@ -38,10 +38,10 @@ block           : edge
 // is the same as:
 //     A -> B
 // While this is a simple case, this is an immensely powerful tool.
-macro           : word "(" arglist ")" "{" macro_rules "}"
+macro           : variable "(" arglist ")" "{" macro_rules "}"
 
 // A series of arguments to a macro
-?arglist        : word ("," word)*
+?arglist        : variable ("," variable)*
 
 macro_rules     : macro_block+
 
@@ -56,8 +56,8 @@ edge_macro      : node_id relation node_id
 
 
 // A macro is called like a function: foo(args).
-macro_call      : word "(" arglist ")"
-?macro_call_re  : word "(" arglist ")"
+macro_call      : variable "(" arglist ")"
+?macro_call_re  : variable "(" arglist ")"
 
 
 
@@ -67,7 +67,7 @@ macro_call      : word "(" arglist ")"
 edge            : node_id relation node_id
 
 // A Node ID is any contiguous (that is, no whitespace) word.
-?node_id        : word
+?node_id        : variable
 
 // A relation is a bipartite: The first character is an indication of whether
 // the relation exists or not. The following characters indicate if a relation
@@ -86,10 +86,10 @@ relation_type   : ">"                               -> rel_def
                 | "+"                               -> rel_pos
                 | "-"                               -> rel_neg
                 | "|"                               -> rel_neg
-                | "[" word "]"                      -> rel_typ
+                | "[" variable "]"                  -> rel_typ
 
 
-?word           : WORD
+?variable       : (WORD | "_" | NUMBER)+
 
 
 COMMENT         : /\#[^\\n]+/
@@ -152,8 +152,8 @@ class DotMotifTransformer(Transformer):
     def node_id(self, node_id):
         return node_id
 
-    def word(self, word):
-        return str(word)
+    def variable(self, variable_components):
+        return "".join(str(c) for c in variable_components)
 
     def rel_exist(self, _):
         return True

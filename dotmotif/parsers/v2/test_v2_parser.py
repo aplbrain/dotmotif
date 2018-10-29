@@ -308,3 +308,23 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         dm.from_motif(exp)
         edges = list(dm._g.edges(data=True))
         self.assertEqual(len(edges), 2)
+
+    def test_alphanumeric_variables(self):
+        exp = """\
+        edge(A, B) {
+            A -> B
+        }
+        dualedge(A1, B) {
+            # Nested-inside comment!
+            edge(A1, B) # inline comment
+            B -> A1
+        }
+
+        dualedge(foo_1, bar_2) # inline comment
+        # standalone comment
+        foo_1 -> bar_2 # inline comment
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        edges = list(dm._g.edges(data=True))
+        self.assertEqual(len(edges), 2)
