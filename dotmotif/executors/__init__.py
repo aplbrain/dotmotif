@@ -22,7 +22,7 @@ from .. import dotmotif
 class Executor:
     ...
 
-    def find(self, motif, limit=None):
+    def find(self, motif: dotmotif, limit: int=None):
         ...
 
 
@@ -52,7 +52,7 @@ class NetworkXExecutor(Executor):
                 "You must pass a graph to the NetworkXExecutor constructor."
             )
 
-    def find(self, motif, limit=None):
+    def find(self, motif, limit: int=None):
         """
         Find a motif in a larger graph.
 
@@ -212,7 +212,10 @@ class Neo4jExecutor(Executor):
         """
         es = []
         es_neg = []
-        for u, v, a in motif._g.edges(data=True):
+
+        motif_graph = motif.to_nx()
+
+        for u, v, a in motif_graph.edges(data=True):
             action = motif._LOOKUP[a['action']]
             if a['exists']:
                 es.append(
@@ -238,7 +241,7 @@ class Neo4jExecutor(Executor):
         else:
             q_match = delim.join([delim.join(es)])
 
-        q_return = "RETURN " + ",".join(list(motif._g.nodes()))
+        q_return = "RETURN " + ",".join(list(motif_graph.nodes()))
 
         if motif.limit:
             q_limit = " LIMIT {}".format(motif.limit)
@@ -248,7 +251,7 @@ class Neo4jExecutor(Executor):
         if motif.enforce_inequality:
             q_not_eqs = "WHERE " + " AND ".join(set([
                 "<>".join(sorted(a))
-                for a in list(product(motif._g.nodes(), motif._g.nodes()))
+                for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
                 if a[0] != a[1]
             ]))
         else:
