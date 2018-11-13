@@ -150,7 +150,7 @@ C ![EXCITES] D
 
 Macros enable simple motif construction from simpler subcomponents:
 
-```
+```dotmotif
 # Nodes that are connected in only one direction:
 unidirectional(n, m) {
     n -> m

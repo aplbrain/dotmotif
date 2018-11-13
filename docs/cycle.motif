@@ -1,0 +1,14 @@
+# Non-reciprocal edges:
+edge(A, B) {
+    A -> B
+    B !> A
+}
+
+# A clockwise BUT NOT WIDDERSHINS triangle:
+tri(A, B, C) {
+    edge(A, B)
+    edge(B, C)
+    edge(C, A)
+}
+
+tri(x, y, z)

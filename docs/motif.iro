@@ -1,0 +1,176 @@
+name = dotmotif
+file_extensions [] = motif;
+// background_color = white
+color = grey
+
+contexts[] {
+   arglist : context {
+         : pattern {
+      regex       \= ([\w\d]+)
+      styles []    = .arg;
+   }
+   : pattern {
+      regex       \= (,)
+      styles []    = .punctuation;
+   }
+
+   }
+   main : context {
+
+
+      : pattern {
+         regex \= ([\-][\>])
+         styles[] = .arrow_e;
+      }
+      : pattern {
+         regex \= ([\!\~][\>])
+         styles[] = .arrow_ne;
+      }
+
+      : pattern {
+         regex \= ([\-][\+])
+         styles[] = .p_arrow_e;
+      }
+      : pattern {
+         regex \= ([\!\~][\+])
+         styles[] = .p_arrow_ne;
+      }
+
+      : pattern {
+         regex \= ([\-][\-])
+         styles[] = .n_arrow_e;
+      }
+      : pattern {
+         regex \= ([\!\~][\-])
+         styles[] = .n_arrow_ne;
+      }
+
+
+      : pattern {
+         regex \= (\#(.*))
+         styles[] = .comment;
+      }
+
+      // macros
+      : pattern {
+         regex \= (\#(.*))
+         styles[] = .comment;
+      }
+
+      : inline_push {
+         regex          \= (\{)
+         styles []       = .punctuation;
+         : pop {
+            regex       \= (\})
+            styles []    = .punctuation;
+         }
+         : include "main" ;
+      }
+
+      : inline_push {
+         regex          \= (\S+\s?)(\()
+         styles []       = .macroname, .punctuation;
+         : pop {
+            regex       \= (\))
+            styles []    = .punctuation;
+         }
+         : include "arglist";
+      }
+
+      : inline_push {
+         regex          \= (\S+\s?)(\()
+         styles []       = .macrocall, .punctuation;
+         : pop {
+            regex       \= (\))([^\{])
+            styles []    = .punctuation;
+         }
+         : include "arglist";
+      }
+
+
+   : pattern {
+      regex       \= ([\S]+)
+      styles []    = .arg;
+
+   }
+   : pattern {
+      regex       \= (,|\}\(|\))
+      styles []    = .punctuation;
+   }
+
+
+
+      : pattern {
+         regex          \= ([^\s])
+         styles []       = .illegal;
+      }
+
+
+
+   }
+}
+
+styles[] {
+   // .all     : style ;
+
+   .arrow_e     : style {
+      color = "cyan" ;
+      textmate_scope        = keyword.operator
+   }
+   .arrow_ne     : style {
+      color = "blue" ;
+      textmate_scope        = keyword.operator
+   }
+
+   .p_arrow_e     : style {
+      color = "#aaff22" ;
+      textmate_scope        = keyword.operator
+   }
+   .p_arrow_ne     : style {
+      color = "#006611" ;
+      textmate_scope        = keyword.operator
+   }
+
+   .n_arrow_e     : style {
+      color = "pink" ;
+      textmate_scope        = keyword.operator
+   }
+   .n_arrow_ne     : style {
+      color = "red" ;
+      textmate_scope        = keyword.operator
+   }
+
+   .comment : style {
+      color = "grey";
+      textmate_scope        = comment
+}
+
+   .macroname : style {
+      color = cyan
+      bold= true
+      textmate_scope        = constant
+   }
+   .macrocall : style {
+      color = "cyan";
+      textmate_scope        = constant
+   }
+
+   .arg : style {
+      color = "orange";
+      textmate_scope        = variable
+   }
+
+
+   .illegal : style {
+      color                 = white
+      background_color      = red
+      ace_scope             = invalid
+      textmate_scope        = invalid
+      pygments_scope        = Generic.Error
+   }
+
+   .punctuation : style {
+      color = "red_2" ;
+      textmate_scope        = punctuation
+   }
+}
