@@ -30,6 +30,11 @@ setup(
     classifiers=[],
     install_requires=[
         'networkx',
-        'numpy'
+        'numpy',
+        'lark-parser',
+        'docker',
+        'pandas',
+        'py2neo',
+        'dask[dataframe]'
     ],
 )

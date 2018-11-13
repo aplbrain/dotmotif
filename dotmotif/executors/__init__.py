@@ -88,6 +88,8 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
+        self._max_memory_size: str = kwargs.get("max_memory", "8GB")
+        self._initial_heap_size: str = kwargs.get("initial_memory", "4GB")
 
         graph: nx.Graph = kwargs.get("graph", None)
         import_directory: str = kwargs.get("import_directory", None)
@@ -145,6 +147,10 @@ class Neo4jExecutor(Executor):
             tail -f /dev/null'""",
             # auto_remove=True,
             detach=True,
+            environment={
+                "NEO4J_dbms_memory_heap_initial__size": self._initial_heap_size,
+                "NEO4J_dbms_memory_heap_max__size": self._max_memory_size,
+            },
             volumes={
                 f"{os.getcwd()}/{import_dir}": {
                     "bind": "/import",
@@ -241,7 +247,7 @@ class Neo4jExecutor(Executor):
         else:
             q_match = delim.join([delim.join(es)])
 
-        q_return = "RETURN " + ",".join(list(motif_graph.nodes()))
+        q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
         if motif.limit:
             q_limit = " LIMIT {}".format(motif.limit)
