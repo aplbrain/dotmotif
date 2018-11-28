@@ -14,7 +14,7 @@ MATCH (A:Neuron)-[:SYN]->(B:Neuron)
 MATCH (C:Neuron)-[:SYN]->(A:Neuron)
 WHERE NOT (B:Neuron)-[:INH]->(A:Neuron)
  AND NOT (C:Neuron)-[:SYN]->(D:Neuron)
-RETURN A,B,C,D
+RETURN DISTINCT A,B,C,D
 """
 
 
