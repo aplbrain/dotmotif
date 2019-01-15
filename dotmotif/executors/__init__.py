@@ -179,7 +179,7 @@ class Neo4jExecutor(Executor):
         self._running_container.stop()
         self._running_container.remove()
 
-    def run(self, cypher: str) -> Table:
+    def run(self, cypher: str, cursor=True) -> Table:
         """
         Run an arbitrary cypher command.
 
@@ -192,9 +192,11 @@ class Neo4jExecutor(Executor):
             The result of the cypher query
 
         """
-        return self.G.run(cypher).to_table()
+        if not cursor:
+            return self.G.run(cypher).to_table()
+        return self.G.run(cypher)
 
-    def find(self, motif: dotmotif, limit=None) -> Table:
+    def find(self, motif: dotmotif, limit=None, cursor=True) -> Table:
         """
         Find a motif in a larger graph.
 
@@ -205,7 +207,9 @@ class Neo4jExecutor(Executor):
         qry = self.motif_to_cypher(motif)
         if limit:
             qry += f" LIMIT {limit}"
-        return self.G.run(qry).to_table()
+        if not cursor:
+            return self.G.run(qry).to_table()
+        return self.G.run(qry)
 
     @staticmethod
     def motif_to_cypher(motif: dotmotif) -> str:
