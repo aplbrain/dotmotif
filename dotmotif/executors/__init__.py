@@ -88,8 +88,9 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._max_memory_size: str = kwargs.get("max_memory", "8GB")
-        self._initial_heap_size: str = kwargs.get("initial_memory", "4GB")
+        self._max_memory_size: str = kwargs.get("max_memory", "8G")
+        self.max_retries: int = kwargs.get("max_retries", 20)
+        self._initial_heap_size: str = kwargs.get("initial_memory", "4G")
 
         graph: nx.Graph = kwargs.get("graph", None)
         import_directory: str = kwargs.get("import_directory", None)
@@ -160,10 +161,12 @@ class Neo4jExecutor(Executor):
             ports={
                 7474: 7474,
                 7687: 7687
-            }
+            },
+            network_mode="bridge"
         )
         self._created_container = True
         container_is_ready = False
+        tries = 0
         while not container_is_ready:
             try:
                 res = requests.get("http://localhost:7474")
@@ -172,7 +175,12 @@ class Neo4jExecutor(Executor):
             except:
                 pass
             else:
+                tries += 1
                 time.sleep(2)
+                if tries > self.max_retries:
+                    raise IOError(
+                        f"Could not connect to neo4j container {self._running_container}."
+                    )
         self.G = Graph(password="neo4jpw")
 
     def _teardown_container(self):
