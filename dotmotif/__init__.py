@@ -97,6 +97,7 @@ class dotmotif:
 
         """
         self._g = graph
+        return self
 
     def to_nx(self) -> nx.DiGraph:
         """
