@@ -21,6 +21,7 @@ WHERE NOT (B:Neuron)-[:INH]->(A:Neuron)
 RETURN DISTINCT A,B,C,D
 """
 
+
 class TestDotmotif_Cypher(unittest.TestCase):
 
     def test_sanity(self):
