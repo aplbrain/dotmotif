@@ -328,3 +328,17 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         dm.from_motif(exp)
         edges = list(dm._g.edges(data=True))
         self.assertEqual(len(edges), 2)
+        self.assertEqual(list(dm._g.nodes()), ["foo_1", "bar_2"])
+
+
+class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
+
+    def test_basic_edge_attr(self):
+        exp = """\
+        Aa -> Ba [type == 1]
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
+        u, v, d = list(dm._g.edges(['Aa', 'Bb'], data=True))[0]
+        self.assertEqual(d['constraints']['type'], {'==': 1})
