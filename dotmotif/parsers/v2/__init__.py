@@ -102,7 +102,7 @@ edge_clauses   : edge_clause ("," edge_clause)*
 
 ?variable       : (WORD | VAR_SEP | NUMBER)+
 
-OPERATOR        : /[\=\>\<\!][\=]/
+OPERATOR        : /[\=\>\<\!]?[\=]/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
 %ignore COMMENT
@@ -174,6 +174,8 @@ class DotMotifTransformer(Transformer):
             attrs = {}
         elif len(tup) == 4:
             u, rel, v, attrs = tup
+        u = str(u)
+        v = str(v)
         for val in self.validators:
             val.validate(self.G, u, v, rel["type"], rel["exists"])
         if self.G.has_edge(u, v):
@@ -200,7 +202,7 @@ class DotMotifTransformer(Transformer):
         return str(node_id)
 
     def variable(self, var):
-        return "".join(str(c) for c in var)
+        return str("".join(str(c) for c in var))
 
     def rel_exist(self, _):
         return True

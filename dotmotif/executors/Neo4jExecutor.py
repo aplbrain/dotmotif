@@ -195,6 +195,7 @@ class Neo4jExecutor(Executor):
             str: A Cypher query
 
         """
+        # Edges and negative edges
         es = []
         es_neg = []
 
@@ -208,7 +209,7 @@ class Neo4jExecutor(Executor):
             action = motif._LOOKUP[a["action"]]
             # edge_id = random_id()
             edge_id = "{}_{}".format(u, v)
-            edge_mapping = {(u, v): edge_id}
+            edge_mapping[(u, v)] = edge_id
             if a["exists"]:
                 es.append(
                     "MATCH ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(

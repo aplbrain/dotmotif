@@ -309,6 +309,7 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         edges = list(dm._g.edges(data=True))
         self.assertEqual(len(edges), 2)
         self.assertEqual(list(dm._g.nodes()), ["foo_1", "bar_2"])
+        self.assertEqual(type(list(dm._g.nodes())[0]), str)
 
 
 class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
@@ -320,4 +321,6 @@ class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
         dm.from_motif(exp)
         self.assertEqual(len(dm._g.edges()), 1)
         u, v, d = list(dm._g.edges(["Aa", "Bb"], data=True))[0]
+        self.assertEqual(type(list(dm._g.nodes())[0]), str)
+        self.assertEqual(type(list(dm._g.nodes())[1]), str)
         self.assertEqual(d["constraints"]["type"], {"==": 1})
