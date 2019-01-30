@@ -80,7 +80,10 @@ class dotmotif:
 
         """
         if len(cmd.split("\n")) is 1:
-            cmd = open(cmd, "r").read()
+            try:
+                cmd = open(cmd, "r").read()
+            except FileNotFoundError:
+                pass
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
@@ -100,3 +103,6 @@ class dotmotif:
 
         """
         return self._g
+
+    def list_edge_constraints(self):
+        return self._edge_constraints
