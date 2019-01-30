@@ -115,6 +115,8 @@ class NetworkXExecutor(Executor):
             motif (dotmotif.dotmotif)
 
         """
+        # TODO: Can add constraints on node assignment. If we do this a little
+        # smarter, can save a lot of post-processing time-complexity.
         gm = nx.algorithms.isomorphism.GraphMatcher(self.graph, motif.to_nx())
         results = [
             {v: k for k, v in r.items()}

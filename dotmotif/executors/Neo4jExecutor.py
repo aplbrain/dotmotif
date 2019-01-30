@@ -20,6 +20,8 @@ import time
 
 import pandas as pd
 import networkx as nx
+import random
+import string
 
 import docker
 from py2neo import Database, Graph
@@ -32,6 +34,10 @@ from .. import dotmotif
 
 from .Executor import Executor
 from ..ingest import NetworkXIngester
+
+
+def random_id(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 class Neo4jExecutor(Executor):
@@ -194,18 +200,29 @@ class Neo4jExecutor(Executor):
 
         motif_graph = motif.to_nx()
 
+        # This will hold the edge mapping of (u, v) in the motif to the random
+        # ID that is assigned to it so that it can hold constraints later on.
+        edge_mapping = {}
+
         for u, v, a in motif_graph.edges(data=True):
             action = motif._LOOKUP[a["action"]]
+            # edge_id = random_id()
+            edge_id = "{}_{}".format(u, v)
+            edge_mapping = {(u, v): edge_id}
             if a["exists"]:
                 es.append(
-                    "MATCH ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action, "" if motif.ignore_direction else ">", v
+                    "MATCH ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
+                        u,
+                        edge_id, action,
+                        "" if motif.ignore_direction else ">", v
                     )
                 )
             else:
                 es_neg.append(
-                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action, "" if motif.ignore_direction else ">", v
+                    "NOT ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
+                        u,
+                        edge_id, action,
+                        "" if motif.ignore_direction else ">", v
                     )
                 )
 
@@ -217,6 +234,19 @@ class Neo4jExecutor(Executor):
             )
         else:
             q_match = delim.join([delim.join(es)])
+
+        # Edge constraints:
+        cypher_edge_constraints = []
+        for (u, v), a in motif.list_edge_constraints().items():
+            for key, constraints in a.items():
+                for operator, value in constraints.items():
+                    cypher_edge_constraints.append(
+                        "{}.{} {} {}".format(
+                            edge_mapping[(u, v)], key, operator, value
+                        )
+                    )
+        if cypher_edge_constraints:
+            q_match += delim + "WHERE " + " AND ".join(cypher_edge_constraints)
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
