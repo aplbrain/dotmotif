@@ -66,6 +66,9 @@ class dotmotif:
         }
         self._g = nx.MultiDiGraph()
 
+        self._edge_constraints = {}
+        self._node_constraints = {}
+
     def from_motif(self, cmd: str):
         """
         Ingest a dotmotif-format string.
@@ -80,8 +83,12 @@ class dotmotif:
         if len(cmd.split("\n")) is 1:
             cmd = open(cmd, 'r').read()
 
-        self.cmd = cmd
-        self._g = self.parser(validators=self.validators).parse(self.cmd)
+        result = self.parser(validators=self.validators).parse(cmd)
+        if isinstance(result, tuple):
+            self._g, self._edge_constraints, self._node_constraints = result
+        else:
+            # For backwards compatibility with parser v1
+            self._g = result
 
         return self
 

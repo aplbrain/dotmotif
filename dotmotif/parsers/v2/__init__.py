@@ -322,5 +322,5 @@ class ParserV2(Parser):
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
-        G = DotMotifTransformer(validators=self.validators).transform(tree)
-        return G
+        G, edge_constraints, node_constraints = DotMotifTransformer(validators=self.validators).transform(tree)
+        return G, edge_constraints, node_constraints
