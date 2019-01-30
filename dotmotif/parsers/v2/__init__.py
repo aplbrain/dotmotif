@@ -64,7 +64,10 @@ macro_call      : variable "(" arglist ")"
 
 // Edges are currently composed of a node, a relation, and a node. In other
 // words, an arbitrary word, a relation between them, and then another node.
+// Edges can also have optional edge attributes, delimited from the original
+// structure with square brackets.
 edge            : node_id relation node_id
+                | node_id relation node_id "[" edge_clauses "]"
 
 // A Node ID is any contiguous (that is, no whitespace) word.
 ?node_id        : variable
@@ -86,12 +89,21 @@ relation_type   : ">"                               -> rel_def
                 | "+"                               -> rel_pos
                 | "-"                               -> rel_neg
                 | "|"                               -> rel_neg
-                | "[" variable "]"                  -> rel_typ
+
+// Edge attributes are separated from the main edge declaration with sqbrackets
+edge_clauses   : edge_clause ("," edge_clause)*
+
+?edge_clause     : key op value
+
+?key            : WORD
+?value          : WORD | NUMBER
+?op             : OPERATOR
 
 
-?variable       : (WORD | "_" | NUMBER)+
+?variable       : (WORD | VAR_SEP | NUMBER)+
 
-
+OPERATOR        : /[\=\>\<\!][\=]/
+VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
 %ignore COMMENT
 
@@ -112,19 +124,56 @@ class DotMotifTransformer(Transformer):
             self, validators: List[Validator] = None, *args, **kwargs
     ) -> None:
         self.validators = validators if validators else []
-        self.macros = {}
+        self.macros: dict = {}
         self.G = nx.MultiDiGraph()
+        self.edge_constraints: dict = {}
+        self.node_constraints: dict = {}
         super().__init__(*args, **kwargs)
 
     def transform(self, tree):
         self._transform_tree(tree)
-        return self.G
+        return self.G, self.edge_constraints, self.node_constraints
 
-    # def comment(self, words):
-    #     pass
+    def edge_clauses(self, tup):
+        attrs = {}
+        for key, op, val in tup:
+            if key not in attrs:
+                attrs[key] = {}
+            attrs[key][op] = val
+        return attrs
+
+    def edge_clause(self, tup):
+        key, op, val = tup
+        try:
+            val = float(val)
+        except:
+            val = str(val)
+        return str(key), str(op), val
+
+    def key(self, key):
+        return key
+
+    def value(self, value):
+        return value
+
+    def op(self, operator):
+        return {
+            "=": "==",
+            "==": "==",
+            ">=": ">=",
+            "<=": "<=",
+            "<": "<",
+            ">": ">",
+            "<>": "!=",
+            "!=": "!="
+        }[operator]
 
     def edge(self, tup):
-        u, rel, v = tup
+        if len(tup) == 3:
+            u, rel, v = tup
+            attrs = {}
+        elif len(tup) == 4:
+            u, rel, v, attrs = tup
         for val in self.validators:
             val.validate(self.G, u, v, rel["type"], rel["exists"])
         if (
@@ -139,8 +188,12 @@ class DotMotifTransformer(Transformer):
                     edge["exists"] == rel["exists"] and
                     edge["action"] == rel["type"]
                 ):
+                    # Don't need to re-add an identical edge
                     return
-        self.G.add_edge(u, v, exists=rel["exists"], action=rel["type"])
+        if (u, v) not in self.edge_constraints:
+            self.edge_constraints[(u, v)] = {}
+        self.edge_constraints[(u, v)].update(attrs)
+        self.G.add_edge(u, v, exists=rel["exists"], action=rel["type"], constraints=attrs)
 
     def relation(self, tup):
         exists, type = tup
@@ -150,10 +203,10 @@ class DotMotifTransformer(Transformer):
         }
 
     def node_id(self, node_id):
-        return node_id
+        return str(node_id)
 
-    def variable(self, variable_components):
-        return "".join(str(c) for c in variable_components)
+    def variable(self, var):
+        return "".join(str(c) for c in var)
 
     def rel_exist(self, _):
         return True
