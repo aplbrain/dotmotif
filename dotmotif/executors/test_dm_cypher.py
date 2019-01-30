@@ -23,7 +23,6 @@ RETURN DISTINCT A,B,C,D
 
 
 class TestDotmotif_Cypher(unittest.TestCase):
-
     def test_sanity(self):
         self.assertEqual(1, 1)
 
@@ -32,6 +31,5 @@ class TestDotmotif_Cypher(unittest.TestCase):
         dm.from_motif(_DEMO_G_MIN)
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(),
-            _DEMO_G_MIN_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )

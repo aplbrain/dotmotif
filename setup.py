@@ -18,23 +18,20 @@ setup(
     author_email="jordan.matelsky@jhuapl.edu",
     description=("dotmotif"),
     license="ISC",
-    keywords=[
-        "graph",
-        "motif"
-    ],
+    keywords=["graph", "motif"],
     url="https://github.com/aplbrain/dotmotif/tarball/" + VERSION,
-    packages=['dotmotif'],
+    packages=["dotmotif"],
     scripts=[
         #  'scripts/'
     ],
     classifiers=[],
     install_requires=[
-        'networkx',
-        'numpy',
-        'lark-parser',
-        'docker',
-        'pandas',
-        'py2neo',
-        'dask[dataframe]'
+        "networkx",
+        "numpy",
+        "lark-parser",
+        "docker",
+        "pandas",
+        "py2neo",
+        "dask[dataframe]",
     ],
 )

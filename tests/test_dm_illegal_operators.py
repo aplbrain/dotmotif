@@ -18,7 +18,6 @@ class TestDotmotifIllegal(unittest.TestCase):
     #     ):
     #         dm.from_motif("A -- B\nA !- B")
 
-
     def test_disagreeing_edges_ignored(self):
         dm = dotmotif.dotmotif(validators=[])
         dm.from_motif("A -+ B\nA !> B")

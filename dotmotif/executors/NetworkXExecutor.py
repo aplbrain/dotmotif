@@ -4,6 +4,7 @@ import pandas as pd
 from .Executor import Executor
 from .. import dotmotif
 
+
 class NetworkXExecutor(Executor):
     """
     A query executor that runs inside RAM.
@@ -23,14 +24,14 @@ class NetworkXExecutor(Executor):
             None
 
         """
-        if 'graph' in kwargs:
-            self.graph = kwargs.get('graph')
+        if "graph" in kwargs:
+            self.graph = kwargs.get("graph")
         else:
             raise ValueError(
                 "You must pass a graph to the NetworkXExecutor constructor."
             )
 
-    def find(self, motif: dotmotif, limit: int=None):
+    def find(self, motif: dotmotif, limit: int = None):
         """
         Find a motif in a larger graph.
 

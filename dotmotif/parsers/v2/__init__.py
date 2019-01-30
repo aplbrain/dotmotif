@@ -116,13 +116,13 @@ COMMENT         : /\#[^\\n]+/
 
 dm_parser = Lark(GRAMMAR)
 
+
 class DotMotifTransformer(Transformer):
     """
     This transformer converts a parsed Lark tree into a networkx.MultiGraph.
     """
-    def __init__(
-            self, validators: List[Validator] = None, *args, **kwargs
-    ) -> None:
+
+    def __init__(self, validators: List[Validator] = None, *args, **kwargs) -> None:
         self.validators = validators if validators else []
         self.macros: dict = {}
         self.G = nx.MultiDiGraph()
@@ -165,7 +165,7 @@ class DotMotifTransformer(Transformer):
             "<": "<",
             ">": ">",
             "<>": "!=",
-            "!=": "!="
+            "!=": "!=",
         }[operator]
 
     def edge(self, tup):
@@ -176,31 +176,25 @@ class DotMotifTransformer(Transformer):
             u, rel, v, attrs = tup
         for val in self.validators:
             val.validate(self.G, u, v, rel["type"], rel["exists"])
-        if (
-            self.G.has_edge(u, v)
-        ):
+        if self.G.has_edge(u, v):
             # There are existing edges. Only add a new one if it's unique
             # from all existing ones.
             candidate_edges = self.G.get_edge_data(u, v)
             # There are many of these because this is a multidigraph.
             for i, edge in candidate_edges.items():
-                if (
-                    edge["exists"] == rel["exists"] and
-                    edge["action"] == rel["type"]
-                ):
+                if edge["exists"] == rel["exists"] and edge["action"] == rel["type"]:
                     # Don't need to re-add an identical edge
                     return
         if (u, v) not in self.edge_constraints:
             self.edge_constraints[(u, v)] = {}
         self.edge_constraints[(u, v)].update(attrs)
-        self.G.add_edge(u, v, exists=rel["exists"], action=rel["type"], constraints=attrs)
+        self.G.add_edge(
+            u, v, exists=rel["exists"], action=rel["type"], constraints=attrs
+        )
 
     def relation(self, tup):
         exists, type = tup
-        return {
-            "exists": exists,
-            "type": type,
-        }
+        return {"exists": exists, "type": type}
 
     def node_id(self, node_id):
         return str(node_id)
@@ -226,10 +220,7 @@ class DotMotifTransformer(Transformer):
     # Macros
     def macro(self, arg):
         name, args, rules = arg
-        self.macros[name] = {
-            "args": args,
-            "rules": rules
-        }
+        self.macros[name] = {"args": args, "rules": rules}
 
     def arglist(self, args):
         return [str(s) for s in args]
@@ -299,17 +290,12 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (
-                args[macro_args.index(rule[0])],
-                rule[1],
-                args[macro_args.index(rule[2])]
-            )
+            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 
 
 class ParserV2(Parser):
-
     def __init__(self, validators: List[Validator] = None) -> None:
         if validators is None:
             self.validators: List[Validator] = []
@@ -322,5 +308,7 @@ class ParserV2(Parser):
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
-        G, edge_constraints, node_constraints = DotMotifTransformer(validators=self.validators).transform(tree)
+        G, edge_constraints, node_constraints = DotMotifTransformer(
+            validators=self.validators
+        ).transform(tree)
         return G, edge_constraints, node_constraints

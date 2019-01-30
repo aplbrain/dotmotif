@@ -121,17 +121,9 @@ class Neo4jExecutor(Executor):
                 "NEO4J_dbms_memory_heap_initial__size": self._initial_heap_size,
                 "NEO4J_dbms_memory_heap_max__size": self._max_memory_size,
             },
-            volumes={
-                f"{os.getcwd()}/{import_dir}": {
-                    "bind": "/import",
-                    "mode": "ro"
-                }
-            },
-            ports={
-                7474: 7474,
-                7687: 7687
-            },
-            network_mode="bridge"
+            volumes={f"{os.getcwd()}/{import_dir}": {"bind": "/import", "mode": "ro"}},
+            ports={7474: 7474, 7687: 7687},
+            network_mode="bridge",
         )
         self._created_container = True
         container_is_ready = False
@@ -203,21 +195,17 @@ class Neo4jExecutor(Executor):
         motif_graph = motif.to_nx()
 
         for u, v, a in motif_graph.edges(data=True):
-            action = motif._LOOKUP[a['action']]
-            if a['exists']:
+            action = motif._LOOKUP[a["action"]]
+            if a["exists"]:
                 es.append(
                     "MATCH ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action,
-                        "" if motif.ignore_direction else ">",
-                        v
+                        u, action, "" if motif.ignore_direction else ">", v
                     )
                 )
             else:
                 es_neg.append(
                     "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action,
-                        "" if motif.ignore_direction else ">",
-                        v
+                        u, action, "" if motif.ignore_direction else ">", v
                     )
                 )
 
@@ -225,7 +213,8 @@ class Neo4jExecutor(Executor):
 
         if len(es_neg):
             q_match = delim.join(
-                [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)])
+                [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)]
+            )
         else:
             q_match = delim.join([delim.join(es)])
 
@@ -237,11 +226,15 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            q_not_eqs = "WHERE " + " AND ".join(set([
-                "<>".join(sorted(a))
-                for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
-                if a[0] != a[1]
-            ]))
+            q_not_eqs = "WHERE " + " AND ".join(
+                set(
+                    [
+                        "<>".join(sorted(a))
+                        for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
+                        if a[0] != a[1]
+                    ]
+                )
+            )
         else:
             return "{}".format(delim.join([q_match, q_return, q_limit]))
 

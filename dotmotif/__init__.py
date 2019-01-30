@@ -24,6 +24,7 @@ __version__ = "0.4.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
+
 class MotifError(ValueError):
     pass
 
@@ -53,16 +54,14 @@ class dotmotif:
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
-        self.validators = kwargs.get("validators", [
-            DisagreeingEdgesValidator()
-        ])
+        self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
             "INHIBITS": "INH",
-            "EXCITES":  "EXC",
+            "EXCITES": "EXC",
             "SYNAPSES": "SYN",
-            "INH":      "INH",
-            "EXC":      "EXC",
-            "SYN":      "SYN",
+            "INH": "INH",
+            "EXC": "EXC",
+            "SYN": "SYN",
         }
         self._g = nx.MultiDiGraph()
 
@@ -81,7 +80,7 @@ class dotmotif:
 
         """
         if len(cmd.split("\n")) is 1:
-            cmd = open(cmd, 'r').read()
+            cmd = open(cmd, "r").read()
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
