@@ -106,3 +106,6 @@ class dotmotif:
 
     def list_edge_constraints(self):
         return self._edge_constraints
+
+    def list_node_constraints(self):
+        return self._node_constraints
