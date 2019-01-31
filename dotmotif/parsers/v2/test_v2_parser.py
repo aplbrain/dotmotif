@@ -64,9 +64,9 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         edge(C, D)
         """
-        # dm = dotmotif.dotmotif(parser=ParserV2)
-        # dm.from_motif(exp)
-        # self.assertEqual(len(dm._g.edges()), 1)
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
 
     def test_simple_macro_construction(self):
         exp = """\
@@ -77,9 +77,9 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         """
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
-        # exp_edge = list(dm._g.edges(data=True))[0]
-        # self.assertEqual(exp_edge[0], "C")
-        # self.assertEqual(exp_edge[1], "D")
+        exp_edge = list(dm._g.edges(data=True))[0]
+        self.assertEqual(exp_edge[0], "C")
+        self.assertEqual(exp_edge[1], "D")
 
     def test_multiline_macro_construction(self):
         exp = """\
@@ -324,3 +324,17 @@ class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
         self.assertEqual(type(list(dm._g.nodes())[0]), str)
         self.assertEqual(type(list(dm._g.nodes())[1]), str)
         self.assertEqual(d["constraints"]["type"], {"==": 1})
+
+
+class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
+
+    def test_basic_node_attr(self):
+        exp = """\
+        Aa -> Ba
+
+        Aa.type = "excitatory"
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa"])
