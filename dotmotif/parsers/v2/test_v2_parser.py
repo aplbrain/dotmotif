@@ -323,7 +323,7 @@ class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
         u, v, d = list(dm._g.edges(["Aa", "Bb"], data=True))[0]
         self.assertEqual(type(list(dm._g.nodes())[0]), str)
         self.assertEqual(type(list(dm._g.nodes())[1]), str)
-        self.assertEqual(d["constraints"]["type"], {"==": 1})
+        self.assertEqual(d["constraints"]["type"], {"==": [1]})
 
     def test_edge_multi_attr(self):
         exp = """\

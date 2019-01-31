@@ -148,7 +148,9 @@ class DotMotifTransformer(Transformer):
         for key, op, val in tup:
             if key not in attrs:
                 attrs[key] = {}
-            attrs[key][op] = val
+            if op not in attrs[key]:
+                attrs[key][op] = []
+            attrs[key][op].append(val)
         return attrs
 
     def edge_clause(self, tup):

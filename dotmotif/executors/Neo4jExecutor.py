@@ -245,10 +245,11 @@ class Neo4jExecutor(Executor):
         cypher_edge_constraints = []
         for (u, v), a in motif.list_edge_constraints().items():
             for key, constraints in a.items():
-                for operator, value in constraints.items():
-                    cypher_edge_constraints.append(
-                        "{}.{} {} {}".format(edge_mapping[(u, v)], key, _remapped_operator(operator), value)
-                    )
+                for operator, values in constraints.items():
+                    for value in values:
+                        cypher_edge_constraints.append(
+                            "{}.{} {} {}".format(edge_mapping[(u, v)], key, _remapped_operator(operator), value)
+                        )
         if cypher_edge_constraints:
             q_match += delim + "WHERE " + " AND ".join(cypher_edge_constraints)
 

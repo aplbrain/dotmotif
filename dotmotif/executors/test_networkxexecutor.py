@@ -8,95 +8,94 @@ import networkx as nx
 class TestEdgeConstraintsSatisfy(unittest.TestCase):
 
     def test_edge_satisfies_eq(self):
-        constraints = {"weight": {"==": 10}}
+        constraints = {"weight": {"==": [10]}}
         edge = {"weight": 10}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"==": -10.5}}
+        constraints = {"weight": {"==": [-10.5]}}
         edge = {"weight": -21/2}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_gte(self):
-        constraints = {"weight": {">=": 10}}
+        constraints = {"weight": {">=": [10]}}
         edge = {"weight": 10}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {">=": 10}}
+        constraints = {"weight": {">=": [10]}}
         edge = {"weight": 100}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_lte(self):
-        constraints = {"weight": {"<=": 10}}
+        constraints = {"weight": {"<=": [10]}}
         edge = {"weight": 10}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"<=": 10}}
+        constraints = {"weight": {"<=": [10]}}
         edge = {"weight": -100}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_gt(self):
-        constraints = {"weight": {">": 10}}
+        constraints = {"weight": {">": [10]}}
         edge = {"weight": 100}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_lt(self):
-        constraints = {"weight": {"<": 10}}
+        constraints = {"weight": {"<": [10]}}
         edge = {"weight": -100}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_neq(self):
-        constraints = {"weight": {"!=": 10}}
+        constraints = {"weight": {"!=": [10]}}
         edge = {"weight": 11}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"!=": 10}}
+        constraints = {"weight": {"!=": [10]}}
         edge = {"weight": "TURTLE"}
         self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
 class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
     def test_edge_satisfies_eq(self):
-        constraints = {"weight": {"==": 10}}
+        constraints = {"weight": {"==": [10]}}
         edge = {"weight": 11}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"==": -10.5}}
+        constraints = {"weight": {"==": [-10.5]}}
         edge = {"weight": -21/3}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_gte(self):
-        constraints = {"weight": {">=": 10}}
+        constraints = {"weight": {">=": [10]}}
         edge = {"weight": 9}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {">=": 10}}
+        constraints = {"weight": {">=": [10]}}
         edge = {"weight": -100}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_lte(self):
-        constraints = {"weight": {"<=": 10}}
+        constraints = {"weight": {"<=": [10]}}
         edge = {"weight": 100}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"<=": 10}}
+        constraints = {"weight": {"<=": [10]}}
         edge = {"weight": 100}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_gt(self):
-        constraints = {"weight": {">": 10}}
+        constraints = {"weight": {">": [10]}}
         edge = {"weight": 1}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_satisfies_lt(self):
-        constraints = {"weight": {"<": 10}}
+        constraints = {"weight": {"<": [10]}}
         edge = {"weight": 10}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
     def test_edge_neq(self):
-        constraints = {"weight": {"!=": 10}}
+        constraints = {"weight": {"!=": [10]}}
         edge = {"weight": 10}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
-        constraints = {"weight": {"!=": "TURTLE"}}
+        constraints = {"weight": {"!=": ["TURTLE"]}}
         edge = {"weight": "TURTLE"}
         self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
-
     def test_edge_many_satisfies(self):
         constraints = {
-            "weight": {"!=": 10, "==": 9}
+            "weight": {"!=": [10], "==": [9]}
         }
         edge = {"weight": 9.0}
 
@@ -106,8 +105,8 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
     def test_edge_many_not_satisfies(self):
         constraints = {
-            "weight": {"!=": 10, "==": 9},
-            "mode": {"==": "normal"}
+            "weight": {"!=": [10], "==": [9]},
+            "mode": {"==": ["normal"]}
         }
         edge = {"weight": 9, "mode": "normal"}
 
@@ -123,7 +122,7 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
     def test_edge_many_some_not_satisfies(self):
         constraints = {
-            "weight": {"!=": 10, "==": 9},
+            "weight": {"!=": [10], "==": [9]},
             "mode": {"==": "normal"}
         }
         edge = {"weight": 10.0}
@@ -140,7 +139,7 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
     def test_nx_edges(self):
         constraints = {
-            "weight": {">=": 7},
+            "weight": {">=": [7]},
         }
 
         H = nx.DiGraph()

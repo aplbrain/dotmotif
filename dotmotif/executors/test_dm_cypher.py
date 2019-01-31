@@ -29,6 +29,14 @@ RETURN DISTINCT A,B,X,Y
 """
 
 
+_DEMO_EDGE_ATTR_CYPHER_2 = """
+MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)
+MATCH (X:Neuron)-[X_Y:SYN]->(Y:Neuron)
+WHERE A_B.weight = 4 AND A_B.area <= 10 AND A_B.area <= 20 AND X_Y.weight = 2
+RETURN DISTINCT A,B,X,Y
+"""
+
+
 class TestDotmotif_Cypher(unittest.TestCase):
     def test_cypher(self):
         dm = dotmotif.dotmotif()
@@ -49,4 +57,17 @@ class TestDotmotif_Cypher(unittest.TestCase):
 
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
+        )
+
+    def test_cypher_edge_many_attributes(self):
+        dm = dotmotif.dotmotif()
+        dm.from_motif(
+            """
+        A -> B [weight=4, area<=10, area<=20]
+        X -> Y [weight=2]
+        """
+        )
+
+        self.assertEqual(
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER_2.strip()
         )

@@ -13,6 +13,7 @@ def _edge_satisfies_constraints(
         """
 
         operators = {
+            "=": lambda x, y: x == y,
             "==": lambda x, y: x == y,
             ">=": lambda x, y: x >= y,
             "<=": lambda x, y: x <= y,
@@ -22,10 +23,11 @@ def _edge_satisfies_constraints(
         }
 
         for key, clist in constraints.items():
-            for operator, value in clist.items():
-                if not operators[operator](edge_attributes.get(key, None), value):
-                    # Fail fast, if any edge attributes fail the test
-                    return False
+            for operator, values in clist.items():
+                for value in values:
+                    if not operators[operator](edge_attributes.get(key, None), value):
+                        # Fail fast, if any edge attributes fail the test
+                        return False
         return True
 
 
