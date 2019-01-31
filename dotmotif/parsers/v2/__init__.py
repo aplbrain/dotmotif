@@ -4,6 +4,7 @@ from typing import List
 from lark import Lark, Transformer
 import networkx as nx
 
+from ...utils import untype_string
 from .. import Parser
 from ...validators import Validator
 

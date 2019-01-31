@@ -24,7 +24,7 @@ RETURN DISTINCT A,B,C,D
 _DEMO_EDGE_ATTR_CYPHER = """
 MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)
 MATCH (X:Neuron)-[X_Y:SYN]->(Y:Neuron)
-WHERE A_B.weight = 4.0 AND A_B.area <= 10.0 AND X_Y.weight = 2.0
+WHERE A_B.weight = 4 AND A_B.area <= 10 AND X_Y.weight = 2
 RETURN DISTINCT A,B,X,Y
 """
 

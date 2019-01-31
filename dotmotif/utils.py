@@ -8,6 +8,18 @@ Requires nx>=2.0
 import networkx as nx
 
 
+def untype_string(string):
+    try:
+        return eval(string)
+    except:
+        try:
+            if int(string) == float(string):
+                return int(string)
+            return float(string)
+        except:
+            return str(string)
+
+
 def draw_motif(dm, negative_edge_color: str = "r", pos=None):
     """
     Draw a dotmotif motif object.
