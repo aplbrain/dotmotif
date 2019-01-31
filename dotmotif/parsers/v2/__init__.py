@@ -27,6 +27,7 @@ comment_or_block: block
 block           : edge
                 | macro
                 | macro_call
+                | node_constraint
                 | comment
 
 
@@ -94,6 +95,13 @@ relation_type   : ">"                               -> rel_def
 edge_clauses   : edge_clause ("," edge_clause)*
 
 ?edge_clause     : key op value
+
+
+// Node constraints:
+node_constraint : node_id "." key op value
+                | node_id "." key op "\\"" value "\\""
+
+
 
 ?key            : WORD
 ?value          : WORD | NUMBER
