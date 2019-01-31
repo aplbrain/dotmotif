@@ -8,27 +8,26 @@ from .. import dotmotif
 def _edge_satisfies_constraints(
     edge_attributes: dict, constraints: dict
 ) -> bool:
-        """
-        Does a single edge satisfy the constraints?
-        """
+    """
+    Does a single edge satisfy the constraints?
+    """
 
-        operators = {
-            "=": lambda x, y: x == y,
-            "==": lambda x, y: x == y,
-            ">=": lambda x, y: x >= y,
-            "<=": lambda x, y: x <= y,
-            "<": lambda x, y: x < y,
-            ">": lambda x, y: x > y,
-            "!=": lambda x, y: x != y,
-        }
+    operators = {
+        "==": lambda x, y: x == y,
+        ">=": lambda x, y: x >= y,
+        "<=": lambda x, y: x <= y,
+        "<": lambda x, y: x < y,
+        ">": lambda x, y: x > y,
+        "!=": lambda x, y: x != y,
+    }
 
-        for key, clist in constraints.items():
-            for operator, values in clist.items():
-                for value in values:
-                    if not operators[operator](edge_attributes.get(key, None), value):
-                        # Fail fast, if any edge attributes fail the test
-                        return False
-        return True
+    for key, clist in constraints.items():
+        for operator, values in clist.items():
+            for value in values:
+                if not operators[operator](edge_attributes.get(key, None), value):
+                    # Fail fast, if any edge attributes fail the test
+                    return False
+    return True
 
 
 class NetworkXExecutor(Executor):
