@@ -29,6 +29,34 @@ def _edge_satisfies_constraints(
                     return False
     return True
 
+def _node_satisfies_constraints(
+    node_attributes: dict, constraints: dict
+) -> bool:
+    """
+    Does a single node satisfy the constraints?
+
+    TODO: This function is distinct from the above because I anticipate that
+    differences will emerge as the implementation matures. But these are
+    currently identical functions otherwise. -- @j6k4m8
+    """
+
+    operators = {
+        "==": lambda x, y: x == y,
+        ">=": lambda x, y: x >= y,
+        "<=": lambda x, y: x <= y,
+        "<": lambda x, y: x < y,
+        ">": lambda x, y: x > y,
+        "!=": lambda x, y: x != y,
+    }
+
+    for key, clist in constraints.items():
+        for operator, values in clist.items():
+            for value in values:
+                if not operators[operator](node_attributes.get(key, None), value):
+                    # Fail fast, if any edge attributes fail the test
+                    return False
+    return True
+
 
 class NetworkXExecutor(Executor):
     """
@@ -55,6 +83,25 @@ class NetworkXExecutor(Executor):
             raise ValueError(
                 "You must pass a graph to the NetworkXExecutor constructor."
             )
+
+    def _validate_node_constraints(
+        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+    ) -> bool:
+        """
+        Validate nodes against their isomorphism's constraints in the motif.
+
+        Arguments:
+            ...
+
+        Returns:
+            bool
+        """
+        for motif_U, constraint_list in constraints.items():
+            graph_u = node_isomorphism_map[motif_U]
+
+            if not _node_satisfies_constraints(node, constraint_list):
+                return False
+        return True
 
     def _validate_edge_constraints(
         self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
@@ -112,8 +159,8 @@ class NetworkXExecutor(Executor):
             motif (dotmotif.dotmotif)
 
         """
-        # TODO: Can add constraints on node assignment. If we do this a little
-        # smarter, can save a lot of post-processing time-complexity.
+        # TODO: Can add constraints on iso node assignment. If we do this a
+        # little smarter, can save a lot of post-processing time-complexity.
         gm = nx.algorithms.isomorphism.GraphMatcher(self.graph, motif.to_nx())
         results = [
             {v: k for k, v in r.items()} for r in gm.subgraph_isomorphisms_iter()
@@ -122,8 +169,13 @@ class NetworkXExecutor(Executor):
             [
                 r
                 for r in results
-                if self._validate_edge_constraints(
-                    r, self.graph, motif.list_edge_constraints()
+                if (
+                    self._validate_edge_constraints(
+                        r, self.graph, motif.list_edge_constraints()
+                    ) and
+                    self._validate_node_constraints(
+                        r, self.graph, motif.list_node_constraints()
+                    )
                 )
             ]
         )
