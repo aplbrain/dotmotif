@@ -95,7 +95,7 @@ relation_type   : ">"                               -> rel_def
 // Edge attributes are separated from the main edge declaration with sqbrackets
 edge_clauses   : edge_clause ("," edge_clause)*
 
-?edge_clause     : key op value
+edge_clause     : key op value
 
 
 // Node constraints:
@@ -109,14 +109,14 @@ node_constraint : node_id "." key op value
 ?op             : OPERATOR
 
 
-?variable       : (WORD | VAR_SEP | NUMBER)+
+variable       : (WORD | VAR_SEP | NUMBER)+
 
 OPERATOR        : /[\=\>\<\!]?[\=]/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
 %ignore COMMENT
 
-%import common.WORD
+%import common.WORD -> WORD
 %import common.SIGNED_NUMBER  -> NUMBER
 %import common.WS
 %ignore WS
