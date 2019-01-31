@@ -5,23 +5,94 @@ from dotmotif.executors.NetworkXExecutor import _edge_satisfies_constraints
 import networkx as nx
 
 
-class TestEdgeConstraints(unittest.TestCase):
+class TestEdgeConstraintsSatisfy(unittest.TestCase):
 
-    def test_edge_satisfies(self):
+    def test_edge_satisfies_eq(self):
         constraints = {"weight": {"==": 10}}
         edge = {"weight": 10}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"==": -10.5}}
+        edge = {"weight": -21/2}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
-        self.assertTrue(_edge_satisfies_constraints(
-            edge, constraints
-        ))
+    def test_edge_satisfies_gte(self):
+        constraints = {"weight": {">=": 10}}
+        edge = {"weight": 10}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {">=": 10}}
+        edge = {"weight": 100}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
 
-    def test_edge_not_satisfies(self):
+    def test_edge_satisfies_lte(self):
+        constraints = {"weight": {"<=": 10}}
+        edge = {"weight": 10}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"<=": 10}}
+        edge = {"weight": -100}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_gt(self):
+        constraints = {"weight": {">": 10}}
+        edge = {"weight": 100}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_lt(self):
+        constraints = {"weight": {"<": 10}}
+        edge = {"weight": -100}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_neq(self):
+        constraints = {"weight": {"!=": 10}}
+        edge = {"weight": 11}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"!=": 10}}
+        edge = {"weight": "TURTLE"}
+        self.assertTrue(_edge_satisfies_constraints(edge, constraints))
+
+class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
+
+    def test_edge_satisfies_eq(self):
+        constraints = {"weight": {"==": 10}}
+        edge = {"weight": 11}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"==": -10.5}}
+        edge = {"weight": -21/3}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_gte(self):
+        constraints = {"weight": {">=": 10}}
+        edge = {"weight": 9}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {">=": 10}}
+        edge = {"weight": -100}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_lte(self):
+        constraints = {"weight": {"<=": 10}}
+        edge = {"weight": 100}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"<=": 10}}
+        edge = {"weight": 100}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_gt(self):
+        constraints = {"weight": {">": 10}}
+        edge = {"weight": 1}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_satisfies_lt(self):
+        constraints = {"weight": {"<": 10}}
+        edge = {"weight": 10}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+
+    def test_edge_neq(self):
         constraints = {"weight": {"!=": 10}}
         edge = {"weight": 10}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
+        constraints = {"weight": {"!=": "TURTLE"}}
+        edge = {"weight": "TURTLE"}
+        self.assertFalse(_edge_satisfies_constraints(edge, constraints))
 
-        self.assertFalse(_edge_satisfies_constraints(
-            edge, constraints
-        ))
 
     def test_edge_many_satisfies(self):
         constraints = {
@@ -189,20 +260,19 @@ class TestSmallMotifs(unittest.TestCase):
             2
         )
 
-
     def test_mini_example(self):
 
         H = nx.DiGraph()
-        H.add_edge("y", "x", weight=10)
-        H.add_edge("x", "z", weight=1)
-        H.add_edge("x", "a", weight=2)
-        H.add_edge("a", "b", weight=5)
-        H.add_edge("a", "x", weight=7)
-        H.add_edge("z", "y", weight=2)
-        H.add_edge("z", "b", weight=0)
-        H.add_edge("z", "a", weight=5)
+        H.add_edge("y", "x", ATTRIBUTE=7)
+        H.add_edge("x", "z", ATTRIBUTE=1)
+        H.add_edge("a", "b", ATTRIBUTE=5)
+        H.add_edge("a", "x", ATTRIBUTE=7)
+        H.add_edge("x", "a", ATTRIBUTE=2)
+        H.add_edge("z", "y", ATTRIBUTE=2)
+        H.add_edge("z", "b", ATTRIBUTE=0)
+        H.add_edge("z", "a", ATTRIBUTE=5)
         motif = dotmotif.dotmotif().from_motif("""
-        A -> B [weight>=7]
+        A -> B [ATTRIBUTE>=7]
         """.strip())
 
         self.assertEqual(
