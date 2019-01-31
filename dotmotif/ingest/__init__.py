@@ -58,7 +58,6 @@ class NetworkXIngester(Ingester):
                 float(val)
                 return float(val)
             except:
-                print(val, type(val))
                 return str(val)
 
         all_edge_attrs = {}

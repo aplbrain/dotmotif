@@ -136,12 +136,66 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("y", "z", weight=5)
         self.assertEqual(len(NetworkXExecutor(graph=H).find(dm)), 1)
 
+    def test_one_instance(self):
+
+        H = nx.DiGraph()
+        H.add_edge("x", "y", weight=1)
+        H.add_edge("y", "z", weight=10)
+        H.add_edge("z", "x", weight=5)
+        motif = dotmotif.dotmotif().from_motif("""
+        A -> B [weight>=11]
+        """.strip())
+
+        self.assertEqual(
+            len(NetworkXExecutor(graph=H).find(motif)),
+            0
+        )
+
+    def test_two_instance(self):
+        H=nx.DiGraph()
+        H.add_edge("x", "y", weight=1)
+        H.add_edge("y", "z", weight=10)
+        H.add_edge("z", "x", weight=5)
+        H.add_edge("z", "a", weight=5)
+        H.add_edge("a", "b", weight=1)
+        H.add_edge("b", "c", weight=10)
+        H.add_edge("c", "a", weight=5)
+        motif = dotmotif.dotmotif().from_motif("""
+        A -> B [weight>=7]
+        """.strip())
+
+        self.assertEqual(
+            len(NetworkXExecutor(graph=H).find(motif)),
+            2
+        )
+
+    def test_triangle_two_instance(self):
+        H=nx.DiGraph()
+        H.add_edge("x", "y", weight=1)
+        H.add_edge("y", "z", weight=10)
+        H.add_edge("z", "x", weight=5)
+        H.add_edge("z", "a", weight=5)
+        H.add_edge("a", "b", weight=1)
+        H.add_edge("b", "c", weight=10)
+        H.add_edge("c", "a", weight=5)
+        motif = dotmotif.dotmotif().from_motif("""
+        A -> B [weight>=7]
+        B -> C
+        C -> A
+        """.strip())
+
+        self.assertEqual(
+            len(NetworkXExecutor(graph=H).find(motif)),
+            2
+        )
+
+
     def test_mini_example(self):
 
         H = nx.DiGraph()
         H.add_edge("y", "x", weight=10)
         H.add_edge("x", "z", weight=1)
-        # H.add_edge("x", "a", weight=2)
+        H.add_edge("x", "a", weight=2)
         H.add_edge("a", "b", weight=5)
         H.add_edge("a", "x", weight=7)
         H.add_edge("z", "y", weight=2)

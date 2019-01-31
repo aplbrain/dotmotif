@@ -100,9 +100,7 @@ class NetworkXExecutor(Executor):
 
             if not _edge_satisfies_constraints(edge[2], constraint_list):
                 # Fail fast
-                print(f"Did not match graph because edge {edge} failed to match against the constraints {constraint_list}.")
                 return False
-        print(edge[2], constraint_list)
         return True
 
     def find(self, motif: dotmotif, limit: int = None):
