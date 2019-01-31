@@ -5,15 +5,16 @@ from dotmotif.executors.NetworkXExecutor import _edge_satisfies_constraints, _no
 import networkx as nx
 
 
-class TestNodeConstraintsSatisfy(unittest.TestCase):
-
-    def test_edge_satisfies_eq(self):
-        constraints = {"radius": {"==": [10]}}
-        node = {"radius": 10}
-        self.assertTrue(_node_satisfies_constraints(node, constraints))
-        constraints = {"radius": {"==": [-10.5]}}
-        node = {"radius": -21/2}
-        self.assertTrue(_node_satisfies_constraints(node, constraints))
+# class TestNodeConstraintsSatisfy(unittest.TestCase):
+    # TODO: Don't need this class because the two functions (edge/node) are
+    # currently the same. See todo note in networkx executor file.
+    # def test_edge_satisfies_eq(self):
+    #     constraints = {"radius": {"==": [10]}}
+    #     node = {"radius": 10}
+    #     self.assertTrue(_node_satisfies_constraints(node, constraints))
+    #     constraints = {"radius": {"==": [-10.5]}}
+    #     node = {"radius": -21/2}
+    #     self.assertTrue(_node_satisfies_constraints(node, constraints))
 
 
 class TestEdgeConstraintsSatisfy(unittest.TestCase):

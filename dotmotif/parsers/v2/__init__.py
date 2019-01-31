@@ -99,9 +99,9 @@ edge_clause     : key op value
 
 
 // Node constraints:
-node_constraint : node_id "." key op value
-                | node_id "." key op "\\"" value "\\""
+node_constraint : node_id "." key op value_or_quoted_value
 
+?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
 
 
 ?key            : WORD
@@ -114,6 +114,7 @@ variable       : (WORD | VAR_SEP | NUMBER)+
 OPERATOR        : /[\=\>\<\!]?[\=]/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
+DOUBLE_QUOTED_STRING  : /"[^"]*"/
 %ignore COMMENT
 
 %import common.WORD -> WORD
@@ -174,9 +175,6 @@ class DotMotifTransformer(Transformer):
 
     def key(self, key):
         return str(key)
-
-    def value(self, value):
-        return str(value)
 
     def op(self, operator):
         return {

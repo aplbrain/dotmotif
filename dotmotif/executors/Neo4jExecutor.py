@@ -248,10 +248,34 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_edge_constraints.append(
-                            "{}.{} {} {}".format(edge_mapping[(u, v)], key, _remapped_operator(operator), value)
+                            "{}.{} {} {}".format(
+                                edge_mapping[(u, v)],
+                                key, _remapped_operator(operator),
+                                f'"{value}"' if isinstance(
+                                    value, str
+                                ) else value
+                            )
                         )
         if cypher_edge_constraints:
             q_match += delim + "WHERE " + " AND ".join(cypher_edge_constraints)
+
+        # Edge constraints:
+        cypher_node_constraints = []
+        for n, a in motif.list_node_constraints().items():
+            for key, constraints in a.items():
+                for operator, values in constraints.items():
+                    for value in values:
+                        cypher_node_constraints.append(
+                            "{}.{} {} {}".format(
+                                n, key,
+                                _remapped_operator(operator),
+                                f'"{value}"' if isinstance(
+                                    value, str
+                                ) else value
+                            )
+                        )
+        if cypher_node_constraints:
+            q_match += delim + "WHERE " + " AND ".join(cypher_node_constraints)
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
