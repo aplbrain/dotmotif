@@ -153,17 +153,28 @@ class DotMotifTransformer(Transformer):
 
     def edge_clause(self, tup):
         key, op, val = tup
-        try:
-            val = float(val)
-        except:
-            val = str(val)
+        val = untype_string(val)
         return str(key), str(op), val
 
+    def node_constraint(self, tup):
+        node_id, key, op, val = tup
+        node_id = str(node_id)
+        key = str(key)
+        op = str(op)
+        val = untype_string(val)
+        if node_id not in self.node_constraints:
+            self.node_constraints[node_id] = {}
+        if key not in self.node_constraints[node_id]:
+            self.node_constraints[node_id][key] = {}
+        if op not in self.node_constraints[node_id][key]:
+            self.node_constraints[node_id][key][op] = []
+        self.node_constraints[node_id][key][op].append(val)
+
     def key(self, key):
-        return key
+        return str(key)
 
     def value(self, value):
-        return value
+        return str(value)
 
     def op(self, operator):
         return {
