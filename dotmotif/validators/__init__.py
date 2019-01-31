@@ -29,7 +29,6 @@ class DisagreeingEdgesValidatorError(Exception):
 
 
 class DisagreeingEdgesValidator(Validator):
-
     def __init__(self) -> None:
         pass
 

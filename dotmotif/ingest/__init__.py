@@ -1,6 +1,7 @@
 # Standard installs:
 import json
 import os
+import numbers
 
 # Non-standard installs:
 import dask.dataframe as dd
@@ -48,8 +49,51 @@ class NetworkXIngester(Ingester):
         nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join(
             [i for i, n in self.graph.nodes(True)]
         )
-        edges_csv = ":START_ID(Neuron),:END_ID(Neuron)\n" + "\n".join(
-            [f"{u},{v}" for u, v in self.graph.edges()]
+
+        # This huge mess is type inference to make the exported file convey the
+        # types of the attributes, if available. String is the default.
+        # TODO: Can probably be cleaned up!
+        def _try_float_or_string(val):
+            try:
+                float(val)
+                return float(val)
+            except:
+                print(val, type(val))
+                return str(val)
+
+        all_edge_attrs = {}
+        for _, _, a in self.graph.edges(data=True):
+            for key, val in a.items():
+                val = _try_float_or_string(val)
+                if key in all_edge_attrs:
+                    if (isinstance(val, all_edge_attrs[key])):
+                        pass
+                    else:
+                        all_edge_attrs[key] = str
+                else:
+                    if isinstance(val, (float, int)):
+                        all_edge_attrs[key] = float
+                    else:
+                        all_edge_attrs[key] = str
+
+        for k, v in all_edge_attrs.items():
+            all_edge_attrs[k] = {
+                str: "string",
+                float: "float",
+                int: "int"
+            }[v]
+
+        sorted_attrs = sorted(list(all_edge_attrs.keys()))
+        edges_csv = (
+            ":START_ID(Neuron),:END_ID(Neuron),"
+            + ",".join(["{}:{}".format(k, all_edge_attrs[k]) for k in sorted_attrs])
+            + "\n"
+            + "\n".join(
+                [
+                    f"{u},{v}," + ",".join([str(a.get(k, "")) for k in sorted_attrs])
+                    for u, v, a in self.graph.edges(data=True)
+                ]
+            )
         )
 
         # Export the files:

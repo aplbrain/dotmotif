@@ -30,7 +30,6 @@ RETURN DISTINCT A,B,X,Y
 
 
 class TestDotmotif_Cypher(unittest.TestCase):
-
     def test_cypher(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
@@ -41,12 +40,13 @@ class TestDotmotif_Cypher(unittest.TestCase):
 
     def test_cypher_edge_attributes(self):
         dm = dotmotif.dotmotif()
-        dm.from_motif("""
+        dm.from_motif(
+            """
         A -> B [weight=4, area<=10]
         X -> Y [weight=2]
-        """)
+        """
+        )
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(),
-            _DEMO_EDGE_ATTR_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
         )

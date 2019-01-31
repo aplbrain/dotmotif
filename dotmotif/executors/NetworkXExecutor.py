@@ -5,6 +5,30 @@ from .Executor import Executor
 from .. import dotmotif
 
 
+def _edge_satisfies_constraints(
+    edge_attributes: dict, constraints: dict
+) -> bool:
+        """
+        Does a single edge satisfy the constraints?
+        """
+
+        operators = {
+            "==": lambda x, y: x == y,
+            ">=": lambda x, y: x >= y,
+            "<=": lambda x, y: x <= y,
+            "<": lambda x, y: x < y,
+            ">": lambda x, y: x > y,
+            "!=": lambda x, y: x != y,
+        }
+
+        for key, clist in constraints.items():
+            for operator, value in clist.items():
+                if not operators[operator](edge_attributes.get(key, None), value):
+                    # Fail fast, if any edge attributes fail the test
+                    return False
+        return True
+
+
 class NetworkXExecutor(Executor):
     """
     A query executor that runs inside RAM.
@@ -31,35 +55,8 @@ class NetworkXExecutor(Executor):
                 "You must pass a graph to the NetworkXExecutor constructor."
             )
 
-    def _edge_satisfies_constraints(self, edge_attributes: dict, constraints: dict) -> bool:
-        """
-        Does a single edge satisfy the constraints?
-        """
-
-        operators = {
-            "==":   lambda x, y: x == y,
-            ">=":   lambda x, y: x >= y,
-            "<=":   lambda x, y: x <= y,
-            "<":    lambda x, y: x < y,
-            ">":    lambda x, y: x > y,
-            "!=":   lambda x, y: x != y,
-        }
-
-        for key, constraints in constraints.items():
-            for operator, value in constraints.items():
-                if not operators[operator](
-                    edge_attributes.get(key, None),
-                    value
-                ):
-                    # Fail fast
-                    return False
-        return True
-
     def _validate_edge_constraints(
-        self,
-        node_isomorphism_map: dict,
-        graph: nx.DiGraph,
-        constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
     ):
         """
         Validate all edge constraints on a subgraph.
@@ -100,11 +97,12 @@ class NetworkXExecutor(Executor):
 
             if len(edge) == 2:
                 edge = edge[0], edge[1], {}
-            # for k, v in edge_attrs.items():
 
-            if not self._edge_satisfies_constraints(edge[2], constraint_list):
+            if not _edge_satisfies_constraints(edge[2], constraint_list):
                 # Fail fast
+                print(f"Did not match graph because edge {edge} failed to match against the constraints {constraint_list}.")
                 return False
+        print(edge[2], constraint_list)
         return True
 
     def find(self, motif: dotmotif, limit: int = None):
@@ -119,11 +117,14 @@ class NetworkXExecutor(Executor):
         # smarter, can save a lot of post-processing time-complexity.
         gm = nx.algorithms.isomorphism.GraphMatcher(self.graph, motif.to_nx())
         results = [
-            {v: k for k, v in r.items()}
-            for r in gm.subgraph_isomorphisms_iter()
+            {v: k for k, v in r.items()} for r in gm.subgraph_isomorphisms_iter()
         ]
-        return pd.DataFrame([
-            r for r in results
-            if self._validate_edge_constraints(r, self.graph, motif.list_edge_constraints())
-        ])
-
+        return pd.DataFrame(
+            [
+                r
+                for r in results
+                if self._validate_edge_constraints(
+                    r, self.graph, motif.list_edge_constraints()
+                )
+            ]
+        )

@@ -24,7 +24,7 @@ import random
 import string
 
 import docker
-from py2neo import Database, Graph
+from py2neo import Graph
 import requests
 
 # Types only:
@@ -36,8 +36,17 @@ from .Executor import Executor
 from ..ingest import NetworkXIngester
 
 
-def random_id(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+def _remapped_operator(op):
+    return {
+        "=": "=",
+        "==": "=",
+        ">=": ">=",
+        "<=": "<=",
+        "<": "<",
+        ">": ">",
+        "!=": "!=",
+        "<>": "!=",
+    }[op]
 
 
 class Neo4jExecutor(Executor):
@@ -213,17 +222,13 @@ class Neo4jExecutor(Executor):
             if a["exists"]:
                 es.append(
                     "MATCH ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
-                        u,
-                        edge_id, action,
-                        "" if motif.ignore_direction else ">", v
+                        u, edge_id, action, "" if motif.ignore_direction else ">", v
                     )
                 )
             else:
                 es_neg.append(
                     "NOT ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
-                        u,
-                        edge_id, action,
-                        "" if motif.ignore_direction else ">", v
+                        u, edge_id, action, "" if motif.ignore_direction else ">", v
                     )
                 )
 
@@ -242,9 +247,7 @@ class Neo4jExecutor(Executor):
             for key, constraints in a.items():
                 for operator, value in constraints.items():
                     cypher_edge_constraints.append(
-                        "{}.{} {} {}".format(
-                            edge_mapping[(u, v)], key, operator, value
-                        )
+                        "{}.{} {} {}".format(edge_mapping[(u, v)], key, _remapped_operator(operator), value)
                     )
         if cypher_edge_constraints:
             q_match += delim + "WHERE " + " AND ".join(cypher_edge_constraints)
