@@ -71,7 +71,7 @@ class NetworkXIngester(Ingester):
 
         nodes_csv = (
             "neuronId:ID(Neuron),"
-            + +",".join(
+            + ",".join(
                 ["{}:{}".format(k, all_node_attrs[k]) for k in sorted_node_attrs]
             )
             + "\n"
