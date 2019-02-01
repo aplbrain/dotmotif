@@ -11,6 +11,8 @@ import pandas as pd
 from typing import List
 import networkx as nx
 
+from .. import utils
+
 
 class Ingester:
     """
@@ -46,26 +48,50 @@ class NetworkXIngester(Ingester):
 
     def ingest(self) -> List[str]:
         # Export the graph to CSV (nodes and edges):
-        nodes_csv = "neuronId:ID(Neuron)\n" + "\n".join(
-            [i for i, n in self.graph.nodes(True)]
+
+        all_node_attrs = {}
+        for _, a in self.graph.nodes(data=True):
+            for key, val in a.items():
+                val = utils.untype_string(val)
+                if key in all_node_attrs:
+                    if isinstance(val, all_node_attrs[key]):
+                        pass
+                    else:
+                        all_node_attrs[key] = str
+                else:
+                    if isinstance(val, (float, int)):
+                        all_node_attrs[key] = float
+                    else:
+                        all_node_attrs[key] = str
+
+        for k, v in all_node_attrs.items():
+            all_node_attrs[k] = {str: "string", float: "float", int: "int"}[v]
+
+        sorted_node_attrs = sorted(list(all_node_attrs.keys()))
+
+        nodes_csv = (
+            "neuronId:ID(Neuron),"
+            + +",".join(
+                ["{}:{}".format(k, all_node_attrs[k]) for k in sorted_node_attrs]
+            )
+            + "\n"
+            + "\n".join(
+                [
+                    i + "," + ",".join([str(n.get(k, "") for k in sorted_node_attrs)])
+                    for i, n in self.graph.nodes(True)
+                ]
+            )
         )
 
         # This huge mess is type inference to make the exported file convey the
         # types of the attributes, if available. String is the default.
         # TODO: Can probably be cleaned up!
-        def _try_float_or_string(val):
-            try:
-                float(val)
-                return float(val)
-            except:
-                return str(val)
-
         all_edge_attrs = {}
         for _, _, a in self.graph.edges(data=True):
             for key, val in a.items():
-                val = _try_float_or_string(val)
+                val = utils.untype_string(val)
                 if key in all_edge_attrs:
-                    if (isinstance(val, all_edge_attrs[key])):
+                    if isinstance(val, all_edge_attrs[key]):
                         pass
                     else:
                         all_edge_attrs[key] = str
@@ -76,20 +102,19 @@ class NetworkXIngester(Ingester):
                         all_edge_attrs[key] = str
 
         for k, v in all_edge_attrs.items():
-            all_edge_attrs[k] = {
-                str: "string",
-                float: "float",
-                int: "int"
-            }[v]
+            all_edge_attrs[k] = {str: "string", float: "float", int: "int"}[v]
 
-        sorted_attrs = sorted(list(all_edge_attrs.keys()))
+        sorted_edge_attrs = sorted(list(all_edge_attrs.keys()))
         edges_csv = (
             ":START_ID(Neuron),:END_ID(Neuron),"
-            + ",".join(["{}:{}".format(k, all_edge_attrs[k]) for k in sorted_attrs])
+            + ",".join(
+                ["{}:{}".format(k, all_edge_attrs[k]) for k in sorted_edge_attrs]
+            )
             + "\n"
             + "\n".join(
                 [
-                    f"{u},{v}," + ",".join([str(a.get(k, "")) for k in sorted_attrs])
+                    f"{u},{v},"
+                    + ",".join([str(a.get(k, "")) for k in sorted_edge_attrs])
                     for u, v, a in self.graph.edges(data=True)
                 ]
             )

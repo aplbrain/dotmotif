@@ -337,7 +337,6 @@ class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
 
 
 class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
-
     def test_basic_node_attr(self):
         exp = """\
         Aa -> Ba

@@ -250,10 +250,9 @@ class Neo4jExecutor(Executor):
                         cypher_edge_constraints.append(
                             "{}.{} {} {}".format(
                                 edge_mapping[(u, v)],
-                                key, _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str
-                                ) else value
+                                key,
+                                _remapped_operator(operator),
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
         if cypher_edge_constraints:
@@ -267,11 +266,10 @@ class Neo4jExecutor(Executor):
                     for value in values:
                         cypher_node_constraints.append(
                             "{}.{} {} {}".format(
-                                n, key,
+                                n,
+                                key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str
-                                ) else value
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
         if cypher_node_constraints:

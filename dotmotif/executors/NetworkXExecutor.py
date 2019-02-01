@@ -5,9 +5,7 @@ from .Executor import Executor
 from .. import dotmotif
 
 
-def _edge_satisfies_constraints(
-    edge_attributes: dict, constraints: dict
-) -> bool:
+def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
     """
     Does a single edge satisfy the constraints?
     """
@@ -29,9 +27,8 @@ def _edge_satisfies_constraints(
                     return False
     return True
 
-def _node_satisfies_constraints(
-    node_attributes: dict, constraints: dict
-) -> bool:
+
+def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> bool:
     """
     Does a single node satisfy the constraints?
 
@@ -172,8 +169,8 @@ class NetworkXExecutor(Executor):
                 if (
                     self._validate_edge_constraints(
                         r, self.graph, motif.list_edge_constraints()
-                    ) and
-                    self._validate_node_constraints(
+                    )
+                    and self._validate_node_constraints(
                         r, self.graph, motif.list_node_constraints()
                     )
                 )
