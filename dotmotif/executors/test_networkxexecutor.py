@@ -264,3 +264,28 @@ class TestSmallMotifs(unittest.TestCase):
         )
 
         self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 2)
+
+    def test_node_and_edge_full_example(self):
+
+        H = nx.DiGraph()
+        H.add_node("y", size=4)
+        H.add_edge("y", "x", ATTRIBUTE=7)
+        H.add_edge("x", "y", ATTRIBUTE=7)
+        H.add_edge("x", "z", ATTRIBUTE=7)
+        motif = dotmotif.dotmotif().from_motif(
+            """
+            A -> B [ATTRIBUTE=7]
+            A -> B
+        """.strip()
+        )
+
+        res = NetworkXExecutor(graph=H).find(motif)
+        print(res)
+        self.assertEqual(len(res), 1)
+
+        H.add_edge("y", "z", ATTRIBUTE=7)
+        res = NetworkXExecutor(graph=H).find(motif)
+        self.assertEqual(len(res), 2)
+
+        # H.add_edge("y", "a")
+        # self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 2)

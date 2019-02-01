@@ -11,6 +11,7 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
     """
 
     operators = {
+        "=": lambda x, y: x == y,
         "==": lambda x, y: x == y,
         ">=": lambda x, y: x >= y,
         "<=": lambda x, y: x <= y,
@@ -38,6 +39,7 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
     """
 
     operators = {
+        "=": lambda x, y: x == y,
         "==": lambda x, y: x == y,
         ">=": lambda x, y: x >= y,
         "<=": lambda x, y: x <= y,
@@ -96,7 +98,7 @@ class NetworkXExecutor(Executor):
         for motif_U, constraint_list in constraints.items():
             graph_u = node_isomorphism_map[motif_U]
 
-            if not _node_satisfies_constraints(node, constraint_list):
+            if not _node_satisfies_constraints(graph.node[graph_u], constraint_list):
                 return False
         return True
 
