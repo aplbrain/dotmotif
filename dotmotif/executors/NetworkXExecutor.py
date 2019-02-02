@@ -23,7 +23,21 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
     for key, clist in constraints.items():
         for operator, values in clist.items():
             for value in values:
-                if not operators[operator](edge_attributes.get(key, None), value):
+                keyvalue_or_none = edge_attributes.get(key, None)
+                try:
+                    operator_success = operators[operator](
+                        keyvalue_or_none, value
+                    )
+                except TypeError as e:
+                    # If you encounter a type error, that means the comparison
+                    # could not possibly succeed,
+                    # # TODO: unless you tried a comparison
+                    # against an undefined value (i.e. VALUE >= undefined)
+                    return False
+                    # raise TypeError(
+                    #     f"Failed to compare key '{key}' ({edge_attributes.get(key, None)}) with value {value}."
+                    # ) from e
+                if not operator_success:
                     # Fail fast, if any edge attributes fail the test
                     return False
     return True
@@ -140,12 +154,9 @@ class NetworkXExecutor(Executor):
             graph_v = node_isomorphism_map[motif_V]
 
             # Check edge in graph for constraints
-            edge = list(graph.edges((graph_u, graph_v), data=True))[0]
+            edge_attrs = graph.edges[graph_u, graph_v]
 
-            if len(edge) == 2:
-                edge = edge[0], edge[1], {}
-
-            if not _edge_satisfies_constraints(edge[2], constraint_list):
+            if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                 # Fail fast
                 return False
         return True
@@ -164,17 +175,27 @@ class NetworkXExecutor(Executor):
         results = [
             {v: k for k, v in r.items()} for r in gm.subgraph_isomorphisms_iter()
         ]
-        return pd.DataFrame(
-            [
-                r
-                for r in results
-                if (
+        print("\n")
+        for r in results:
+            print(
+                (
                     self._validate_edge_constraints(
                         r, self.graph, motif.list_edge_constraints()
-                    )
-                    and self._validate_node_constraints(
+                    ), self._validate_node_constraints(
                         r, self.graph, motif.list_node_constraints()
                     )
+            )
+            )
+        res = [
+            r
+            for r in results
+            if (
+                self._validate_edge_constraints(
+                    r, self.graph, motif.list_edge_constraints()
                 )
-            ]
-        )
+                and self._validate_node_constraints(
+                    r, self.graph, motif.list_node_constraints()
+                )
+            )
+        ]
+        return res
