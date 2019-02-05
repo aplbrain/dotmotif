@@ -255,10 +255,10 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("x", "z", ATTRIBUTE=1)
         H.add_edge("a", "b", ATTRIBUTE=5)
         H.add_edge("a", "x", ATTRIBUTE=7)
-        H.add_edge("x", "a", ATTRIBUTE=2)
-        H.add_edge("z", "y", ATTRIBUTE=2)
-        H.add_edge("z", "b", ATTRIBUTE=0)
-        H.add_edge("z", "a", ATTRIBUTE=5)
+        H.add_edge("x", "a", ATTRIBUTE=5)
+        # H.add_edge("z", "y", ATTRIBUTE=2)
+        # H.add_edge("z", "b", ATTRIBUTE=0)
+        # H.add_edge("z", "a", ATTRIBUTE=5)
         motif = dotmotif.dotmotif().from_motif(
             """
         A -> B [ATTRIBUTE>=7]

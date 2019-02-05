@@ -178,6 +178,9 @@ class NetworkXExecutor(Executor):
         print("\n")
         for r in results:
             print(
+                r,
+                motif.list_edge_constraints(),
+                self.graph.edges(data=True),
                 (
                     self._validate_edge_constraints(
                         r, self.graph, motif.list_edge_constraints()
