@@ -151,6 +151,51 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
         for _, _, a in H.edges(data=True):
             self.assertFalse(_edge_satisfies_constraints(a, constraints))
 
+    def test_contains(self):
+        constraints = {"name": {"contains": ["oodle"]}}
+
+        H = nx.DiGraph()
+        H.add_edge("y", "z", name="poodle")
+        H.add_edge("a", "b", name="Doodles")
+
+        for _, _, a in H.edges(data=True):
+            self.assertTrue(_edge_satisfies_constraints(a, constraints))
+
+        H = nx.DiGraph()
+        H.add_edge("y", "z", name="puddle")
+        H.add_edge("a", "b", name="DOodles")
+
+        for _, _, a in H.edges(data=True):
+            self.assertFalse(_edge_satisfies_constraints(a, constraints))
+
+    def test_in(self):
+        constraints = {"name": {"in": [["A", "B"]]}}
+
+        H = nx.DiGraph()
+        H.add_edge("y", "z", name="A")
+        H.add_edge("a", "b", name="B")
+
+        for _, _, a in H.edges(data=True):
+            self.assertTrue(_edge_satisfies_constraints(a, constraints))
+
+        H = nx.DiGraph()
+        H.add_edge("y", "z", name="C")
+        H.add_edge("a", "b", name="['A']")
+
+        for _, _, a in H.edges(data=True):
+            self.assertFalse(_edge_satisfies_constraints(a, constraints))
+
+    def test_in_string(self):
+        constraints = {"name": {"in": ["abcdefghijklmnopqrstuvwxyz"]}}
+
+        H = nx.DiGraph()
+        H.add_edge("y", "z", name="cde")
+        H.add_edge("a", "b", name="jklm")
+
+        for _, _, a in H.edges(data=True):
+            self.assertTrue(_edge_satisfies_constraints(a, constraints))
+
+
 
 class TestSmallMotifs(unittest.TestCase):
 

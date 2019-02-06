@@ -18,6 +18,8 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
         "<": lambda x, y: x < y,
         ">": lambda x, y: x > y,
         "!=": lambda x, y: x != y,
+        "in": lambda x, y: x in y,
+        "contains": lambda x, y: y in x,
     }
 
     for key, clist in constraints.items():
