@@ -166,3 +166,5 @@ dotmotif.dotmotif(validators=[]).from_motif(m)
 ```
 
 This empty list overrides the default list of validators, which includes a built-in `DisagreeingEdgesValidator`. It's not recommended that you do this — but it is _possible_.
+
+Learn more about motif constraints [here](attributes.md).
