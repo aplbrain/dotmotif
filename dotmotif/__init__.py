@@ -94,6 +94,20 @@ class dotmotif:
 
         return self
 
+    def from_nx(self, graph: nx.DiGraph) -> None:
+        """
+        Ingest directly from a graph.
+
+        Arguments:
+            graph (nx.DiGraph): The graph to import
+
+        Returns:
+            None
+
+        """
+        self._g = graph
+        return self
+
     def to_nx(self) -> nx.DiGraph:
         """
         Output a networkx graph describing the motif.

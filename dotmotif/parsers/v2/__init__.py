@@ -63,7 +63,6 @@ macro_call      : variable "(" arglist ")"
 
 
 
-
 // Edges are currently composed of a node, a relation, and a node. In other
 // words, an arbitrary word, a relation between them, and then another node.
 // Edges can also have optional edge attributes, delimited from the original
