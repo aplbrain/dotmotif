@@ -257,8 +257,6 @@ class Neo4jExecutor(Executor):
                                 f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
-        if cypher_edge_constraints:
-            q_match += delim + "WHERE " + " AND ".join(cypher_edge_constraints)
 
         # Edge constraints:
         cypher_node_constraints = []
@@ -274,8 +272,9 @@ class Neo4jExecutor(Executor):
                                 f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
-        if cypher_node_constraints:
-            q_match += delim + "WHERE " + " AND ".join(cypher_node_constraints)
+        if [*cypher_node_constraints, *cypher_edge_constraints]:
+            q_match += delim + "WHERE " + \
+                " AND ".join([*cypher_edge_constraints, *cypher_node_constraints])
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
