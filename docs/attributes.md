@@ -50,6 +50,25 @@ A.area < 20
 
 This combination is redundant, and more importantly, it can increase the runtime of your query! When you're dealing with sufficiently large graphs, be sure to design your motifs with runtime in mind.
 
+It is likewise possible (lo! even easy!) to build contradicting constraints:
+
+```
+A.name == "Fred"
+A.name != "Fred"
+```
+
+Even though this seems like a contrived example, it becomes increasingly simple to make this sort of mistake in larger motifs. Though constraint validators will often catch these sorts of mistakes, it's smart to give your motif a once-over before submitting it to run unsuccessfully.
+
+## Everybody now
+
+You can of course run node and edge attributes through the same motif:
+
+```
+A -> B [weight >= 0.6]
+A.type = "Glu"
+B.type = "ACh"
+```
+
 # Available Operators
 
 ## Edge Operators
