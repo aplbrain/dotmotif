@@ -103,8 +103,8 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         foo(C, D)
         """
-        with self.assertRaises(ValueError):
-        # with self.assertRaises(Exception):
+        # with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
 
@@ -116,8 +116,8 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         edge(C, D, E)
         """
-        with self.assertRaises(ValueError):
-        # with self.assertRaises(Exception):
+        # with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
 
