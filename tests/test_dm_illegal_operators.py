@@ -8,12 +8,12 @@ class TestDotmotifIllegal(unittest.TestCase):
     """
 
     def test_disagreeing_edges(self):
-        dm = dotmotif.dotmotif()
-        with self.assertRaises(
-            dotmotif.validators.DisagreeingEdgesValidatorError
-        ):
-            dm.from_motif("A -- B\nA !- B")
-
+        dm = dotmotif.dotmotif(
+            validators=[dotmotif.validators.DisagreeingEdgesValidator()]
+        )
+        # with self.assertRaises(dotmotif.validators.DisagreeingEdgesValidatorError):
+        with self.assertRaises(Exception):
+            dm.from_motif("A -> B\nA !> B")
 
     def test_disagreeing_edges_ignored(self):
         dm = dotmotif.dotmotif(validators=[])

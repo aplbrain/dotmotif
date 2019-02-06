@@ -9,7 +9,6 @@ class Validator(abc.ABC):
 
 
 class NeuronConnectomeValidator(Validator):
-
     class NeuronConnectomeValidatorError(Exception):
         pass
 
@@ -26,14 +25,14 @@ class NeuronConnectomeValidator(Validator):
 
 
 class DisagreeingEdgesValidatorError(Exception):
-        pass
+    pass
+
 
 class DisagreeingEdgesValidator(Validator):
-
     def __init__(self) -> None:
         pass
 
-    def validate(self, g: nx.Graph, u, v, type=None, exists: bool=True) -> bool:
+    def validate(self, g: nx.Graph, u, v, type=None, exists: bool = True) -> bool:
         """
         Return True if valid.
 

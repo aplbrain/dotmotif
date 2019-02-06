@@ -9,7 +9,7 @@ git push --tags
 python setup.py sdist upload -r pypi
 """
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 setup(
     name="dotmotif",
@@ -18,23 +18,20 @@ setup(
     author_email="jordan.matelsky@jhuapl.edu",
     description=("dotmotif"),
     license="ISC",
-    keywords=[
-        "graph",
-        "motif"
-    ],
+    keywords=["graph", "motif"],
     url="https://github.com/aplbrain/dotmotif/tarball/" + VERSION,
-    packages=['dotmotif'],
+    packages=["dotmotif"],
     scripts=[
         #  'scripts/'
     ],
     classifiers=[],
     install_requires=[
-        'networkx',
-        'numpy',
-        'lark-parser',
-        'docker',
-        'pandas',
-        'py2neo',
-        'dask[dataframe]'
+        "networkx",
+        "numpy",
+        "lark-parser",
+        "docker",
+        "pandas",
+        "py2neo",
+        "dask[dataframe]",
     ],
 )

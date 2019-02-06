@@ -7,15 +7,12 @@ from ...validators import Validator
 
 import networkx as nx
 
+
 class ParserDMv1(Parser):
     """
     """
 
-    _LOOKUP = {
-        "INHIBITS": "INH",
-        "EXCITES":  "EXC",
-        "SYNAPSES": "SYN",
-    }
+    _LOOKUP = {"INHIBITS": "INH", "EXCITES": "EXC", "SYNAPSES": "SYN"}
 
     ACTIONS = {
         ">": "SYNAPSES",
@@ -26,7 +23,6 @@ class ParserDMv1(Parser):
         "-": "SYNAPSES",
     }
 
-
     def __init__(self, validators: List[Validator]) -> None:
         self.validators = validators
 
@@ -34,7 +30,7 @@ class ParserDMv1(Parser):
         """
         """
         G = nx.MultiDiGraph()
-        for line in dm.split('\n'):
+        for line in dm.split("\n"):
             res = self._parse_dm_line(line.strip())
             if res:
                 u, v, action, exists = res
@@ -58,12 +54,9 @@ class ParserDMv1(Parser):
         except ValueError:
             raise ValueError(
                 "Line must be of the form [NEURON_ID, ACTION, NEURON_ID], but got {}.".format(
-                    line)
+                    line
+                )
             )
-        edge_exists = (action[0] != "!")
+        edge_exists = action[0] != "!"
 
-        return (
-            u, v,
-            self.ACTIONS[action[-1]],
-            edge_exists
-        )
+        return (u, v, self.ACTIONS[action[-1]], edge_exists)

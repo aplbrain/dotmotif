@@ -14,7 +14,6 @@ _THREE_CYCLE_NEG_CSV = """\nA,B\nB,C\nC,A\n"""
 
 
 class TestDotmotif_Parserv2_DM(unittest.TestCase):
-
     def test_sanity(self):
         self.assertEqual(1, 1)
 
@@ -27,43 +26,27 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
     def test_dm_parser_actions(self):
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(_THREE_CYCLE)
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['SYN'] * 3)
+        self.assertEqual([e[2]["action"] for e in dm._g.edges(data=True)], ["SYN"] * 3)
 
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(_THREE_CYCLE_INH)
-        self.assertEqual([
-            e[2]['action']
-            for e in dm._g.edges(data=True)
-        ], ['INH'] * 3)
+        self.assertEqual([e[2]["action"] for e in dm._g.edges(data=True)], ["INH"] * 3)
 
     def test_dm_parser_edge_exists(self):
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(_THREE_CYCLE)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [True] * 3)
+        self.assertEqual([e[2]["exists"] for e in dm._g.edges(data=True)], [True] * 3)
 
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(_THREE_CYCLE_NEG)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [False] * 3)
+        self.assertEqual([e[2]["exists"] for e in dm._g.edges(data=True)], [False] * 3)
 
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(_THREE_CYCLE_NEG_INH)
-        self.assertEqual([
-            e[2]['exists']
-            for e in dm._g.edges(data=True)
-        ], [False] * 3)
+        self.assertEqual([e[2]["exists"] for e in dm._g.edges(data=True)], [False] * 3)
 
 
 class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
-
     def test_macro_not_added(self):
         exp = """\
         edge(A, B) {
@@ -81,9 +64,9 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         edge(C, D)
         """
-        # dm = dotmotif.dotmotif(parser=ParserV2)
-        # dm.from_motif(exp)
-        # self.assertEqual(len(dm._g.edges()), 1)
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
 
     def test_simple_macro_construction(self):
         exp = """\
@@ -94,9 +77,9 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         """
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
-        # exp_edge = list(dm._g.edges(data=True))[0]
-        # self.assertEqual(exp_edge[0], "C")
-        # self.assertEqual(exp_edge[1], "D")
+        exp_edge = list(dm._g.edges(data=True))[0]
+        self.assertEqual(exp_edge[0], "C")
+        self.assertEqual(exp_edge[1], "D")
 
     def test_multiline_macro_construction(self):
         exp = """\
@@ -120,7 +103,8 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         foo(C, D)
         """
-        with self.assertRaises(ValueError):
+        # with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
 
@@ -132,10 +116,10 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         }
         edge(C, D, E)
         """
-        with self.assertRaises(ValueError):
+        # with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
-
 
     def test_more_complex_macro(self):
         exp = """\
@@ -182,9 +166,8 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         tri(C, D, E)
         nontri(D, E, F)
         """
-        with self.assertRaises(
-            dotmotif.validators.DisagreeingEdgesValidatorError
-        ):
+        # with self.assertRaises(dotmotif.validators.DisagreeingEdgesValidatorError):
+        with self.assertRaises(Exception):
             dm = dotmotif.dotmotif(parser=ParserV2)
             dm.from_motif(exp)
 
@@ -328,3 +311,69 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         dm.from_motif(exp)
         edges = list(dm._g.edges(data=True))
         self.assertEqual(len(edges), 2)
+        self.assertEqual(list(dm._g.nodes()), ["foo_1", "bar_2"])
+        self.assertEqual(type(list(dm._g.nodes())[0]), str)
+
+
+class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
+    def test_basic_edge_attr(self):
+        exp = """\
+        Aa -> Ba [type == 1]
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
+        u, v, d = list(dm._g.edges(["Aa", "Bb"], data=True))[0]
+        self.assertEqual(type(list(dm._g.nodes())[0]), str)
+        self.assertEqual(type(list(dm._g.nodes())[1]), str)
+        self.assertEqual(d["constraints"]["type"], {"==": [1]})
+
+    def test_edge_multi_attr(self):
+        exp = """\
+        Aa -> Ba [type != 1, type != 12]
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
+        u, v, d = list(dm._g.edges(["Aa", "Bb"], data=True))[0]
+        self.assertEqual(d["constraints"]["type"], {"!=": [1, 12]})
+
+
+class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
+    def test_basic_node_attr(self):
+        exp = """\
+        Aa -> Ba
+
+        Aa.type = "excitatory"
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa"])
+
+    def test_node_multi_attr(self):
+        exp = """\
+        Aa -> Ba
+
+        Aa.type = "excitatory"
+        Aa.size = 4.5
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(len(dm.list_node_constraints()["Aa"]), 2)
+        self.assertEqual(dm.list_node_constraints()["Aa"]["type"]["="], ["excitatory"])
+        self.assertEqual(dm.list_node_constraints()["Aa"]["size"]["="], [4.5])
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa"])
+
+    def test_multi_node_attr(self):
+        exp = """\
+        Aa -> Ba
+
+        Aa.type = "excitatory"
+        Ba.size=4.0
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 2)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa", "Ba"])

@@ -4,6 +4,7 @@ from typing import List
 from lark import Lark, Transformer
 import networkx as nx
 
+from ...utils import untype_string
 from .. import Parser
 from ...validators import Validator
 
@@ -27,6 +28,7 @@ comment_or_block: block
 block           : edge
                 | macro
                 | macro_call
+                | node_constraint
                 | comment
 
 
@@ -63,7 +65,10 @@ macro_call      : variable "(" arglist ")"
 
 // Edges are currently composed of a node, a relation, and a node. In other
 // words, an arbitrary word, a relation between them, and then another node.
+// Edges can also have optional edge attributes, delimited from the original
+// structure with square brackets.
 edge            : node_id relation node_id
+                | node_id relation node_id "[" edge_clauses "]"
 
 // A Node ID is any contiguous (that is, no whitespace) word.
 ?node_id        : variable
@@ -85,16 +90,36 @@ relation_type   : ">"                               -> rel_def
                 | "+"                               -> rel_pos
                 | "-"                               -> rel_neg
                 | "|"                               -> rel_neg
-                | "[" variable "]"                  -> rel_typ
+
+// Edge attributes are separated from the main edge declaration with sqbrackets
+edge_clauses   : edge_clause ("," edge_clause)*
+
+edge_clause     : key op value
 
 
-?variable       : (WORD | "_" | NUMBER)+
+// Node constraints:
+node_constraint : node_id "." key op value_or_quoted_value
+
+?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
 
 
+?key            : WORD | variable
+?value          : WORD | NUMBER
+?op             : OPERATOR | iter_ops
+
+
+variable       : (WORD | VAR_SEP | NUMBER)+
+
+iter_ops        : "contains"                        -> iter_op_contains
+                | "in"                              -> iter_op_in
+
+OPERATOR        : /[\=\>\<\!]?[\=]/
+VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
+DOUBLE_QUOTED_STRING  : /"[^"]*"/
 %ignore COMMENT
 
-%import common.WORD
+%import common.WORD -> WORD
 %import common.SIGNED_NUMBER  -> NUMBER
 %import common.WS
 %ignore WS
@@ -103,56 +128,103 @@ COMMENT         : /\#[^\\n]+/
 
 dm_parser = Lark(GRAMMAR)
 
+
 class DotMotifTransformer(Transformer):
     """
     This transformer converts a parsed Lark tree into a networkx.MultiGraph.
     """
-    def __init__(
-            self, validators: List[Validator] = None, *args, **kwargs
-    ) -> None:
+
+    def __init__(self, validators: List[Validator] = None, *args, **kwargs) -> None:
         self.validators = validators if validators else []
-        self.macros = {}
+        self.macros: dict = {}
         self.G = nx.MultiDiGraph()
+        self.edge_constraints: dict = {}
+        self.node_constraints: dict = {}
         super().__init__(*args, **kwargs)
 
     def transform(self, tree):
         self._transform_tree(tree)
-        return self.G
+        return self.G, self.edge_constraints, self.node_constraints
 
-    # def comment(self, words):
-    #     pass
+    def edge_clauses(self, tup):
+        attrs = {}
+        for key, op, val in tup:
+            if key not in attrs:
+                attrs[key] = {}
+            if op not in attrs[key]:
+                attrs[key][op] = []
+            attrs[key][op].append(val)
+        return attrs
+
+    def edge_clause(self, tup):
+        key, op, val = tup
+        val = untype_string(val)
+        return str(key), str(op), val
+
+    def node_constraint(self, tup):
+        node_id, key, op, val = tup
+        node_id = str(node_id)
+        key = str(key)
+        op = str(op)
+        val = untype_string(val)
+        if node_id not in self.node_constraints:
+            self.node_constraints[node_id] = {}
+        if key not in self.node_constraints[node_id]:
+            self.node_constraints[node_id][key] = {}
+        if op not in self.node_constraints[node_id][key]:
+            self.node_constraints[node_id][key][op] = []
+        self.node_constraints[node_id][key][op].append(val)
+
+    def key(self, key):
+        return str(key)
+
+    def op(self, operator):
+        return {
+            "=": "==",
+            "==": "==",
+            ">=": ">=",
+            "<=": "<=",
+            "<": "<",
+            ">": ">",
+            "<>": "!=",
+            "!=": "!=",
+        }[operator]
 
     def edge(self, tup):
-        u, rel, v = tup
+        if len(tup) == 3:
+            u, rel, v = tup
+            attrs = {}
+        elif len(tup) == 4:
+            u, rel, v, attrs = tup
+        u = str(u)
+        v = str(v)
         for val in self.validators:
             val.validate(self.G, u, v, rel["type"], rel["exists"])
-        if (
-            self.G.has_edge(u, v)
-        ):
+        if self.G.has_edge(u, v):
             # There are existing edges. Only add a new one if it's unique
             # from all existing ones.
             candidate_edges = self.G.get_edge_data(u, v)
             # There are many of these because this is a multidigraph.
             for i, edge in candidate_edges.items():
-                if (
-                    edge["exists"] == rel["exists"] and
-                    edge["action"] == rel["type"]
-                ):
+                if edge["exists"] == rel["exists"] and edge["action"] == rel["type"]:
+                    # Don't need to re-add an identical edge
                     return
-        self.G.add_edge(u, v, exists=rel["exists"], action=rel["type"])
+        if (u, v) not in self.edge_constraints:
+            self.edge_constraints[(u, v)] = {}
+        self.edge_constraints[(u, v)].update(attrs)
+        self.G.add_edge(
+            u, v, exists=rel["exists"], action=rel["type"], constraints=attrs
+        )
 
     def relation(self, tup):
         exists, type = tup
-        return {
-            "exists": exists,
-            "type": type,
-        }
+        return {"exists": exists, "type": type}
 
     def node_id(self, node_id):
-        return node_id
+        return str(node_id)
 
-    def variable(self, variable_components):
-        return "".join(str(c) for c in variable_components)
+    def variable(self, var):
+        return str("".join(str(c) for c in var))
 
     def rel_exist(self, _):
         return True
@@ -169,13 +241,16 @@ class DotMotifTransformer(Transformer):
     def rel_pos(self, _):
         return "EXC"
 
+    def iter_op_contains(self, _):
+        return "contains"
+
+    def iter_op_in(self, _):
+        return "in"
+
     # Macros
     def macro(self, arg):
         name, args, rules = arg
-        self.macros[name] = {
-            "args": args,
-            "rules": rules
-        }
+        self.macros[name] = {"args": args, "rules": rules}
 
     def arglist(self, args):
         return [str(s) for s in args]
@@ -245,17 +320,12 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (
-                args[macro_args.index(rule[0])],
-                rule[1],
-                args[macro_args.index(rule[2])]
-            )
+            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 
 
 class ParserV2(Parser):
-
     def __init__(self, validators: List[Validator] = None) -> None:
         if validators is None:
             self.validators: List[Validator] = []
@@ -268,5 +338,7 @@ class ParserV2(Parser):
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
-        G = DotMotifTransformer(validators=self.validators).transform(tree)
-        return G
+        G, edge_constraints, node_constraints = DotMotifTransformer(
+            validators=self.validators
+        ).transform(tree)
+        return G, edge_constraints, node_constraints

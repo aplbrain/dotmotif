@@ -3,6 +3,7 @@ import abc
 
 import networkx as nx
 
+
 class Parser(abc.ABC):
     ...
 

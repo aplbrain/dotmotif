@@ -1,3 +1,10 @@
+
+- **0.4.0**
+    - DSL:
+        - Support for node and edge attributes in non-template contexts
+    - Executors:
+        - `NetworkxExecutor`
+            - Support for attribute filtering
 - **0.3.0**
     - Overhaul of DotMotif Parsers
         - Implement EBNF spec of language, and complete parser (`lark`)

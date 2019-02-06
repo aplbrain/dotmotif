@@ -20,9 +20,10 @@ import networkx as nx
 from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
+
 
 class MotifError(ValueError):
     pass
@@ -53,18 +54,19 @@ class dotmotif:
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
-        self.validators = kwargs.get("validators", [
-            DisagreeingEdgesValidator()
-        ])
+        self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
             "INHIBITS": "INH",
-            "EXCITES":  "EXC",
+            "EXCITES": "EXC",
             "SYNAPSES": "SYN",
-            "INH":      "INH",
-            "EXC":      "EXC",
-            "SYN":      "SYN",
+            "INH": "INH",
+            "EXC": "EXC",
+            "SYN": "SYN",
         }
         self._g = nx.MultiDiGraph()
+
+        self._edge_constraints = {}
+        self._node_constraints = {}
 
     def from_motif(self, cmd: str):
         """
@@ -78,10 +80,17 @@ class dotmotif:
 
         """
         if len(cmd.split("\n")) is 1:
-            cmd = open(cmd, 'r').read()
+            try:
+                cmd = open(cmd, "r").read()
+            except FileNotFoundError:
+                pass
 
-        self.cmd = cmd
-        self._g = self.parser(validators=self.validators).parse(self.cmd)
+        result = self.parser(validators=self.validators).parse(cmd)
+        if isinstance(result, tuple):
+            self._g, self._edge_constraints, self._node_constraints = result
+        else:
+            # For backwards compatibility with parser v1
+            self._g = result
 
         return self
 
@@ -108,3 +117,9 @@ class dotmotif:
 
         """
         return self._g
+
+    def list_edge_constraints(self):
+        return self._edge_constraints
+
+    def list_node_constraints(self):
+        return self._node_constraints
