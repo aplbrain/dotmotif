@@ -56,13 +56,4 @@ You can chain the entire operation into one single command using the chaining fu
 dm = dotmotif().from_motif("threecycle.motif").to_cypher()
 ```
 
-----
-
-```
-docker run -e NEO4J_AUTH=neo4j1/neo4j1 -p 7474:7474 -p 7687:7687 -v $(pwd)/import:/_import_csv --volume=$(pwd)/data:/data neo4j:3.4 /bin/bash
-
-docker run -e NEO4J_AUTH=neo4j1/neo4j1 -p 7474:7474 -p 7687:7687 -v $(pwd)/import:/_import_csv neo4j:3.4 /bin/bash
-
-./bin/neo4j-admin import --id-type STRING --nodes:Neuron /_import_csv/neurons.csv --relationships:SYN /_import_csv/synapses.csv && neo4j start
-
-```
+Learn more about motif constraints [here](attributes.md).
