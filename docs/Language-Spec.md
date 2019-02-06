@@ -1,43 +1,12 @@
-# v1.0 (October 23, 2018)
-
-```
-S -> T
-T -> nERn   | TDT | c  | ε
-R -> >      | +   | ~  | ?
-E -> -      | !   | ?
-D -> ;      | \n
-n -> /\S+/
-c -> /\#.*/
-```
-
-For example, the following notates that nodes `α`, `β`, and `γ` form a triangle:
-
-```
-α -> β
-β -> γ
-γ -> α
-```
-
-This example demonstrates that `α`, `β`, `γ`, and `λ` form a directed 4-cycle with no diagonals:
-
-```
-# Directed 4-cycle:
-α -> β
-β -> γ
-γ -> λ
-λ -> α
-
-# No diagonals:
-α !> γ
-γ !> α
-β !> λ
-λ !> β
-```
-
-Note that comments, prefixed with a `#` character, are valid syntax.
+# Current version: v2.1 (February 6, 2019)
 
 
-# v2.0 (Under Development)
+
+
+
+# Older versions
+
+## v2.0
 
 ```
 // See Extended Backus-Naur Form for more details.
@@ -167,3 +136,41 @@ unidirectionalTriangle(x, y, z) {
 unidirectionalTriangle(A, B, C)
 unidirectionalTriangle(C, D, E)
 ```
+
+## v1.0 (October 23, 2018)
+
+```
+S -> T
+T -> nERn   | TDT | c  | ε
+R -> >      | +   | ~  | ?
+E -> -      | !   | ?
+D -> ;      | \n
+n -> /\S+/
+c -> /\#.*/
+```
+
+For example, the following notates that nodes `α`, `β`, and `γ` form a triangle:
+
+```
+α -> β
+β -> γ
+γ -> α
+```
+
+This example demonstrates that `α`, `β`, `γ`, and `λ` form a directed 4-cycle with no diagonals:
+
+```
+# Directed 4-cycle:
+α -> β
+β -> γ
+γ -> λ
+λ -> α
+
+# No diagonals:
+α !> γ
+γ !> α
+β !> λ
+λ !> β
+```
+
+Note that comments, prefixed with a `#` character, are valid syntax.
