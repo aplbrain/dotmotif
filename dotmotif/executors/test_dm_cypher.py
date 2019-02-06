@@ -117,7 +117,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
 
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(dm).strip(),
-            """MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\nWHERE A.personality != "exciting" AND A.personality != "funny"\nRETURN DISTINCT A,B""".strip(),
+            """MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\nWHERE A.personality <> "exciting" AND A.personality <> "funny"\nRETURN DISTINCT A,B""".strip(),
         )
 
     def test_cypher_node_many_node_attributes(self):
@@ -133,4 +133,26 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(dm).strip(),
             """MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\nWHERE A.area <= 10 AND B.area <= 10\nRETURN DISTINCT A,B""".strip(),
+        )
+
+
+class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
+
+    def test_cypher_node_and_edge_attributes(self):
+        dm = dotmotif.dotmotif()
+        dm.from_motif(
+            """
+        A -> B [area != 10]
+        A.area <= 10
+        B.area <= 10
+        """
+        )
+
+        self.assertEqual(
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
+            (
+                "MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\n"
+                "WHERE A_B.area <> 10 AND A.area <= 10 AND B.area <= 10\n"
+                "RETURN DISTINCT A,B"
+            ).strip(),
         )

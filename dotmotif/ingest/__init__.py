@@ -77,7 +77,7 @@ class NetworkXIngester(Ingester):
             + "\n"
             + "\n".join(
                 [
-                    i + "," + ",".join([str(n.get(k, "") for k in sorted_node_attrs)])
+                    (i + "," + ",".join([str(n.get(k, "")) for k in sorted_node_attrs]))
                     for i, n in self.graph.nodes(True)
                 ]
             )

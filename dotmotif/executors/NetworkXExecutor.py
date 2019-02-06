@@ -175,20 +175,6 @@ class NetworkXExecutor(Executor):
         results = [
             {v: k for k, v in r.items()} for r in gm.subgraph_isomorphisms_iter()
         ]
-        print("\n")
-        for r in results:
-            print(
-                r,
-                motif.list_edge_constraints(),
-                self.graph.edges(data=True),
-                (
-                    self._validate_edge_constraints(
-                        r, self.graph, motif.list_edge_constraints()
-                    ), self._validate_node_constraints(
-                        r, self.graph, motif.list_node_constraints()
-                    )
-            )
-            )
         res = [
             r
             for r in results

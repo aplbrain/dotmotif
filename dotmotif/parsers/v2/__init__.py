@@ -104,12 +104,15 @@ node_constraint : node_id "." key op value_or_quoted_value
 ?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
 
 
-?key            : WORD
+?key            : WORD | variable
 ?value          : WORD | NUMBER
-?op             : OPERATOR
+?op             : OPERATOR | iter_ops
 
 
 variable       : (WORD | VAR_SEP | NUMBER)+
+
+iter_ops        : "contains"                        -> iter_op_contains
+                | "in"                              -> iter_op_in
 
 OPERATOR        : /[\=\>\<\!]?[\=]/
 VAR_SEP         : /[\_\-]/
@@ -238,6 +241,12 @@ class DotMotifTransformer(Transformer):
 
     def rel_pos(self, _):
         return "EXC"
+
+    def iter_op_contains(self, _):
+        return "contains"
+
+    def iter_op_in(self, _):
+        return "in"
 
     # Macros
     def macro(self, arg):
