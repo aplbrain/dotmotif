@@ -69,19 +69,54 @@ class Neo4jExecutor(Executor):
         If there is no existing database and you do not pass in a graph, you
         must pass an `import_directory`, which the container will mount as an
         importable CSV resource.
+
+        Arguments:
+            db_bolt_uri (str): If connecting to an existing server, the URI
+                of the server (including the port, probably 7474).
+            username (str: "neo4j"): The username to use to attach to an
+                existing server.
+            password (str): The password to use to attach to an existing server.
+            graph (nx.Graph): If provisioning a new database, the networkx
+                graph to import into the database.
+            import_directory (str): If provisioning a new database, the local
+                directory to crawl for CSVs to import into the Neo4j database.
+                Commonly used when you want to quickly and easily start a new
+                Executor that uses the export from a previous graph.
+            autoremove_container (bool: True): Whether to delete the container
+                when the executor is deconstructed. Set to False if you'd like
+                to be able to connect with other executors after the first one
+                has closed.
+            max_memory (str: "4G"): The maximum amount of memory to provision.
+            initial_memory (str: "2G"): The starting heap-size for the Neo4j
+                container's JVM.
+            max_retries (int: 20): The number of times DotMotif should try to
+                connect to the neo4j container before giving up.
+
         """
 
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._max_memory_size: str = kwargs.get("max_memory", "8G")
+        self._autoremove_container: str = kwargs.get(
+            "autoremove_container", True
+        )
+        self._max_memory_size: str = kwargs.get("max_memory", "4G")
+        self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
-        self._initial_heap_size: str = kwargs.get("initial_memory", "4G")
 
         graph: nx.Graph = kwargs.get("graph", None)
         import_directory: str = kwargs.get("import_directory", None)
 
         self._created_container = False
+
+        if (
+            (db_bolt_uri and graph) or
+            (db_bolt_uri and import_directory) or
+            (import_directory and graph)
+        ):
+            raise ValueError(
+                "Specify EXACTLY ONE of db_bolt_uri/graph/import_directory."
+            )
 
         if db_bolt_uri and password:
             # Authentication information was provided. Use this to log in and
@@ -132,7 +167,7 @@ class Neo4jExecutor(Executor):
             ./bin/neo4j-admin set-initial-password neo4jpw &&
             ./bin/neo4j start &&
             tail -f /dev/null'""",
-            # auto_remove=True,
+            auto_remove=self._autoremove_container,
             detach=True,
             environment={
                 "NEO4J_dbms_memory_heap_initial__size": self._initial_heap_size,
@@ -150,15 +185,16 @@ class Neo4jExecutor(Executor):
                 res = requests.get("http://localhost:7474")
                 if res.status_code == 200:
                     container_is_ready = True
-            except:
-                pass
-            else:
-                tries += 1
-                time.sleep(2)
-                if tries > self.max_retries:
-                    raise IOError(
-                        f"Could not connect to neo4j container {self._running_container}."
-                    )
+                else:
+                    tries += 1
+                    time.sleep(2)
+                    if tries > self.max_retries:
+                        raise IOError(
+                            f"Could not connect to neo4j container {self._running_container}."
+                            "For more information, see Troubleshooting-Neo4jExecutor.md in the docs."
+                        )
+            except requests.RequestException as e:
+                raise requests.RequestException("Failed to reach Neo4j HTTP server.") from e
         self.G = Graph(password="neo4jpw")
 
     def _teardown_container(self):
