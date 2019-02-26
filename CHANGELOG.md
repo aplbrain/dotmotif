@@ -4,7 +4,9 @@
         - Support for node and edge attributes in non-template contexts
     - Executors:
         - `NetworkxExecutor`
-            - Support for attribute filtering
+            - Support for node and edge constraints
+        - `Neo4jExecutor`
+            - Support for node and edge constraints
 - **0.3.0**
     - Overhaul of DotMotif Parsers
         - Implement EBNF spec of language, and complete parser (`lark`)

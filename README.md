@@ -13,9 +13,9 @@ You can currently write motifs in dotmotif form, which is a DSL that specializes
 `threecycle.motif`
 ```
 # A excites B
-A -+ B
+A -> B [type = "excitatory"]
 # B inhibits C
-B -| C
+B -> C [type = "inhibitory"]
 ```
 
 ## Ingesting the motif into dotmotif
