@@ -27,18 +27,13 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
             for value in values:
                 keyvalue_or_none = edge_attributes.get(key, None)
                 try:
-                    operator_success = operators[operator](
-                        keyvalue_or_none, value
-                    )
-                except TypeError as e:
+                    operator_success = operators[operator](keyvalue_or_none, value)
+                except TypeError:
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
                     # # TODO: unless you tried a comparison
                     # against an undefined value (i.e. VALUE >= undefined)
                     return False
-                    # raise TypeError(
-                    #     f"Failed to compare key '{key}' ({edge_attributes.get(key, None)}) with value {value}."
-                    # ) from e
                 if not operator_success:
                     # Fail fast, if any edge attributes fail the test
                     return False

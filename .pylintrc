@@ -11,14 +11,14 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=test_*
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
 #init-hook=
 
 # Use multiple processes to speed up Pylint.
-jobs=1
+jobs=4
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.

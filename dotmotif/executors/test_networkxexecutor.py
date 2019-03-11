@@ -196,9 +196,7 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
             self.assertTrue(_edge_satisfies_constraints(a, constraints))
 
 
-
 class TestSmallMotifs(unittest.TestCase):
-
     def test_edgecount_motif(self):
         dm = dotmotif.dotmotif()
         dm.from_motif("""A->B""")

@@ -1,5 +1,6 @@
+# Changelog
 
-- **0.4.0**
+- [**0.4.0**](https://github.com/aplbrain/dotmotif/releases/tag/v0.4.0) (February 26, 2019)
     - DSL:
         - Support for node and edge attributes in non-template contexts
     - Executors:

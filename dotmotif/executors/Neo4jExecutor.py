@@ -11,17 +11,12 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
+limitations under the License.`
 """
 
 from itertools import product
 import os
 import time
-
-import pandas as pd
-import networkx as nx
-import random
-import string
 
 import docker
 from py2neo import Graph
@@ -93,13 +88,10 @@ class Neo4jExecutor(Executor):
                 connect to the neo4j container before giving up.
 
         """
-
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get(
-            "autoremove_container", True
-        )
+        self._autoremove_container: str = kwargs.get("autoremove_container", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -110,9 +102,9 @@ class Neo4jExecutor(Executor):
         self._created_container = False
 
         if (
-            (db_bolt_uri and graph) or
-            (db_bolt_uri and import_directory) or
-            (import_directory and graph)
+            (db_bolt_uri and graph)
+            or (db_bolt_uri and import_directory)
+            or (import_directory and graph)
         ):
             raise ValueError(
                 "Specify EXACTLY ONE of db_bolt_uri/graph/import_directory."
@@ -172,6 +164,7 @@ class Neo4jExecutor(Executor):
             environment={
                 "NEO4J_dbms_memory_heap_initial__size": self._initial_heap_size,
                 "NEO4J_dbms_memory_heap_max__size": self._max_memory_size,
+                "NEO4J_dbms_security_procedures_unrestricted": "apoc.\\\*",
             },
             volumes={f"{os.getcwd()}/{import_dir}": {"bind": "/import", "mode": "ro"}},
             ports={7474: 7474, 7687: 7687},
@@ -191,10 +184,12 @@ class Neo4jExecutor(Executor):
                     if tries > self.max_retries:
                         raise IOError(
                             f"Could not connect to neo4j container {self._running_container}."
-                            "For more information, see Troubleshooting-Neo4jExecutor.md in the docs."
+                            "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
                         )
             except requests.RequestException as e:
-                raise requests.RequestException("Failed to reach Neo4j HTTP server.") from e
+                raise requests.RequestException(
+                    "Failed to reach Neo4j HTTP server."
+                ) from e
         self.G = Graph(password="neo4jpw")
 
     def _teardown_container(self):
@@ -248,13 +243,11 @@ class Neo4jExecutor(Executor):
 
         motif_graph = motif.to_nx()
 
-        # This will hold the edge mapping of (u, v) in the motif to the random
         # ID that is assigned to it so that it can hold constraints later on.
         edge_mapping = {}
 
         for u, v, a in motif_graph.edges(data=True):
             action = motif._LOOKUP[a["action"]]
-            # edge_id = random_id()
             edge_id = "{}_{}".format(u, v)
             edge_mapping[(u, v)] = edge_id
             if a["exists"]:
@@ -309,8 +302,11 @@ class Neo4jExecutor(Executor):
                             )
                         )
         if [*cypher_node_constraints, *cypher_edge_constraints]:
-            q_match += delim + "WHERE " + \
-                " AND ".join([*cypher_edge_constraints, *cypher_node_constraints])
+            q_match += (
+                delim
+                + "WHERE "
+                + " AND ".join([*cypher_edge_constraints, *cypher_node_constraints])
+            )
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 

@@ -1,5 +1,7 @@
 """
 Test Cypher conversion system.
+
+Doesn't check validity of output; just matchiness to test strings.
 """
 
 import unittest
@@ -137,7 +139,6 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
 
 
 class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
-
     def test_cypher_node_and_edge_attributes(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(
