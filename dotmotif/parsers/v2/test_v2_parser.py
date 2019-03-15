@@ -314,6 +314,15 @@ class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
         self.assertEqual(list(dm._g.nodes()), ["foo_1", "bar_2"])
         self.assertEqual(type(list(dm._g.nodes())[0]), str)
 
+        new_exp = """
+        L1 -> Mi1
+        L1 -> Tm3
+        L3 -> Mi9
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(new_exp)
+        self.assertEqual(list(dm._g.nodes()), ["L1", "Mi1", "Tm3", "L3", "Mi9"])
+
 
 class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
     def test_basic_edge_attr(self):
