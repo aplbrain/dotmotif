@@ -108,11 +108,12 @@ node_constraint : node_id "." key op value_or_quoted_value
 ?op             : OPERATOR | iter_ops
 
 
-variable       : (WORD | VAR_SEP | NUMBER)+
+variable       : NAME
 
 iter_ops        : "contains"                        -> iter_op_contains
                 | "in"                              -> iter_op_in
 
+NAME            : /[a-zA-Z_-]\w*/
 OPERATOR        : /[\=\>\<\!]?[\=]/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /\#[^\\n]+/
