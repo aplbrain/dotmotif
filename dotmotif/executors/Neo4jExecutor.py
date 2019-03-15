@@ -180,16 +180,20 @@ class Neo4jExecutor(Executor):
                     container_is_ready = True
                 else:
                     tries += 1
-                    time.sleep(2)
                     if tries > self.max_retries:
                         raise IOError(
                             f"Could not connect to neo4j container {self._running_container}."
                             "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
                         )
+                    time.sleep(2)
             except requests.RequestException as e:
-                raise requests.RequestException(
-                    "Failed to reach Neo4j HTTP server."
-                ) from e
+                tries += 1
+                if tries > self.max_retries:
+                    raise IOError(
+                        f"Could not connect to neo4j container {self._running_container}."
+                        "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
+                    )
+                time.sleep(2)
         self.G = Graph(password="neo4jpw")
 
     def _teardown_container(self):
