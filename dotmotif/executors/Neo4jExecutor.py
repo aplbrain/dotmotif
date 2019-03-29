@@ -49,6 +49,8 @@ def _remapped_operator(op):
 class Neo4jExecutor(Executor):
     """
     A Neo4j executor that runs Cypher queries against a running Neo4j database.
+
+    .
     """
 
     def __init__(self, **kwargs) -> None:
@@ -138,6 +140,11 @@ class Neo4jExecutor(Executor):
             )
 
     def __del__(self):
+        """
+        Destroy the docker container from the running processes.
+
+        Also will handle (TODO) other teardown actions.
+        """
         if self._created_container:
             self._teardown_container()
 
@@ -269,7 +276,7 @@ class Neo4jExecutor(Executor):
 
         delim = "\n" if motif.pretty_print else " "
 
-        if len(es_neg):
+        if es_neg:
             q_match = delim.join(
                 [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)]
             )
@@ -320,7 +327,10 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            q_not_eqs = "WHERE " + " AND ".join(
+            q_not_eqs = (
+                # If this is the first constraint, use WHERE. Otherwise, use AND
+                "AND " if q_match else "WHERE "
+            ) + " AND ".join(
                 set(
                     [
                         "<>".join(sorted(a))

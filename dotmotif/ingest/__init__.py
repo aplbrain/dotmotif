@@ -27,6 +27,12 @@ class Ingester:
 
 
 class FileIngester(Ingester):
+    """
+    Base class for ingester from a file on disk (or file-like).
+
+    Abstract class, should not be used directly.
+    """
+
     def __init__(self, path: str, export_dir: str) -> None:
         """
         Store the path and export directory of this ingester.
@@ -42,11 +48,30 @@ class FileIngester(Ingester):
 
 
 class NetworkXIngester(Ingester):
+    """
+    An ingester from the NetworkX in-memory format.
+
+    .
+    """
+
     def __init__(self, graph: nx.Graph, export_dir: str) -> None:
+        """
+        Create a new ingester from networkx format.
+
+        Arguments:
+            graph (nx.Graph): The in-memory graph to ingest
+            export_dir (str): The path to the CSV directory to use
+
+        """
         self.export_dir = export_dir.rstrip("/") + "/"
         self.graph = graph
 
     def ingest(self) -> List[str]:
+        """
+        Perform the ingest into a list of CSV filenames.
+
+        .
+        """
         # Export the graph to CSV (nodes and edges):
 
         all_node_attrs = {}
@@ -84,7 +109,9 @@ class NetworkXIngester(Ingester):
         )
 
         # This huge mess is type inference to make the exported file convey the
-        # types of the attributes, if available. String is the default.
+        # types of the attributes, if available. String is the default, and is
+        # used if multiple datatypes are detected (for example, str and int
+        # defaults to String. int and float default to float.)
         # TODO: Can probably be cleaned up!
         all_edge_attrs = {}
         for _, _, a in self.graph.edges(data=True):
@@ -94,11 +121,15 @@ class NetworkXIngester(Ingester):
                     if isinstance(val, all_edge_attrs[key]):
                         pass
                     else:
+                        # Set the "expected type" the first time you see the
+                        # attribute in the entries
                         all_edge_attrs[key] = str
                 else:
                     if isinstance(val, (float, int)):
+                        # Set the dtype to float (which includes all ints)
                         all_edge_attrs[key] = float
                     else:
+                        # Set the dtype to string; we couldn't be more specific
                         all_edge_attrs[key] = str
 
         for k, v in all_edge_attrs.items():
@@ -148,12 +179,16 @@ class PrincetonIngester(FileIngester):
     def __init__(self, path: str, export_dir: str) -> None:
         """
         Create a new ingester.
+
+        .
         """
         super().__init__(path, export_dir)
 
     def ingest(self) -> List[str]:
         """
         Ingest using dask and pandas.
+
+        .
         """
         df = dd.read_csv(self.path).dropna()
         export_df = df.copy()
