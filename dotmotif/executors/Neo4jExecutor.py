@@ -327,7 +327,10 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            q_not_eqs = "WHERE " + " AND ".join(
+            q_not_eqs = (
+                # If this is the first constraint, use WHERE. Otherwise, use AND
+                "AND " if q_match else "WHERE "
+            ) + " AND ".join(
                 set(
                     [
                         "<>".join(sorted(a))
