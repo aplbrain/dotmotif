@@ -177,7 +177,8 @@ class Neo4jExecutor(Executor):
             self._container_port
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
-            import_path=import_dir
+            import_path=f"{os.getcwd()}/{import_dir}",
+            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """
         )
         self._created_container = True
         container_is_ready = False
