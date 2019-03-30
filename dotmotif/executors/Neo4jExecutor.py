@@ -17,10 +17,12 @@ limitations under the License.`
 from itertools import product
 import os
 import time
+from uuid import uuid4
 
 import docker
 from py2neo import Graph
 import requests
+import tamarind
 
 # Types only:
 from py2neo.data import Table
@@ -102,6 +104,7 @@ class Neo4jExecutor(Executor):
         import_directory: str = kwargs.get("import_directory", None)
 
         self._created_container = False
+        self._tamarind_provisioner = None
 
         if (
             (db_bolt_uri and graph)
@@ -129,9 +132,19 @@ class Neo4jExecutor(Executor):
             except Exception as e:
                 raise ValueError(f"Could not export graph: {e}")
 
+            self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
+                autoremove_container=self._autoremove_container,
+                max_memory_size=self._max_memory_size,
+                initial_heap_size=self._initial_heap_size,
+            )
             self._create_container(export_dir)
 
         elif import_directory:
+            self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
+                autoremove_container=self._autoremove_container,
+                max_memory_size=self._max_memory_size,
+                initial_heap_size=self._initial_heap_size,
+            )
             self._create_container(import_directory)
 
         else:
@@ -158,54 +171,34 @@ class Neo4jExecutor(Executor):
 
     def _create_container(self, import_dir: str):
         # Create a docker container:
-        self.docker_client = docker.from_env()
-        self._running_container = self.docker_client.containers.run(
-            "neo4j:3.4",
-            command="""
-            bash -c './bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" &&
-            ./bin/neo4j-admin set-initial-password neo4jpw &&
-            ./bin/neo4j start &&
-            tail -f /dev/null'""",
-            auto_remove=self._autoremove_container,
-            detach=True,
-            environment={
-                "NEO4J_dbms_memory_heap_initial__size": self._initial_heap_size,
-                "NEO4J_dbms_memory_heap_max__size": self._max_memory_size,
-                "NEO4J_dbms_security_procedures_unrestricted": "apoc.\\\*",
-            },
-            volumes={f"{os.getcwd()}/{import_dir}": {"bind": "/import", "mode": "ro"}},
-            ports={7474: 7474, 7687: 7687},
-            network_mode="bridge",
+        self._tamarind_container_id = str(uuid4())
+        (
+            self._running_container,
+            self._container_port
+        ) = self._tamarind_provisioner.start(
+            self._tamarind_container_id,
+            import_path=f"{os.getcwd()}/{import_dir}",
+            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """
         )
         self._created_container = True
         container_is_ready = False
         tries = 0
         while not container_is_ready:
             try:
-                res = requests.get("http://localhost:7474")
-                if res.status_code == 200:
-                    container_is_ready = True
-                else:
-                    tries += 1
-                    if tries > self.max_retries:
-                        raise IOError(
-                            f"Could not connect to neo4j container {self._running_container}."
-                            "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
-                        )
-                    time.sleep(2)
-            except requests.RequestException as e:
+                self.G = self._tamarind_provisioner[self._tamarind_container_id]
+                container_is_ready = True
+            except:
                 tries += 1
                 if tries > self.max_retries:
                     raise IOError(
-                        f"Could not connect to neo4j container {self._running_container}."
+                        f"Could not connect to neo4j container {self._running_container}. "
                         "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
                     )
-                time.sleep(2)
-        self.G = Graph(password="neo4jpw")
+                time.sleep(5)
+        self.G = self._tamarind_provisioner[self._tamarind_container_id]
 
     def _teardown_container(self):
-        self._running_container.stop()
-        self._running_container.remove()
+        self._tamarind_provisioner.stop(self._tamarind_container_id)
 
     def run(self, cypher: str, cursor=True) -> Table:
         """
