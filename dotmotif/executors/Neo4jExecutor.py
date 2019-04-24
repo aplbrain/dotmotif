@@ -174,11 +174,11 @@ class Neo4jExecutor(Executor):
         self._tamarind_container_id = str(uuid4())
         (
             self._running_container,
-            self._container_port
+            self._container_port,
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
-            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """
+            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
         )
         self._created_container = True
         container_is_ready = False
@@ -322,7 +322,9 @@ class Neo4jExecutor(Executor):
         if motif.enforce_inequality:
             q_not_eqs = (
                 # If this is the first constraint, use WHERE. Otherwise, use AND
-                "AND " if q_match else "WHERE "
+                "AND "
+                if q_match
+                else "WHERE "
             ) + " AND ".join(
                 set(
                     [
