@@ -1,6 +1,7 @@
 # Changelog
-
-- **0.4.1**
+- **0.4.2**
+    - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
+- **0.4.1** (April 13, 2019)
     - Backend [tamarind](https://github.com/fitmango/tamarind) for provisioning Docker containers.
     - Resolved issue with improper tokenization of variables in DSL
     - Resolved failure to wait the appropriate amount of time before failing to connect to a `Neo4jExecutor` provisioned container
