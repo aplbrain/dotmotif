@@ -15,6 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Union, IO
+import pickle
+
 import networkx as nx
 
 from .parsers.v2 import ParserV2
@@ -123,3 +126,39 @@ class dotmotif:
 
     def list_node_constraints(self):
         return self._node_constraints
+
+    def save(self, fname: Union[str, IO[bytes]]) -> Union[str, IO[bytes]]:
+        """
+        Save the motif to a file on disk.
+
+        Arguments:
+            fname (str): A path on disk for IO
+
+        Returns:
+            Pointer to File-like.
+
+        """
+        if isinstance(fname, str):
+            f = open(fname, 'wb')
+        else:
+            f = fname
+        pickle.dump(self, f)
+        return fname
+
+    @staticmethod
+    def load(fname: Union[str, IO[bytes]]) -> 'dotmotif':
+        """
+        Load the motif from a file on disk.
+
+        Arguments:
+            fname (str): A path on disk for IO
+
+        Returns:
+            Pointer to File-like.
+
+        """
+        if isinstance(fname, str):
+            f = open(fname, 'rb')
+        else:
+            f = fname
+        return pickle.load(f)
