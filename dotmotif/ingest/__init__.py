@@ -192,7 +192,7 @@ class PrincetonIngester(FileIngester):
         """
         df = dd.read_csv(self.path).dropna()
         export_df = df.copy()
-        export_df[":START_ID(Neuron)"] = df["cleft_segid"].astype("int")
+        export_df[":START_ID(Neuron)"] = df["presyn_segid"].astype("int")
         export_df[":END_ID(Neuron)"] = df["postsyn_segid"].astype("int")
         for col in df.columns:
             del export_df[col]
