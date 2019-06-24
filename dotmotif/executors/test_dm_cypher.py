@@ -179,3 +179,14 @@ class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
                 "RETURN DISTINCT A,B"
             ).strip(),
         )
+
+
+class BugReports(unittest.TestCase):
+    def test_fix_where_clause_github_35(self):
+        dm = dotmotif.dotmotif(enforce_inequality=True)
+        dm.from_motif(
+            """
+        A -> B
+        """
+        )
+        self.assertIn("WHERE", Neo4jExecutor.motif_to_cypher(dm).strip())

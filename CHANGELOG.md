@@ -1,6 +1,8 @@
 # Changelog
 - **0.4.2**
     - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
+    - Full support for attributes inside macros
+    - Fix [#35](https://github.com/aplbrain/dotmotif/issues/35), wherein a `WHERE` clause was omitted from the cypher query constructed from the `Neo4jExecutor` under certain conditions
 - **0.4.1** (April 13, 2019)
     - Backend [tamarind](https://github.com/fitmango/tamarind) for provisioning Docker containers.
     - Resolved issue with improper tokenization of variables in DSL

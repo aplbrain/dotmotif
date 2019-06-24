@@ -323,7 +323,7 @@ class Neo4jExecutor(Executor):
             q_not_eqs = (
                 # If this is the first constraint, use WHERE. Otherwise, use AND
                 "AND "
-                if q_match
+                if [*cypher_node_constraints, *cypher_edge_constraints]
                 else "WHERE "
             ) + " AND ".join(
                 set(
