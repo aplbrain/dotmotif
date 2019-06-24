@@ -53,7 +53,8 @@ macro_rules     : macro_block+
 
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro      : node_id relation node_id
-
+                | node_id relation node_id "[" macro_edge_clauses "]"
+                | node_constraint
 
 
 
@@ -93,6 +94,7 @@ relation_type   : ">"                               -> rel_def
 
 // Edge attributes are separated from the main edge declaration with sqbrackets
 edge_clauses   : edge_clause ("," edge_clause)*
+macro_edge_clauses   : edge_clause ("," edge_clause)*
 
 edge_clause     : key op value
 
@@ -257,8 +259,17 @@ class DotMotifTransformer(Transformer):
         return [str(s) for s in args]
 
     def edge_macro(self, tup):
-        u, rel, v = tup
-        return (str(u), rel, str(v))
+        if len(tup) == 3:
+            u, rel, v = tup
+            attrs = {}
+        elif len(tup) == 4:
+            u, rel, v, attrs = tup
+        u = str(u)
+        v = str(v)
+        return (str(u), rel, str(v), attrs)
+
+    def macro_edge_clauses(self, rules):
+        return list(rules)
 
     def macro_rules(self, rules):
         return list(rules)
@@ -293,10 +304,24 @@ class DotMotifTransformer(Transformer):
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg
             # from the macro call.
-            left, rel, right = rule
+            if len(rule) == 3:
+                left, rel, right = rule
+                attrs = {}
+            elif len(rule) == 4:
+                left, rel, right, attrs = rule
+            left = str(left)
+            right = str(right)
             left = args[macro_args.index(left)]
             right = args[macro_args.index(right)]
-            self.edge((left, rel, right))
+            dict_attrs = {}
+            for k, v, a in attrs:
+                if k not in dict_attrs:
+                    dict_attrs[k] = {}
+                if v in dict_attrs[k]:
+                    dict_attrs[k][v].append(a)
+                else:
+                    dict_attrs[k][v] = [a]
+            self.edge((left, rel, right, dict_attrs))
 
     def macro_call_re(self, tup):
         callname, args = tup
@@ -321,7 +346,8 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
+            (args[macro_args.index(rule[0])],
+             rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 
