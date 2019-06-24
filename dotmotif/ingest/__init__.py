@@ -76,7 +76,8 @@ class NetworkXIngester(Ingester):
         for n in self.graph.nodes():
             if isinstance(n, (int, float)):
                 raise ValueError(
-                    "DotMotif does not support haystack graphs with numerical IDs. Not all executors can operate on numerical-ID graphs, and so they are disallowed. Learn more at https://github.com/aplbrain/dotmotif/issues/26")
+                    "DotMotif does not support haystack graphs with numerical IDs. Not all executors can operate on numerical-ID graphs, and so they are disallowed. Learn more at https://github.com/aplbrain/dotmotif/issues/26"
+                )
 
         # Export the graph to CSV (nodes and edges):
         all_node_attrs = {}
