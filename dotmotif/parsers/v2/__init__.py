@@ -50,10 +50,11 @@ macro_rules     : macro_block+
 ?macro_block    : edge_macro
                 | macro_call_re
                 | comment
+                | macro_node_constraint
 
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro      : node_id relation node_id
-
+                | node_id relation node_id "[" macro_edge_clauses "]"
 
 
 
@@ -93,12 +94,14 @@ relation_type   : ">"                               -> rel_def
 
 // Edge attributes are separated from the main edge declaration with sqbrackets
 edge_clauses   : edge_clause ("," edge_clause)*
+macro_edge_clauses   : edge_clause ("," edge_clause)*
 
 edge_clause     : key op value
 
 
 // Node constraints:
 node_constraint : node_id "." key op value_or_quoted_value
+macro_node_constraint : node_id "." key op value_or_quoted_value
 
 ?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
 
@@ -175,6 +178,14 @@ class DotMotifTransformer(Transformer):
         if op not in self.node_constraints[node_id][key]:
             self.node_constraints[node_id][key][op] = []
         self.node_constraints[node_id][key][op].append(val)
+
+    def macro_node_constraint(self, tup):
+        node_id, key, op, val = tup
+        node_id = str(node_id)
+        key = str(key)
+        op = str(op)
+        val = untype_string(val)
+        return ("node_constraint", node_id, key, op, val)
 
     def key(self, key):
         return str(key)
@@ -257,8 +268,19 @@ class DotMotifTransformer(Transformer):
         return [str(s) for s in args]
 
     def edge_macro(self, tup):
-        u, rel, v = tup
-        return (str(u), rel, str(v))
+        if len(tup) == 3:
+            u, rel, v = tup
+            attrs = {}
+        elif len(tup) == 4:
+            u, rel, v, attrs = tup
+        # else:
+        #     print(tup, len(tup))
+        u = str(u)
+        v = str(v)
+        return (str(u), rel, str(v), attrs)
+
+    def macro_edge_clauses(self, rules):
+        return list(rules)
 
     def macro_rules(self, rules):
         return list(rules)
@@ -268,15 +290,20 @@ class DotMotifTransformer(Transformer):
         if callname not in self.macros:
             raise ValueError(
                 f"Tried to invoke macro '{callname}' but "
-                f"macro {callname} does not exist."
+                f"macro '{callname}' does not exist."
             )
         macro = self.macros[callname]
         macro_args = macro["args"]
+        if isinstance(args, str):
+            args = [args]
         if len(macro_args) != len(args):
             raise ValueError(
                 f"Tried to invoke macro '{callname}' with "
-                f"{len(args)} arguments, but {callname} takes "
+                f"{len(args)} arguments, but '{callname}' takes "
                 f"{len(macro_args)} arguments."
+                f"\n"
+                f"Called With:     {args}\n"
+                f"Macro Arguments: {macro_args}"
             )
 
         # Else, append the macro to the graph:
@@ -289,14 +316,36 @@ class DotMotifTransformer(Transformer):
                     all_rules.append(r)
 
         for rule in all_rules:
+            if len(rule) == 3:
+                # This is a structural edge with no constraints.
+                left, rel, right = rule
+                attrs = {}
+            elif len(rule) == 4:
+                # This is an edge with attributes.
+                left, rel, right, attrs = rule
+            else:
+                # This is a node constraint!
+                _, node, key, op, val = rule
+                node = args[macro_args.index(node)]
+                self.node_constraint((node, key, op, val))
+                continue
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg
             # from the macro call.
-            left, rel, right = rule
+            left = str(left)
+            right = str(right)
             left = args[macro_args.index(left)]
             right = args[macro_args.index(right)]
-            self.edge((left, rel, right))
+            dict_attrs = {}
+            for k, v, a in attrs:
+                if k not in dict_attrs:
+                    dict_attrs[k] = {}
+                if v in dict_attrs[k]:
+                    dict_attrs[k][v].append(a)
+                else:
+                    dict_attrs[k][v] = [a]
+            self.edge((left, rel, right, dict_attrs))
 
     def macro_call_re(self, tup):
         callname, args = tup

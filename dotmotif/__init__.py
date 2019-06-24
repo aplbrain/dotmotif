@@ -139,14 +139,14 @@ class dotmotif:
 
         """
         if isinstance(fname, str):
-            f = open(fname, 'wb')
+            f = open(fname, "wb")
         else:
             f = fname
         pickle.dump(self, f)
         return fname
 
     @staticmethod
-    def load(fname: Union[str, IO[bytes]]) -> 'dotmotif':
+    def load(fname: Union[str, IO[bytes]]) -> "dotmotif":
         """
         Load the motif from a file on disk.
 
@@ -158,7 +158,7 @@ class dotmotif:
 
         """
         if isinstance(fname, str):
-            f = open(fname, 'rb')
+            f = open(fname, "rb")
         else:
             f = fname
         return pickle.load(f)

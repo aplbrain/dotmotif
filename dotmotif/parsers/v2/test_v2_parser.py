@@ -344,7 +344,21 @@ class TestDotmotif_Parserv2_DM_EdgeAttributes(unittest.TestCase):
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
         self.assertEqual(len(dm._g.edges()), 1)
-        u, v, d = list(dm._g.edges(["Aa", "Bb"], data=True))[0]
+        u, v, d = list(dm._g.edges(data=True))[0]
+        self.assertEqual(d["constraints"]["type"], {"!=": [1, 12]})
+
+    def test_edge_macro_attr(self):
+        exp = """\
+        macro(Aa, Ba) {
+            Aa -> Ba [type != 1, type != 12]
+        }
+
+        macro(X, Y)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm._g.edges()), 1)
+        u, v, d = list(dm._g.edges(data=True))[0]
         self.assertEqual(d["constraints"]["type"], {"!=": [1, 12]})
 
 
@@ -386,3 +400,31 @@ class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
         dm.from_motif(exp)
         self.assertEqual(len(dm.list_node_constraints()), 2)
         self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa", "Ba"])
+
+    def test_node_macro_attr(self):
+        exp = """\
+        macro(A) {
+            A.type = "excitatory"
+            A.size >= 4.0
+        }
+        Aaa -> Ba
+        macro(Aaa)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aaa"])
+
+        exp = """\
+        macro(A) {
+            A.type = "excitatory"
+            A.size >= 4.0
+        }
+        Aaa -> Ba
+        macro(Aaa)
+        macro(Ba)
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 2)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aaa", "Ba"])
