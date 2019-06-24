@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from distutils.core import setup
+from setuptools import find_packages, setup, Command
 
 """
 git tag {VERSION}
@@ -20,7 +20,9 @@ setup(
     license="ISC",
     keywords=["graph", "motif"],
     url="https://github.com/aplbrain/dotmotif/tarball/" + VERSION,
-    packages=["dotmotif"],
+    packages=find_packages(
+        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]
+    ),
     scripts=[
         #  'scripts/'
     ],
