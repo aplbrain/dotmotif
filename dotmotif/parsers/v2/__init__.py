@@ -346,8 +346,7 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (args[macro_args.index(rule[0])],
-             rule[1], args[macro_args.index(rule[2])])
+            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 

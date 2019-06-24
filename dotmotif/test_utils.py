@@ -20,11 +20,12 @@ class TestConverter(TestCase):
 
 
 class TestSaveLoad(TestCase):
-
     def test_saveload(self):
-        m = dotmotif().from_motif("""
+        m = dotmotif().from_motif(
+            """
         A -> B [type=6]
-        """)
+        """
+        )
         tf = NamedTemporaryFile()
         m.save(tf)
         tf.flush()
