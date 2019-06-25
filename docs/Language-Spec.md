@@ -1,12 +1,10 @@
-# Current version: v2.1 (February 6, 2019)
+# Latest Version
 
+See [Language-Spec.md](Language-Spec.md) for more details.
 
+## Older versions
 
-
-
-# Older versions
-
-## v2.0
+### v2.0
 
 ```
 // See Extended Backus-Naur Form for more details.

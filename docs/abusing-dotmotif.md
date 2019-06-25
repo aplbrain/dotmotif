@@ -1,6 +1,10 @@
 # Using DotMotif only for its database
 
-DotMotif does a lot of heavy-lifting so that you can ignore the fact that you're using a graph database. This can come in handy when you want to use a graph database but don't want to do work to set it up. 
+> **UPDATE AS OF DOTMOTIF 0.4.2**: If you are just using DotMotif as a graph database container-management system, you may want to consider using [Tamarind](https://github.com/FitMango/tamarind) instead. DotMotif uses Tamarind under the hood.
+
+----
+
+DotMotif does a lot of heavy-lifting so that you can ignore the fact that you're using a graph database. This can come in handy when you want to use a graph database but don't want to do work to set it up.
 
 > Note that this uses private library APIs and this is not guaranteed to always work.
 

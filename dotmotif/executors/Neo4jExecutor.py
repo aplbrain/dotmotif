@@ -19,9 +19,7 @@ import os
 import time
 from uuid import uuid4
 
-import docker
 from py2neo import Graph
-import requests
 import tamarind
 
 # Types only:
@@ -95,7 +93,8 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get("autoremove_container", True)
+        self._autoremove_container: str = kwargs.get(
+            "autoremove_container", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -287,7 +286,8 @@ class Neo4jExecutor(Executor):
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                f'"{value}"' if isinstance(
+                                    value, str) else value,
                             )
                         )
 
@@ -302,14 +302,16 @@ class Neo4jExecutor(Executor):
                                 n,
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                f'"{value}"' if isinstance(
+                                    value, str) else value,
                             )
                         )
         if [*cypher_node_constraints, *cypher_edge_constraints]:
             q_match += (
                 delim
                 + "WHERE "
-                + " AND ".join([*cypher_edge_constraints, *cypher_node_constraints])
+                + " AND ".join([*cypher_edge_constraints,
+                                *cypher_node_constraints])
             )
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))

@@ -1,11 +1,11 @@
 # Getting started with dotmotif
 
-Once you have [installed `dotmotif`](#), you can start writing queries.
+Once you have [installed `dotmotif`](installation.md), you can start writing queries.
 
 Queries are written in `.motif` syntax, the task-specific motif-finding language designed for use with `dotmotif`.
 
 
-# 1. Write your motif
+## 1. Write your motif
 
 First, let's write the motif we want to find. The .motif format uses a handful of simple notational primitives that you can combine to form more complex network structures.
 
@@ -20,7 +20,7 @@ D -> A
 
 Easy enough!
 
-# 2. Refine the motif
+## 2. Refine the motif
 
 Let's add some more complex structure. Let's say we want to _disallow_ diagonal connections between non-neighboring nodes. Let's add that to our file:
 
@@ -42,7 +42,7 @@ We've introduced a few new concepts here, so let's break down the new syntax. Fi
 
 Next, see that we indicated a _synapse_ with the `->` notation. The first component can be negated using the `!` operator to tell the compiler that we want to _prohibit_ that edge. If you do not prohibit an edge, your search results may include places where those nodes have OR do not have an edge.
 
-# 3. Refactor the motif
+## 3. Refactor the motif
 
 You can use dotmotif "macros" to simplify the process of writing a motif. You can think of macros as a type of template that enables you to write a pattern once and then reuse it (like a function in other languages). This reduces the possibility of typos, and also enables you to write more complex structures without confusion.
 
@@ -123,7 +123,7 @@ unitriangle(G, A, D)
 
 This last example is _very_ readable, and far more tractable than trying to understand 18 lines of individual rules!
 
-# Validation
+## Validation
 
 Let's try another example.
 
