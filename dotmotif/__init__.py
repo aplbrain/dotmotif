@@ -129,6 +129,9 @@ class dotmotif:
     def list_node_constraints(self):
         return self._node_constraints
 
+    def list_automorphisms(self):
+        return self._automorphisms
+
     def save(self, fname: Union[str, IO[bytes]]) -> Union[str, IO[bytes]]:
         """
         Save the motif to a file on disk.

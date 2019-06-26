@@ -115,8 +115,8 @@ class DotMotifTransformer(Transformer):
         self.automorphisms.append(tup)
 
     def relation(self, tup):
-        exists, type = tup
-        return {"exists": exists, "type": type}
+        exists, typ = tup
+        return {"exists": exists, "type": typ}
 
     def node_id(self, node_id):
         return str(node_id)
