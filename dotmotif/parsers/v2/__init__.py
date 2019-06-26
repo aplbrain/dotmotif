@@ -3,134 +3,16 @@
 from typing import List
 from lark import Lark, Transformer
 import networkx as nx
+import os
 
 from ...utils import untype_string
 from .. import Parser
 from ...validators import Validator
 
 
-GRAMMAR = """
-// See Extended Backus-Naur Form for more details.
-start: comment_or_block+
-
-
-
-// Contents may be either comment or block.
-comment_or_block: block
-
-// Comments are signified by a hash followed by anything. Any line that follows
-// a comment hash is thrown away.
-
-?comment        : "#" COMMENT
-
-// A block may consist of either an edge ("A -> B") or a "macro", which is
-// essentially an alias capability.
-block           : edge
-                | macro
-                | macro_call
-                | node_constraint
-                | comment
-
-
-
-
-// A macro can be considered a "function" definition that can be used in the
-// rest of the file to define complex structure. For example,
-//     foo(a, b) { a -> b }; foo(A, B);
-// is the same as:
-//     A -> B
-// While this is a simple case, this is an immensely powerful tool.
-macro           : variable "(" arglist ")" "{" macro_rules "}"
-
-// A series of arguments to a macro
-?arglist        : variable ("," variable)*
-
-macro_rules     : macro_block+
-
-?macro_block    : edge_macro
-                | macro_call_re
-                | comment
-                | macro_node_constraint
-
-// A "hypothetical" edge that forms a subgraph structure.
-edge_macro      : node_id relation node_id
-                | node_id relation node_id "[" macro_edge_clauses "]"
-
-
-
-// A macro is called like a function: foo(args).
-macro_call      : variable "(" arglist ")"
-?macro_call_re  : variable "(" arglist ")"
-
-
-
-// Edges are currently composed of a node, a relation, and a node. In other
-// words, an arbitrary word, a relation between them, and then another node.
-// Edges can also have optional edge attributes, delimited from the original
-// structure with square brackets.
-edge            : node_id relation node_id
-                | node_id relation node_id "[" edge_clauses "]"
-
-// A Node ID is any contiguous (that is, no whitespace) word.
-?node_id        : variable
-
-// A relation is a bipartite: The first character is an indication of whether
-// the relation exists or not. The following characters indicate if a relation
-// has a type other than the default, positive, and negative types offered
-// by default.
-relation        : relation_exist relation_type
-
-// A "-" means the relation exists; "~" means the relation does not exist.
-relation_exist  : "-"                               -> rel_exist
-                | "~"                               -> rel_nexist
-                | "!"                               -> rel_nexist
-
-// The valid types of relation are single-character, except for the custom
-// relation type which is user-defined and lives inside square brackets.
-relation_type   : ">"                               -> rel_def
-                | "+"                               -> rel_pos
-                | "-"                               -> rel_neg
-                | "|"                               -> rel_neg
-
-// Edge attributes are separated from the main edge declaration with sqbrackets
-edge_clauses   : edge_clause ("," edge_clause)*
-macro_edge_clauses   : edge_clause ("," edge_clause)*
-
-edge_clause     : key op value
-
-
-// Node constraints:
-node_constraint : node_id "." key op value_or_quoted_value
-macro_node_constraint : node_id "." key op value_or_quoted_value
-
-?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
-
-
-?key            : WORD | variable
-?value          : WORD | NUMBER
-?op             : OPERATOR | iter_ops
-
-
-variable       : NAME
-
-iter_ops        : "contains"                        -> iter_op_contains
-                | "in"                              -> iter_op_in
-
-NAME            : /[a-zA-Z_-]\w*/
-OPERATOR        : /[\=\>\<\!]?[\=]/
-VAR_SEP         : /[\_\-]/
-COMMENT         : /\#[^\\n]+/
-DOUBLE_QUOTED_STRING  : /"[^"]*"/
-%ignore COMMENT
-
-%import common.WORD -> WORD
-%import common.SIGNED_NUMBER  -> NUMBER
-%import common.WS
-%ignore WS
-"""
-
-
-dm_parser = Lark(GRAMMAR)
+dm_parser = Lark(
+    open(os.path.join(os.path.dirname(__file__), 'grammar.lark'), 'r')
+)
 
 
 class DotMotifTransformer(Transformer):
@@ -144,11 +26,12 @@ class DotMotifTransformer(Transformer):
         self.G = nx.MultiDiGraph()
         self.edge_constraints: dict = {}
         self.node_constraints: dict = {}
+        self.automorphisms: list = []
         super().__init__(*args, **kwargs)
 
     def transform(self, tree):
         self._transform_tree(tree)
-        return self.G, self.edge_constraints, self.node_constraints
+        return self.G, self.edge_constraints, self.node_constraints, self.automorphisms
 
     def edge_clauses(self, tup):
         attrs = {}
@@ -227,6 +110,9 @@ class DotMotifTransformer(Transformer):
         self.G.add_edge(
             u, v, exists=rel["exists"], action=rel["type"], constraints=attrs
         )
+
+    def automorphism_notation(self, tup):
+        self.automorphisms.append(tup)
 
     def relation(self, tup):
         exists, type = tup
@@ -370,7 +256,8 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
+            (args[macro_args.index(rule[0])],
+             rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 
@@ -388,7 +275,7 @@ class ParserV2(Parser):
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
-        G, edge_constraints, node_constraints = DotMotifTransformer(
+        G, edge_constraints, node_constraints, automorphisms = DotMotifTransformer(
             validators=self.validators
         ).transform(tree)
-        return G, edge_constraints, node_constraints
+        return G, edge_constraints, node_constraints, automorphisms

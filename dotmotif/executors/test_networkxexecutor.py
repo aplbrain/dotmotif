@@ -332,3 +332,21 @@ class TestSmallMotifs(unittest.TestCase):
 
         H.add_edge("y", "a", other_weight=7, weight=8)
         self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 5)
+
+    def test_automorphism_reduction(self):
+
+        G = nx.DiGraph()
+        G.add_edge("X", "Z")
+        G.add_edge("Y", "Z")
+
+        motif = dotmotif.dotmotif().from_motif(
+            """
+            A -> C
+            B -> C
+
+            A === B
+            """
+        )
+
+        res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 1)
