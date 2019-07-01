@@ -47,7 +47,7 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
 
     TODO: This function is distinct from the above because I anticipate that
     differences will emerge as the implementation matures. But these are
-    currently identical functions otherwise. -- @j6k4m8
+    currently identical functions otherwise. -- @j6k4m8 Jan 2019
     """
 
     operators = {
