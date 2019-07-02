@@ -1,10 +1,16 @@
 # Changelog
+
 - **0.4.2**
-    - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
-    - Full support for attributes inside macros
-    - Fix [#35](https://github.com/aplbrain/dotmotif/issues/35), wherein a `WHERE` clause was omitted from the cypher query constructed from the `Neo4jExecutor` under certain conditions
-    - Fix #26 by raising an explanatory error message when graphs with integer IDs are imported.
-    - Fix #25 to allow pip-installability outside of edit-mode
+    - Features:
+        - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
+    - DSL:
+        - Full support for [attributes inside macros](https://github.com/aplbrain/dotmotif/pull/38)
+        - Add notation for manual indication of automorphisms ([#45](https://github.com/aplbrain/dotmotif/pull/45))
+    - Parsers:
+        - Fix [#35](https://github.com/aplbrain/dotmotif/issues/35), wherein a `WHERE` clause was omitted from the cypher query constructed from the `Neo4jExecutor` under certain conditions
+    - Bugfixes:
+        - Fix #26 by raising an explanatory error message when graphs with integer IDs are imported.
+        - Fix #25 to allow pip-installability outside of edit-mode
 - **0.4.1** (April 13, 2019)
     - Backend [tamarind](https://github.com/fitmango/tamarind) for provisioning Docker containers.
     - Resolved issue with improper tokenization of variables in DSL
