@@ -52,8 +52,15 @@ class TestDotmotif_Cypher(unittest.TestCase):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
 
+        print(
+            "\n\n\nBAD:\n",
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
+            "\n\n\nGOOD:\n",
+            _DEMO_G_MIN_CYPHER.strip()
+        )
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(
+                dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )
 
 
@@ -68,7 +75,8 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
         )
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(
+                dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
         )
 
     def test_cypher_edge_many_attributes(self):
@@ -81,7 +89,8 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
         )
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER_2.strip()
+            Neo4jExecutor.motif_to_cypher(
+                dm).strip(), _DEMO_EDGE_ATTR_CYPHER_2.strip()
         )
 
     #   TODO      # Issue with arbitrary ordering of inequalities
@@ -175,7 +184,7 @@ class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
             Neo4jExecutor.motif_to_cypher(dm).strip(),
             (
                 "MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\n"
-                "WHERE A_B.area <> 10 AND A.area <= 10 AND B.area <= 10\n"
+                "WHERE A.area <= 10 AND B.area <= 10 AND A_B.area <> 10\n"
                 "RETURN DISTINCT A,B"
             ).strip(),
         )

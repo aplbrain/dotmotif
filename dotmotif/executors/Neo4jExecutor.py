@@ -268,6 +268,10 @@ class Neo4jExecutor(Executor):
 
         delim = "\n" if motif.pretty_print else " "
 
+        conditions = []
+
+        # conditions.append(delim.join(es))
+        # conditions.append(delim.join(es_neg))
         if es_neg:
             q_match = delim.join(
                 [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)]
@@ -291,7 +295,7 @@ class Neo4jExecutor(Executor):
                             )
                         )
 
-        # Edge constraints:
+        # Node constraints:
         cypher_node_constraints = []
         for n, a in motif.list_node_constraints().items():
             for key, constraints in a.items():
@@ -306,13 +310,14 @@ class Neo4jExecutor(Executor):
                                     value, str) else value,
                             )
                         )
-        if [*cypher_node_constraints, *cypher_edge_constraints]:
-            q_match += (
-                delim
-                + "WHERE "
-                + " AND ".join([*cypher_edge_constraints,
-                                *cypher_node_constraints])
-            )
+        # if [*cypher_node_constraints, *cypher_edge_constraints]:
+        #     q_match += (
+        #         delim
+        #         + "WHERE "
+        #         + " AND ".join([*cypher_edge_constraints,
+        #                         *cypher_node_constraints])
+        #     )
+        conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
@@ -322,21 +327,34 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            q_not_eqs = (
-                # If this is the first constraint, use WHERE. Otherwise, use AND
-                "AND "
-                if [*cypher_node_constraints, *cypher_edge_constraints]
-                else "WHERE "
-            ) + " AND ".join(
-                set(
-                    [
-                        "<>".join(sorted(a))
-                        for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
-                        if a[0] != a[1]
-                    ]
-                )
-            )
-        else:
-            return "{}".format(delim.join([q_match, q_return, q_limit]))
-
-        return "{}".format(delim.join([q_match, q_not_eqs, q_return, q_limit]))
+            conditions.extend(list(set(
+                [
+                    "<>".join(sorted(a))
+                    for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
+                    if a[0] != a[1]
+                ]
+            )))
+        #     q_not_eqs = (
+        #         # If this is the first constraint, use WHERE. Otherwise, use AND
+        #         "AND "
+        #         if [*cypher_node_constraints, *cypher_edge_constraints]
+        #         else "WHERE "
+        #     ) + " AND ".join(
+        #         set(
+        #             [
+        #                 "<>".join(sorted(a))
+        #                 for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
+        #                 if a[0] != a[1]
+        #             ]
+        #         )
+        #
+        # else:
+        #     return "{}".format(delim.join([q_match, q_return, q_limit]))
+        query = [q_match]
+        if conditions:
+            query.append("WHERE " + " AND ".join(conditions))
+        query.append(q_return)
+        if q_limit:
+            query.append(q_limit)
+        return "{}".format(delim.join(query))
+        # return "{}".format(delim.join([q_match, q_not_eqs, q_return, q_limit]))
