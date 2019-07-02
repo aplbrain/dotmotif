@@ -51,13 +51,6 @@ class TestDotmotif_Cypher(unittest.TestCase):
     def test_cypher(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
-
-        print(
-            "\n\n\nBAD:\n",
-            Neo4jExecutor.motif_to_cypher(dm).strip(),
-            "\n\n\nGOOD:\n",
-            _DEMO_G_MIN_CYPHER.strip()
-        )
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(
                 dm).strip(), _DEMO_G_MIN_CYPHER.strip()

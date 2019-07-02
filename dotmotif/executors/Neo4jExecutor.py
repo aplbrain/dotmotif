@@ -350,6 +350,12 @@ class Neo4jExecutor(Executor):
         #
         # else:
         #     return "{}".format(delim.join([q_match, q_return, q_limit]))
+
+        automs = motif.list_automorphisms()
+        conditions.extend([
+            "{}.id > {}.id".format(a, b) for a, b in automs
+        ])
+
         query = [q_match]
         if conditions:
             query.append("WHERE " + " AND ".join(conditions))
