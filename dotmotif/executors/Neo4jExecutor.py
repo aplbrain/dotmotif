@@ -96,8 +96,7 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get(
-            "autoremove_container", True)
+        self._autoremove_container: str = kwargs.get("autoremove_container", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -219,7 +218,7 @@ class Neo4jExecutor(Executor):
             return self.G.run(cypher).to_table()
         return self.G.run(cypher)
 
-    def find(self, motif: 'dotmotif', limit=None, cursor=True) -> Table:
+    def find(self, motif: "dotmotif", limit=None, cursor=True) -> Table:
         """
         Find a motif in a larger graph.
 
@@ -235,7 +234,7 @@ class Neo4jExecutor(Executor):
         return self.G.run(qry)
 
     @staticmethod
-    def motif_to_cypher(motif: 'dotmotif') -> str:
+    def motif_to_cypher(motif: "dotmotif") -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
 
@@ -291,8 +290,7 @@ class Neo4jExecutor(Executor):
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str) else value,
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
 
@@ -307,8 +305,7 @@ class Neo4jExecutor(Executor):
                                 n,
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str) else value,
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
 
@@ -322,18 +319,22 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            conditions.extend(list(set(
-                [
-                    "<>".join(sorted(a))
-                    for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
-                    if a[0] != a[1]
-                ]
-            )))
+            conditions.extend(
+                list(
+                    set(
+                        [
+                            "<>".join(sorted(a))
+                            for a in list(
+                                product(motif_graph.nodes(), motif_graph.nodes())
+                            )
+                            if a[0] != a[1]
+                        ]
+                    )
+                )
+            )
 
         automs = motif.list_automorphisms()
-        conditions.extend([
-            "{}.id >= {}.id".format(a, b) for a, b in automs
-        ])
+        conditions.extend(["{}.id >= {}.id".format(a, b) for a, b in automs])
 
         query = [q_match]
         if conditions:

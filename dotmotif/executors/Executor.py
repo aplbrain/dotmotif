@@ -7,5 +7,5 @@ if TYPE_CHECKING:
 class Executor:
     ...
 
-    def find(self, motif: 'dotmotif', limit: int = None):
+    def find(self, motif: "dotmotif", limit: int = None):
         ...

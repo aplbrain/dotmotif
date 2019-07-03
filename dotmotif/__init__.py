@@ -61,8 +61,7 @@ class dotmotif:
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
-        self.validators = kwargs.get(
-            "validators", [DisagreeingEdgesValidator()])
+        self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
             "INHIBITS": "INH",
             "EXCITES": "EXC",
@@ -96,7 +95,9 @@ class dotmotif:
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
-            self._g, self._edge_constraints, self._node_constraints, self._automorphisms = result
+            self._g, self._edge_constraints, self._node_constraints, self._automorphisms = (
+                result
+            )
         else:
             # For backwards compatibility with parser v1
             self._g = result

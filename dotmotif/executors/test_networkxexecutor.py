@@ -351,7 +351,6 @@ class TestSmallMotifs(unittest.TestCase):
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
 
-
     def test_automorphism_auto(self):
 
         G = nx.DiGraph()
@@ -383,7 +382,6 @@ class TestSmallMotifs(unittest.TestCase):
 
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 2)
-
 
     def test_automorphism_flag_triangle(self):
 

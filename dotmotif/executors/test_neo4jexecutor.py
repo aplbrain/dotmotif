@@ -13,7 +13,6 @@ class TestNeo4jExecutor(unittest.TestCase):
 
 
 class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
-
     def test_basic_node_attr(self):
         exp = """\
         A -> C

@@ -30,8 +30,7 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
             for value in values:
                 keyvalue_or_none = edge_attributes.get(key, None)
                 try:
-                    operator_success = operators[operator](
-                        keyvalue_or_none, value)
+                    operator_success = operators[operator](keyvalue_or_none, value)
                 except TypeError:
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
@@ -162,7 +161,7 @@ class NetworkXExecutor(Executor):
                 return False
         return True
 
-    def find(self, motif: 'dotmotif', limit: int = None):
+    def find(self, motif: "dotmotif", limit: int = None):
         """
         Find a motif in a larger graph.
 
