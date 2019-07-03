@@ -186,7 +186,11 @@ class NetworkXExecutor(Executor):
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
                 )
-                and all(r[a] > r[b] for (a, b) in motif.list_automorphisms())
+                # by default, networkx returns the automorphism that is left-
+                # sorted, so this comparison is _opposite_ the check that we
+                # use in the other executors. In other words, we usually check
+                # that A >= B; here we check A <= B.
+                and all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
             )
         ]
         return res

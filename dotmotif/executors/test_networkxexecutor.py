@@ -384,3 +384,30 @@ class TestSmallMotifs(unittest.TestCase):
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 2)
 
+
+    def test_automorphism_flag_triangle(self):
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        motif = dotmotif.dotmotif().from_motif(
+            """
+            A -> B
+            B -> C
+            C -> A
+            """
+        )
+        res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 3)
+
+        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+            """
+            A -> B
+            B -> C
+            C -> A
+            """
+        )
+        res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 1)
