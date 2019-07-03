@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
 import networkx as nx
 import pandas as pd
 
 from .Executor import Executor
-from .. import dotmotif
+
+if TYPE_CHECKING:
+    from .. import dotmotif
 
 
 def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
@@ -27,8 +30,7 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
             for value in values:
                 keyvalue_or_none = edge_attributes.get(key, None)
                 try:
-                    operator_success = operators[operator](
-                        keyvalue_or_none, value)
+                    operator_success = operators[operator](keyvalue_or_none, value)
                 except TypeError:
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
@@ -152,14 +154,14 @@ class NetworkXExecutor(Executor):
             graph_v = node_isomorphism_map[motif_V]
 
             # Check edge in graph for constraints
-            edge_attrs = graph.edges[graph_u, graph_v]
+            edge_attrs = graph.get_edge_data(graph_u, graph_v)
 
             if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                 # Fail fast
                 return False
         return True
 
-    def find(self, motif: dotmotif, limit: int = None):
+    def find(self, motif: "dotmotif", limit: int = None):
         """
         Find a motif in a larger graph.
 
@@ -183,7 +185,11 @@ class NetworkXExecutor(Executor):
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
                 )
-                and all(r[a] > r[b] for (a, b) in motif.list_automorphisms())
+                # by default, networkx returns the automorphism that is left-
+                # sorted, so this comparison is _opposite_ the check that we
+                # use in the other executors. In other words, we usually check
+                # that A >= B; here we check A <= B.
+                and all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
             )
         ]
         return res

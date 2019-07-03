@@ -3,6 +3,7 @@
 - **0.4.2**
     - Features:
         - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
+        - Add `dotmotif` constructor flag to automatically detect automorphisms ([#47](https://github.com/aplbrain/dotmotif/pull/47))
     - DSL:
         - Full support for [attributes inside macros](https://github.com/aplbrain/dotmotif/pull/38)
         - Add notation for manual indication of automorphisms ([#45](https://github.com/aplbrain/dotmotif/pull/45))

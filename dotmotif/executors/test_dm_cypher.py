@@ -52,8 +52,7 @@ class TestDotmotif_Cypher(unittest.TestCase):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(
-                dm).strip(), _DEMO_G_MIN_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )
 
 
@@ -68,8 +67,7 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
         )
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(
-                dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER.strip()
         )
 
     def test_cypher_edge_many_attributes(self):
@@ -82,8 +80,7 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
         )
 
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(
-                dm).strip(), _DEMO_EDGE_ATTR_CYPHER_2.strip()
+            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_EDGE_ATTR_CYPHER_2.strip()
         )
 
     #   TODO      # Issue with arbitrary ordering of inequalities

@@ -5,7 +5,6 @@ import networkx as nx
 
 
 class Validator(abc.ABC):
-
     @abc.abstractmethod
     def validate(self) -> bool:
         ...

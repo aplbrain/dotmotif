@@ -10,9 +10,7 @@ from .. import Parser
 from ...validators import Validator
 
 
-dm_parser = Lark(
-    open(os.path.join(os.path.dirname(__file__), 'grammar.lark'), 'r')
-)
+dm_parser = Lark(open(os.path.join(os.path.dirname(__file__), "grammar.lark"), "r"))
 
 
 class DotMotifTransformer(Transformer):
@@ -256,8 +254,7 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
         return [
-            (args[macro_args.index(rule[0])],
-             rule[1], args[macro_args.index(rule[2])])
+            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
             for rule in all_rules
         ]
 
