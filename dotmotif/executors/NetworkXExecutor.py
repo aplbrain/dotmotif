@@ -155,7 +155,7 @@ class NetworkXExecutor(Executor):
             graph_v = node_isomorphism_map[motif_V]
 
             # Check edge in graph for constraints
-            edge_attrs = graph.edges[graph_u, graph_v]
+            edge_attrs = graph.get_edge_data(graph_u, graph_v)
 
             if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                 # Fail fast

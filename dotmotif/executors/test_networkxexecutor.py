@@ -350,3 +350,37 @@ class TestSmallMotifs(unittest.TestCase):
 
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
+
+
+    def test_automorphism_auto(self):
+
+        G = nx.DiGraph()
+        G.add_edge("X", "Z")
+        G.add_edge("Y", "Z")
+
+        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+            """
+            A -> C
+            B -> C
+            """
+        )
+
+        res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 1)
+
+    def test_automorphism_notauto(self):
+
+        G = nx.DiGraph()
+        G.add_edge("X", "Z")
+        G.add_edge("Y", "Z")
+
+        motif = dotmotif.dotmotif().from_motif(
+            """
+            A -> C
+            B -> C
+            """
+        )
+
+        res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 2)
+

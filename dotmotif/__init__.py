@@ -19,6 +19,7 @@ from typing import Union, IO
 import pickle
 
 import networkx as nx
+from networkx.algorithms import isomorphism
 
 from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
@@ -59,7 +60,7 @@ class dotmotif:
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
-        # self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
+        self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
         self.validators = kwargs.get(
             "validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
@@ -133,7 +134,17 @@ class dotmotif:
         return self._node_constraints
 
     def list_automorphisms(self):
-        return self._automorphisms
+        if not self.exclude_automorphisms:
+            return self._automorphisms
+
+        g = self.to_nx()
+        res = isomorphism.GraphMatcher(g, g).subgraph_isomorphisms_iter()
+        autos = set()
+        for auto in res:
+            for k, v in auto.items():
+                if k != v:
+                    autos.add(tuple(sorted([k, v])))
+        return list(autos)
 
     def save(self, fname: Union[str, IO[bytes]]) -> Union[str, IO[bytes]]:
         """
