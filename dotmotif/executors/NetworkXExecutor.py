@@ -7,7 +7,7 @@ from .. import dotmotif
 
 def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
     """
-    Does a single edge satisfy the constraints?
+    Check if a single edge satisfies the constraints.
     """
 
     operators = {
@@ -27,7 +27,8 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
             for value in values:
                 keyvalue_or_none = edge_attributes.get(key, None)
                 try:
-                    operator_success = operators[operator](keyvalue_or_none, value)
+                    operator_success = operators[operator](
+                        keyvalue_or_none, value)
                 except TypeError:
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
@@ -42,11 +43,11 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
 
 def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> bool:
     """
-    Does a single node satisfy the constraints?
+    Check if a single node satisfies the constraints.
 
     TODO: This function is distinct from the above because I anticipate that
     differences will emerge as the implementation matures. But these are
-    currently identical functions otherwise. -- @j6k4m8
+    currently identical functions otherwise. -- @j6k4m8 Jan 2019
     """
 
     operators = {
@@ -63,7 +64,7 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
         for operator, values in clist.items():
             for value in values:
                 if not operators[operator](node_attributes.get(key, None), value):
-                    # Fail fast, if any edge attributes fail the test
+                    # Fail fast, if any node attributes fail the test
                     return False
     return True
 
@@ -182,6 +183,7 @@ class NetworkXExecutor(Executor):
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
                 )
+                and all(r[a] > r[b] for (a, b) in motif.list_automorphisms())
             )
         ]
         return res

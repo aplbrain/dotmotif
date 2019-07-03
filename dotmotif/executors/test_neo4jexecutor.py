@@ -1,3 +1,4 @@
+import dotmotif
 from dotmotif.executors.Neo4jExecutor import Neo4jExecutor
 import unittest
 import networkx as nx
@@ -9,3 +10,15 @@ class TestNeo4jExecutor(unittest.TestCase):
         g.add_edge(1, 2)
         with self.assertRaisesRegex(Exception, "numerical IDs"):
             Neo4jExecutor(graph=g)
+
+
+class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
+    def test_basic_node_attr(self):
+        exp = """\
+        A -> C
+        B -> C
+        A === B
+        """
+        dm = dotmotif.dotmotif().from_motif(exp)
+        cypher = Neo4jExecutor.motif_to_cypher(dm)
+        self.assertIn("A.id > B.id", cypher)
