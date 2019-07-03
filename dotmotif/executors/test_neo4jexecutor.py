@@ -13,6 +13,7 @@ class TestNeo4jExecutor(unittest.TestCase):
 
 
 class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
+
     def test_basic_node_attr(self):
         exp = """\
         A -> C
@@ -20,5 +21,14 @@ class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
         A === B
         """
         dm = dotmotif.dotmotif().from_motif(exp)
+        cypher = Neo4jExecutor.motif_to_cypher(dm)
+        self.assertIn("A.id > B.id", cypher)
+
+    def test_basic_node_attr(self):
+        exp = """\
+        A -> C
+        B -> C
+        """
+        dm = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(exp)
         cypher = Neo4jExecutor.motif_to_cypher(dm)
         self.assertIn("A.id > B.id", cypher)

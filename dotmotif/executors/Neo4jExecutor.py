@@ -25,7 +25,10 @@ import tamarind
 # Types only:
 from py2neo.data import Table
 import networkx as nx
-from .. import dotmotif
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .. import dotmotif
 
 from .Executor import Executor
 from ..ingest import NetworkXIngester
@@ -216,7 +219,7 @@ class Neo4jExecutor(Executor):
             return self.G.run(cypher).to_table()
         return self.G.run(cypher)
 
-    def find(self, motif: dotmotif, limit=None, cursor=True) -> Table:
+    def find(self, motif: 'dotmotif', limit=None, cursor=True) -> Table:
         """
         Find a motif in a larger graph.
 
@@ -232,7 +235,7 @@ class Neo4jExecutor(Executor):
         return self.G.run(qry)
 
     @staticmethod
-    def motif_to_cypher(motif: dotmotif) -> str:
+    def motif_to_cypher(motif: 'dotmotif') -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
 

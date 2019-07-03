@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
 import networkx as nx
 import pandas as pd
 
 from .Executor import Executor
-from .. import dotmotif
+
+if TYPE_CHECKING:
+    from .. import dotmotif
 
 
 def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
@@ -159,7 +162,7 @@ class NetworkXExecutor(Executor):
                 return False
         return True
 
-    def find(self, motif: dotmotif, limit: int = None):
+    def find(self, motif: 'dotmotif', limit: int = None):
         """
         Find a motif in a larger graph.
 

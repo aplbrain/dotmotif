@@ -23,7 +23,9 @@ import networkx as nx
 from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
-__version__ = "0.4.0"
+from .executors.NetworkXExecutor import NetworkXExecutor
+
+__version__ = "0.4.2"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -57,6 +59,7 @@ class dotmotif:
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
+        # self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
         self.validators = kwargs.get(
             "validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
