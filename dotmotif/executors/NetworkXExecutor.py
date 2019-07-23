@@ -1,13 +1,16 @@
+from typing import TYPE_CHECKING
 import networkx as nx
 import pandas as pd
 
 from .Executor import Executor
-from .. import dotmotif
+
+if TYPE_CHECKING:
+    from .. import dotmotif
 
 
 def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
     """
-    Does a single edge satisfy the constraints?
+    Check if a single edge satisfies the constraints.
     """
 
     operators = {
@@ -42,11 +45,11 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
 
 def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> bool:
     """
-    Does a single node satisfy the constraints?
+    Check if a single node satisfies the constraints.
 
     TODO: This function is distinct from the above because I anticipate that
     differences will emerge as the implementation matures. But these are
-    currently identical functions otherwise. -- @j6k4m8
+    currently identical functions otherwise. -- @j6k4m8 Jan 2019
     """
 
     operators = {
@@ -63,7 +66,7 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
         for operator, values in clist.items():
             for value in values:
                 if not operators[operator](node_attributes.get(key, None), value):
-                    # Fail fast, if any edge attributes fail the test
+                    # Fail fast, if any node attributes fail the test
                     return False
     return True
 
@@ -151,14 +154,14 @@ class NetworkXExecutor(Executor):
             graph_v = node_isomorphism_map[motif_V]
 
             # Check edge in graph for constraints
-            edge_attrs = graph.edges[graph_u, graph_v]
+            edge_attrs = graph.get_edge_data(graph_u, graph_v)
 
             if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                 # Fail fast
                 return False
         return True
 
-    def find(self, motif: dotmotif, limit: int = None):
+    def find(self, motif: "dotmotif", limit: int = None):
         """
         Find a motif in a larger graph.
 
@@ -182,6 +185,11 @@ class NetworkXExecutor(Executor):
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
                 )
+                # by default, networkx returns the automorphism that is left-
+                # sorted, so this comparison is _opposite_ the check that we
+                # use in the other executors. In other words, we usually check
+                # that A >= B; here we check A <= B.
+                and all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
             )
         ]
         return res

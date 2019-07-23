@@ -25,7 +25,10 @@ import tamarind
 # Types only:
 from py2neo.data import Table
 import networkx as nx
-from .. import dotmotif
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .. import dotmotif
 
 from .Executor import Executor
 from ..ingest import NetworkXIngester
@@ -93,8 +96,7 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get(
-            "autoremove_container", True)
+        self._autoremove_container: str = kwargs.get("autoremove_container", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -216,7 +218,7 @@ class Neo4jExecutor(Executor):
             return self.G.run(cypher).to_table()
         return self.G.run(cypher)
 
-    def find(self, motif: dotmotif, limit=None, cursor=True) -> Table:
+    def find(self, motif: "dotmotif", limit=None, cursor=True) -> Table:
         """
         Find a motif in a larger graph.
 
@@ -232,7 +234,7 @@ class Neo4jExecutor(Executor):
         return self.G.run(qry)
 
     @staticmethod
-    def motif_to_cypher(motif: dotmotif) -> str:
+    def motif_to_cypher(motif: "dotmotif") -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
 
@@ -268,6 +270,8 @@ class Neo4jExecutor(Executor):
 
         delim = "\n" if motif.pretty_print else " "
 
+        conditions = []
+
         if es_neg:
             q_match = delim.join(
                 [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)]
@@ -286,12 +290,11 @@ class Neo4jExecutor(Executor):
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str) else value,
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
 
-        # Edge constraints:
+        # Node constraints:
         cypher_node_constraints = []
         for n, a in motif.list_node_constraints().items():
             for key, constraints in a.items():
@@ -302,17 +305,11 @@ class Neo4jExecutor(Executor):
                                 n,
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(
-                                    value, str) else value,
+                                f'"{value}"' if isinstance(value, str) else value,
                             )
                         )
-        if [*cypher_node_constraints, *cypher_edge_constraints]:
-            q_match += (
-                delim
-                + "WHERE "
-                + " AND ".join([*cypher_edge_constraints,
-                                *cypher_node_constraints])
-            )
+
+        conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
         q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
@@ -322,21 +319,27 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            q_not_eqs = (
-                # If this is the first constraint, use WHERE. Otherwise, use AND
-                "AND "
-                if [*cypher_node_constraints, *cypher_edge_constraints]
-                else "WHERE "
-            ) + " AND ".join(
-                set(
-                    [
-                        "<>".join(sorted(a))
-                        for a in list(product(motif_graph.nodes(), motif_graph.nodes()))
-                        if a[0] != a[1]
-                    ]
+            conditions.extend(
+                list(
+                    set(
+                        [
+                            "<>".join(sorted(a))
+                            for a in list(
+                                product(motif_graph.nodes(), motif_graph.nodes())
+                            )
+                            if a[0] != a[1]
+                        ]
+                    )
                 )
             )
-        else:
-            return "{}".format(delim.join([q_match, q_return, q_limit]))
 
-        return "{}".format(delim.join([q_match, q_not_eqs, q_return, q_limit]))
+        automs = motif.list_automorphisms()
+        conditions.extend(["{}.id >= {}.id".format(a, b) for a, b in automs])
+
+        query = [q_match]
+        if conditions:
+            query.append("WHERE " + " AND ".join(conditions))
+        query.append(q_return)
+        if q_limit:
+            query.append(q_limit)
+        return "{}".format(delim.join(query))

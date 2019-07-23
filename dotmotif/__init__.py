@@ -19,11 +19,14 @@ from typing import Union, IO
 import pickle
 
 import networkx as nx
+from networkx.algorithms import isomorphism
 
 from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
-__version__ = "0.4.0"
+from .executors.NetworkXExecutor import NetworkXExecutor
+
+__version__ = "0.4.2"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -57,6 +60,7 @@ class dotmotif:
         self.enforce_inequality = kwargs.get("enforce_inequality", False)
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
+        self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
         self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
         self._LOOKUP = {
             "INHIBITS": "INH",
@@ -70,6 +74,7 @@ class dotmotif:
 
         self._edge_constraints = {}
         self._node_constraints = {}
+        self._automorphisms = []
 
     def from_motif(self, cmd: str):
         """
@@ -90,7 +95,9 @@ class dotmotif:
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
-            self._g, self._edge_constraints, self._node_constraints = result
+            self._g, self._edge_constraints, self._node_constraints, self._automorphisms = (
+                result
+            )
         else:
             # For backwards compatibility with parser v1
             self._g = result
@@ -126,6 +133,19 @@ class dotmotif:
 
     def list_node_constraints(self):
         return self._node_constraints
+
+    def list_automorphisms(self):
+        if not self.exclude_automorphisms:
+            return self._automorphisms
+
+        g = self.to_nx()
+        res = isomorphism.GraphMatcher(g, g).subgraph_isomorphisms_iter()
+        autos = set()
+        for auto in res:
+            for k, v in auto.items():
+                if k != v:
+                    autos.add(tuple(sorted([k, v])))
+        return list(autos)
 
     def save(self, fname: Union[str, IO[bytes]]) -> Union[str, IO[bytes]]:
         """

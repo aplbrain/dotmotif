@@ -51,7 +51,6 @@ class TestDotmotif_Cypher(unittest.TestCase):
     def test_cypher(self):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
-
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )
@@ -175,7 +174,7 @@ class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
             Neo4jExecutor.motif_to_cypher(dm).strip(),
             (
                 "MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\n"
-                "WHERE A_B.area <> 10 AND A.area <= 10 AND B.area <= 10\n"
+                "WHERE A.area <= 10 AND B.area <= 10 AND A_B.area <> 10\n"
                 "RETURN DISTINCT A,B"
             ).strip(),
         )

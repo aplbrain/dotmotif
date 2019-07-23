@@ -20,9 +20,7 @@ setup(
     license="ISC",
     keywords=["graph", "motif"],
     url="https://github.com/aplbrain/dotmotif/tarball/" + VERSION,
-    packages=find_packages(
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]
-    ),
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     scripts=[
         #  'scripts/'
     ],

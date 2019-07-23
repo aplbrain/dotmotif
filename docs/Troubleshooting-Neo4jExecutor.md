@@ -70,7 +70,7 @@ If you prefer that the executor return a nicely parsed table of results, you can
 <details>
 <summary><b>The executor waits for a long time, and then tells me it failed to reach the Neo4j server.</b></summary>
 
-This means that the executor tried to create a new docker container, but was unable to reach it.
+This means that the executor tried to create a new docker container, but was unable to reach it. Make sure you have Docker installed, that you have a Neo4j image either local or reachable over the net, and that your Docker container can be accessed by the current user. Once you have run DotMotif for the first time (or have installed the Neo4j image manually), it will run entirely offline in subsequent runs.
 </details>
 </li>
 </ul>
