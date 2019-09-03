@@ -1,6 +1,7 @@
 import unittest
 import dotmotif
-from dotmotif.executors import Neo4jExecutor
+import networkx as nx
+from dotmotif.executors import Neo4jExecutor, NetworkXExecutor
 
 
 _DEMO_G_MIN = """
@@ -26,7 +27,8 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(
+                dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )
 
     def test_dm_parser_no_pretty_print(self):
@@ -68,3 +70,27 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertFalse("LIMIT" in Neo4jExecutor.motif_to_cypher(dm).strip())
+
+    def test_from_nx_import(self):
+        G = nx.Graph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+
+        g = nx.Graph()
+        g.add_edge("A", "B")
+        dm = dotmotif.dotmotif().from_nx(g)
+
+        E = NetworkXExecutor(graph=G)
+        self.assertEquals(len(E.find(dm)), 4)
+
+    def test_from_nx_import(self):
+        G = nx.Graph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+
+        g = nx.Graph()
+        g.add_edge("A", "B")
+        dm = dotmotif.dotmotif(ignore_direction=True).from_nx(g)
+
+        E = NetworkXExecutor(graph=G)
+        self.assertEquals(len(E.find(dm)), 4)
