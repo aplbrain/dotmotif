@@ -101,14 +101,16 @@ class NetworkXIngester(Ingester):
         sorted_node_attrs = sorted(list(all_node_attrs.keys()))
 
         nodes_csv = (
-            "neuronId:ID(Neuron),"
+            "id:ID(Node),"
             + ",".join(
-                ["{}:{}".format(k, all_node_attrs[k]) for k in sorted_node_attrs]
+                ["{}:{}".format(k, all_node_attrs[k])
+                 for k in sorted_node_attrs]
             )
             + "\n"
             + "\n".join(
                 [
-                    (i + "," + ",".join([str(n.get(k, "")) for k in sorted_node_attrs]))
+                    (i + "," + ",".join([str(n.get(k, ""))
+                                         for k in sorted_node_attrs]))
                     for i, n in self.graph.nodes(True)
                 ]
             )
@@ -143,9 +145,10 @@ class NetworkXIngester(Ingester):
 
         sorted_edge_attrs = sorted(list(all_edge_attrs.keys()))
         edges_csv = (
-            ":START_ID(Neuron),:END_ID(Neuron),"
+            ":START_ID(Node),:END_ID(Node),"
             + ",".join(
-                ["{}:{}".format(k, all_edge_attrs[k]) for k in sorted_edge_attrs]
+                ["{}:{}".format(k, all_edge_attrs[k])
+                 for k in sorted_edge_attrs]
             )
             + "\n"
             + "\n".join(
@@ -163,13 +166,13 @@ class NetworkXIngester(Ingester):
         except:
             pass
 
-        with open(f"{self.export_dir}/export-neurons-0.csv", "w") as fh:
+        with open(f"{self.export_dir}/export-nodes-0.csv", "w") as fh:
             fh.write(nodes_csv)
         with open(f"{self.export_dir}/export-synapses-zdata.csv", "w") as fh:
             fh.write(edges_csv)
 
         return [
-            f"{self.export_dir}/export-neurons-0.csv",
+            f"{self.export_dir}/export-nodes-0.csv",
             f"{self.export_dir}/export-synapses-zdata.csv",
         ]
 
@@ -198,21 +201,21 @@ class PrincetonIngester(FileIngester):
         """
         df = dd.read_csv(self.path).dropna()
         export_df = df.copy()
-        export_df[":START_ID(Neuron)"] = df["presyn_segid"].astype("int")
-        export_df[":END_ID(Neuron)"] = df["postsyn_segid"].astype("int")
+        export_df[":START_ID(Node)"] = df["presyn_segid"].astype("int")
+        export_df[":END_ID(Node)"] = df["postsyn_segid"].astype("int")
         for col in df.columns:
             del export_df[col]
 
         node_names = (
-            (export_df[":START_ID(Neuron)"].append(export_df[":END_ID(Neuron)"]))
+            (export_df[":START_ID(Node)"].append(export_df[":END_ID(Node)"]))
             .unique()
             .dropna()
         )
 
         node_fnames = node_names.to_csv(
-            self.export_dir + "export-neurons-*.csv",
+            self.export_dir + "export-nodes-*.csv",
             index=False,
-            header=["neuronId:ID(Neuron)"],
+            header=["id:ID(Node)"],
         )
 
         # This is absurd, but neo4j can't tolerate file headers in every CSV,
@@ -220,7 +223,7 @@ class PrincetonIngester(FileIngester):
         # So We print off a header file first.
         headerpath = self.export_dir + "export-synapses-header.csv"
         with open(headerpath, "w") as headerfile:
-            headerfile.write(":START_ID(Neuron),:END_ID(Neuron)")
+            headerfile.write(":START_ID(Node),:END_ID(Node)")
 
         edge_fnames = export_df.to_csv(
             self.export_dir + "export-synapses-zdata-*.csv", index=False, header=False
@@ -242,21 +245,22 @@ class HarvardIngester(FileIngester):
         """
         data = json.load(open(self.path, "r"))
         export_df = pd.DataFrame(
-            {":START_ID(Neuron)": data["neuron_1"], ":END_ID(Neuron)": data["neuron_2"]}
+            {":START_ID(Node)": data["neuron_1"],
+             ":END_ID(Node)": data["neuron_2"]}
         )
 
         node_names = (
-            export_df[":START_ID(Neuron)"].append(export_df[":END_ID(Neuron)"])
+            export_df[":START_ID(Node)"].append(export_df[":END_ID(Node)"])
         ).unique()
 
         node_names_dd = dd.from_pandas(
-            pd.DataFrame({"neuronId:ID(Neuron)": node_names}), npartitions=1
+            pd.DataFrame({"id:ID(Node)": node_names}), npartitions=1
         )
 
         node_fnames = node_names_dd.to_csv(
-            self.export_dir + "export-neurons-*.csv",
+            self.export_dir + "export-nodes-*.csv",
             index=False,
-            header=["neuronId:ID(Neuron)"],
+            header=["id:ID(Node)"],
         )
 
         # This is absurd, but neo4j can't tolerate file headers in every CSV,
@@ -265,7 +269,7 @@ class HarvardIngester(FileIngester):
         export_df_dd = dd.from_pandas(export_df, npartitions=1)
         headerpath = self.export_dir + "export-synapses-header.csv"
         with open(headerpath, "w") as headerfile:
-            headerfile.write(":START_ID(Neuron),:END_ID(Neuron)")
+            headerfile.write(":START_ID(Node),:END_ID(Node)")
 
         edge_fnames = export_df_dd.to_csv(
             self.export_dir + "export-synapses-zdata-*.csv", index=False, header=False

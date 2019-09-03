@@ -96,7 +96,8 @@ class Neo4jExecutor(Executor):
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get("autoremove_container", True)
+        self._autoremove_container: str = kwargs.get(
+            "autoremove_container", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -157,7 +158,7 @@ class Neo4jExecutor(Executor):
         """
         Destroy the docker container from the running processes.
 
-        Also will handle (TODO) other teardown actions.
+        Also will handle other teardown actions.
         """
         if self._created_container:
             self._teardown_container()
@@ -179,7 +180,7 @@ class Neo4jExecutor(Executor):
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
-            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
+            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Node "/import/export-nodes-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
         )
         self._created_container = True
         container_is_ready = False
@@ -257,13 +258,13 @@ class Neo4jExecutor(Executor):
             edge_mapping[(u, v)] = edge_id
             if a["exists"]:
                 es.append(
-                    "MATCH ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
+                    "MATCH ({}:Node)-[{}:{}]-{}({}:Node)".format(
                         u, edge_id, action, "" if motif.ignore_direction else ">", v
                     )
                 )
             else:
                 es_neg.append(
-                    "NOT ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
+                    "NOT ({}:Node)-[{}:{}]-{}({}:Node)".format(
                         u, edge_id, action, "" if motif.ignore_direction else ">", v
                     )
                 )
@@ -290,7 +291,8 @@ class Neo4jExecutor(Executor):
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                f'"{value}"' if isinstance(
+                                    value, str) else value,
                             )
                         )
 
@@ -305,7 +307,8 @@ class Neo4jExecutor(Executor):
                                 n,
                                 key,
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                f'"{value}"' if isinstance(
+                                    value, str) else value,
                             )
                         )
 
@@ -325,7 +328,8 @@ class Neo4jExecutor(Executor):
                         [
                             "<>".join(sorted(a))
                             for a in list(
-                                product(motif_graph.nodes(), motif_graph.nodes())
+                                product(motif_graph.nodes(),
+                                        motif_graph.nodes())
                             )
                             if a[0] != a[1]
                         ]

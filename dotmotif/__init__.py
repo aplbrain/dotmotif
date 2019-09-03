@@ -53,6 +53,21 @@ class dotmotif:
             enforce_inequality (bool: False): Whether to enforce inequality; in
                 other words, whether two nodes should be permitted to be aliases
                 for the same node. For example, A>B>C; if A!=C, then set to True
+            pretty_print (bool: True): Whether the motif should be pretty-
+                printed. This option is irrelevant unless you're debugging your
+                queries and want to read, e.g., cypher directly.
+            parser (dotmotif.parsers.Parser: DEFAULT_MOTIF_PARSER): Which parser
+                to use to parse the motif-syntax input. Defaults to the latest
+                available parser. Don't change this unless you're having back-
+                wards-compatibility issues.
+            exclude_automorphisms (bool: False): Whether to automatically ignore
+                automorphisms when returning results. If set to True, this will
+                only return ONE representative out of an automorphism group,
+                selected arbitrarily. If set to False, this will return ALL
+                results, at the expense of a much larger result set.
+            validators (List[dotmotif.validators.Validator]): The list of vali-
+                dators to use to verify the motif. You can pass an empty array
+                if you'd like no validation to be run prior to query execution.
 
         """
         self.ignore_direction = kwargs.get("ignore_direction", False)
@@ -61,7 +76,9 @@ class dotmotif:
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
-        self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
+        self.validators = kwargs.get(
+            "validators", [DisagreeingEdgesValidator()]
+        )
         self._LOOKUP = {
             "INHIBITS": "INH",
             "EXCITES": "EXC",
@@ -104,7 +121,7 @@ class dotmotif:
 
         return self
 
-    def from_nx(self, graph: nx.DiGraph) -> None:
+    def from_nx(self, graph: nx.DiGraph) -> 'dotmotif':
         """
         Ingest directly from a graph.
 

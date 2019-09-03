@@ -10,10 +10,10 @@ B !- A
 C !> D
 """
 _DEMO_G_MIN_CYPHER = """
-MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)
-MATCH (C:Neuron)-[C_A:SYN]->(A:Neuron)
-WHERE NOT (B:Neuron)-[B_A:INH]->(A:Neuron)
- AND NOT (C:Neuron)-[C_D:SYN]->(D:Neuron)
+MATCH (A:Node)-[A_B:SYN]->(B:Node)
+MATCH (C:Node)-[C_A:SYN]->(A:Node)
+WHERE NOT (B:Node)-[B_A:INH]->(A:Node)
+ AND NOT (C:Node)-[C_D:SYN]->(D:Node)
 RETURN DISTINCT A,B,C,D
 """
 
@@ -26,7 +26,8 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
-            Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
+            Neo4jExecutor.motif_to_cypher(
+                dm).strip(), _DEMO_G_MIN_CYPHER.strip()
         )
 
     def test_dm_parser_no_pretty_print(self):
