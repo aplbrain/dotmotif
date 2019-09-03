@@ -70,3 +70,18 @@ Here, `E` is an executor (it does not matter which flavor; let's imagine it's a 
 >>> len(E.find(motif))
 1
 ```
+
+## Using the `===` automorphism operator
+
+The `===` operator is the automorphism operator in the DotMotif syntax. You can use it to indicate that two nodes are isomorphic:
+
+```
+A -> B
+B -> C
+C -> A
+
+A === B
+B === C
+```
+
+In the above example, we indicate that we do not care about the order of triangle nodes. (We do not need to include `A===C` because the DotMotif automorphism operator is transitive and symmetric.)
