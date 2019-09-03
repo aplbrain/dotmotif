@@ -28,11 +28,12 @@ dm = dotmotif().from_motif("threecycle.motif")
 
 You can also pass optional parameters into the constructor for the `dotmotif` object. Those arguments are:
 
-| Argument | Type, Default | Behavior |
-|----------|------|----------|
-`ignore_direction` | `bool`: `False` | Whether to disregard direction when generating the database query |
-| `limit` | `int`: `None` | A limit (if any) to impose on the query results |
-| `enforce_inequality` | `bool`: `False` | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, in `A->B->C`; if `A!=C`, then set to `True` |
+| Argument                | Type, Default   | Behavior                                                                                                                                                                       |
+| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ignore_direction`      | `bool`: `False` | Whether to disregard direction when generating the database query                                                                                                              |
+| `limit`                 | `int`: `None`   | A limit (if any) to impose on the query results                                                                                                                                |
+| `enforce_inequality`    | `bool`: `False` | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, in `A->B->C`; if `A!=C`, then set to `True` |
+| `exclude_automorphisms` | `bool`: `False` | Whether to return only a single example for each detected automorphism. See more in [the documentation](docs/Automorphisms.md)                                                 |
 
 
 For more details on how to write a query, see [Getting Started](docs/start.md).
