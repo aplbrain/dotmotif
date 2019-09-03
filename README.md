@@ -26,6 +26,21 @@ from dotmotif import dotmotif
 dm = dotmotif().from_motif("threecycle.motif")
 ```
 
+## Inline code in Python
+
+Alternatively, you can inline your motif in the python code when creating your `dotmotif` object:
+
+```python
+dm = dotmotif().from_motif("""
+# A excites B
+A -> B [type = "excitatory"]
+# B inhibits C
+B -> C [type = "inhibitory"]
+""")
+```
+
+## Parameters
+
 You can also pass optional parameters into the constructor for the `dotmotif` object. Those arguments are:
 
 | Argument                | Type, Default   | Behavior                                                                                                                                                                       |
