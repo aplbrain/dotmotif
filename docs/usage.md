@@ -48,7 +48,7 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 This will return a string query:
 
 ```python
-dm.to_cypher() # "MATCH (A:Neuron)-[:SYN]-> ..."
+dm.to_cypher() # "MATCH (A:Node)-[:SYN]-> ..."
 ```
 
 You can chain the entire operation into one single command using the chaining functionality of this library:
