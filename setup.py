@@ -33,6 +33,6 @@ setup(
         "pandas",
         "py2neo",
         "dask[dataframe]",
-        "tamarind>=0.1.3",
+        "tamarind>=0.1.4",
     ],
 )
