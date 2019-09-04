@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 from typing import List
+import warnings
 
+import networkx as nx
 
 from .. import Parser
 from ...validators import Validator
 
-import networkx as nx
-
 
 class ParserDMv1(Parser):
     """
+    Version 1 of the DotMotif DSL parser.
+
+    Deprecated as of 0.4.3 (Sept 2019).
     """
 
     _LOOKUP = {"INHIBITS": "INH", "EXCITES": "EXC", "SYNAPSES": "SYN"}
@@ -24,6 +27,13 @@ class ParserDMv1(Parser):
     }
 
     def __init__(self, validators: List[Validator]) -> None:
+        warnings.warn(
+            "Version 1 of the DotMotif DSL parser is deprecated as of v0.4.3. "
+            "Please update your code to use `dotmotif.parsers.v2.ParserV2`, "
+            "or you can point to `dotmotif.DEFAULT_MOTIF_PARSER` "
+            "(which will always point to the latest DSL parser available.)",
+            DeprecationWarning,
+        )
         self.validators = validators
 
     def parse(self, dm: str) -> nx.MultiDiGraph:
