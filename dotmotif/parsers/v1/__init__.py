@@ -27,6 +27,11 @@ class ParserDMv1(Parser):
     }
 
     def __init__(self, validators: List[Validator]) -> None:
+        """
+        Create a new Parser using the V1 service.
+
+        Now deprecated.
+        """
         warnings.warn(
             "Version 1 of the DotMotif DSL parser is deprecated as of v0.4.3. "
             "Please update your code to use `dotmotif.parsers.v2.ParserV2`, "
@@ -38,6 +43,9 @@ class ParserDMv1(Parser):
 
     def parse(self, dm: str) -> nx.MultiDiGraph:
         """
+        Parse the DotMotif using the old V1 DSL parser.
+
+        Now deprecated.
         """
         G = nx.MultiDiGraph()
         for line in dm.split("\n"):

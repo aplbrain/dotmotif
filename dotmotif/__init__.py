@@ -27,7 +27,7 @@ from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
