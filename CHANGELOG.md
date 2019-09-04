@@ -4,6 +4,7 @@
     - Features:
         - Add `Executor#count()` function call to return only a motif count rather than a complete result set.
         - Improve speed response of automorphism detection (use internal Neo4j IDs)
+        - Add optional wait when creating a `Neo4jExecutor`
     - Bugfixes:
         - Fix indexing of automorphisms to better jive with Neo4j's internal result ordering.
 - **0.4.2**
