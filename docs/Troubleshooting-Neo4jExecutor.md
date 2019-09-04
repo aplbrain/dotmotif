@@ -74,3 +74,16 @@ This means that the executor tried to create a new docker container, but was una
 </details>
 </li>
 </ul>
+
+</details>
+</li>
+<li>
+<details>
+<summary><b>The executor successfully creates immediately, but my first query fails.</b> (Subsequent queries within a few seconds may also fail.)</summary>
+
+Versions of `dotmotif` including and following **0.4.3** will wait for the Docker container to spin up by default before the Executor creation completes successfully. If you are using an earlier version of DotMotif, or you have passed the `wait_for_boot=False` argument to the `Neo4jExecutor` constructor, the initialization will complete while the container continues to boot in the background.
+
+This is desired behavior if you anticipate a long-running process taking place in between executor creation and your first query. But in all other cases, you should leave this flag set to `True`.
+</details>
+</li>
+</ul>
