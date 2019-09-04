@@ -334,7 +334,7 @@ class Neo4jExecutor(Executor):
             )
 
         automs = motif.list_automorphisms()
-        conditions.extend(["{}.id >= {}.id".format(a, b) for a, b in automs])
+        conditions.extend(["id({}) >= id({})".format(a, b) for a, b in automs])
 
         query = [q_match]
         if conditions:
