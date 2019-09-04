@@ -91,12 +91,15 @@ class Neo4jExecutor(Executor):
                 container's JVM.
             max_retries (int: 20): The number of times DotMotif should try to
                 connect to the neo4j container before giving up.
+            wait_for_boot (bool: True): Whether the process should pause to
+                wait for a provisioned Docker container to come online.
 
         """
         db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: str = kwargs.get("password", None)
         self._autoremove_container: str = kwargs.get("autoremove_container", True)
+        self._wait_for_boot: str = kwargs.get("wait_for_boot", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
@@ -180,6 +183,7 @@ class Neo4jExecutor(Executor):
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
             run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
+            wait=self._wait_for_boot
         )
         self._created_container = True
         container_is_ready = False
