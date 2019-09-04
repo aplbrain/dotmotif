@@ -325,7 +325,13 @@ class Neo4jExecutor(Executor):
         conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
         if count_only:
-            q_return = "WITH DISTINCT " + ",".join(list(motif_graph.nodes())) + " AS __DOTMOTIF_DISTINCT " + delim + "RETURN COUNT(*)"
+            q_return = (
+                "WITH DISTINCT "
+                + ",".join(list(motif_graph.nodes()))
+                + " AS __DOTMOTIF_DISTINCT "
+                + delim
+                + "RETURN COUNT(*)"
+            )
         else:
             q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
