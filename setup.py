@@ -9,7 +9,7 @@ git push --tags
 python setup.py sdist upload -r pypi
 """
 
-VERSION = "0.4.2"
+VERSION = "0.4.3"
 
 setup(
     name="dotmotif",
@@ -33,6 +33,6 @@ setup(
         "pandas",
         "py2neo",
         "dask[dataframe]",
-        "tamarind",
+        "tamarind>=0.1.4",
     ],
 )

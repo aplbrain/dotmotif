@@ -218,6 +218,19 @@ class Neo4jExecutor(Executor):
             return self.G.run(cypher).to_table()
         return self.G.run(cypher)
 
+    def count(self, motif: "dotmotif", limit=None) -> int:
+        """
+        Count a motif in a larger graph.
+
+        Arguments:
+            motif (dotmotif.dotmotif)
+
+        """
+        qry = self.motif_to_cypher(motif, count_only=True)
+        if limit:
+            qry += f" LIMIT {limit}"
+        return int(self.G.run(qry).to_ndarray())
+
     def find(self, motif: "dotmotif", limit=None, cursor=True) -> Table:
         """
         Find a motif in a larger graph.
@@ -234,7 +247,7 @@ class Neo4jExecutor(Executor):
         return self.G.run(qry)
 
     @staticmethod
-    def motif_to_cypher(motif: "dotmotif") -> str:
+    def motif_to_cypher(motif: "dotmotif", count_only: bool = False) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
 
@@ -311,7 +324,16 @@ class Neo4jExecutor(Executor):
 
         conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
-        q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
+        if count_only:
+            q_return = (
+                "WITH DISTINCT "
+                + ",".join(list(motif_graph.nodes()))
+                + " AS __DOTMOTIF_DISTINCT "
+                + delim
+                + "RETURN COUNT(*)"
+            )
+        else:
+            q_return = "RETURN DISTINCT " + ",".join(list(motif_graph.nodes()))
 
         if motif.limit:
             q_limit = " LIMIT {}".format(motif.limit)
@@ -334,7 +356,7 @@ class Neo4jExecutor(Executor):
             )
 
         automs = motif.list_automorphisms()
-        conditions.extend(["{}.id >= {}.id".format(a, b) for a, b in automs])
+        conditions.extend(["id({}) < id({})".format(a, b) for a, b in automs])
 
         query = [q_match]
         if conditions:
