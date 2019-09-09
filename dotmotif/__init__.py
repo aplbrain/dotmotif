@@ -17,6 +17,7 @@ limitations under the License.
 
 from typing import Union, IO
 import pickle
+import warnings
 
 import networkx as nx
 from networkx.algorithms import isomorphism
@@ -26,7 +27,7 @@ from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -104,7 +105,7 @@ class dotmotif:
 
         return self
 
-    def from_nx(self, graph: nx.DiGraph) -> None:
+    def from_nx(self, graph: nx.DiGraph) -> "dotmotif":
         """
         Ingest directly from a graph.
 
@@ -115,6 +116,13 @@ class dotmotif:
             None
 
         """
+
+        warnings.warn(
+            "The dotmotif#from_nx call is deprecated as of v0.4.3. "
+            "For more information, please read here: "
+            "https://github.com/aplbrain/dotmotif/issues/43",
+            DeprecationWarning,
+        )
         self._g = graph
         return self
 

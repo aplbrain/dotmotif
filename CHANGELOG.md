@@ -7,6 +7,10 @@
         - Add optional wait when creating a `Neo4jExecutor`
     - Bugfixes:
         - Fix indexing of automorphisms to better jive with Neo4j's internal result ordering.
+    - Deprecations:
+        - Warnings:
+            - `dotmotif.parsers.v1.ParserV1`
+            - `dotmotif.from_nx`
 - **0.4.2**
     - Features:
         - Add `dotmotif#save` and `dotmotif#load` to save and load configuration files.
