@@ -161,6 +161,14 @@ class NetworkXExecutor(Executor):
                 return False
         return True
 
+    def count(self, motif: "dotmotif", limit: int = None):
+        """
+        Count the occurrences of a motif in a graph.
+
+        See NetworkXExecutor#find for more documentation.
+        """
+        return len(self.find(motif, limit))
+
     def find(self, motif: "dotmotif", limit: int = None):
         """
         Find a motif in a larger graph.
