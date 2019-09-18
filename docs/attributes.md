@@ -69,6 +69,19 @@ A.type = "Glu"
 B.type = "ACh"
 ```
 
+## Advanced Usage
+
+Node and edge attributes are both valid syntax for use within a macro. This means that you can write macros that only accept a single argument:
+
+```
+is_big(A) {
+    A.size > 10;
+    A.girthiness > 100;
+}
+
+A -> B;
+```
+
 # Available Operators
 
 ## Edge Operators
