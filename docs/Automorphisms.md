@@ -58,7 +58,8 @@ C -> A
 Here, `E` is an executor (it does not matter which flavor; let's imagine it's a `NetworkXExecutor`, for example):
 
 ```python
->>> motif dotmotif().from_motif("triangle.motif")
+>>> E = NetworkXExecutor()
+>>> motif = dotmotif().from_motif("triangle.motif")
 >>> len(E.find(motif))
 3
 ```
@@ -66,7 +67,8 @@ Here, `E` is an executor (it does not matter which flavor; let's imagine it's a 
 ### With `exclude_automorphisms` set to `True`:
 
 ```python
->>> motif dotmotif(exclude_automorphisms=True).from_motif("triangle.motif")
+>>> E = NetworkXExecutor()
+>>> motif = dotmotif(exclude_automorphisms=True).from_motif("triangle.motif")
 >>> len(E.find(motif))
 1
 ```
