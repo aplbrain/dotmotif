@@ -25,7 +25,7 @@ import tamarind
 # Types only:
 from py2neo.data import Table
 import networkx as nx
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .. import dotmotif
@@ -95,17 +95,17 @@ class Neo4jExecutor(Executor):
                 wait for a provisioned Docker container to come online.
 
         """
-        db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
+        db_bolt_uri: Optional[str] = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
-        password: str = kwargs.get("password", None)
-        self._autoremove_container: str = kwargs.get("autoremove_container", True)
-        self._wait_for_boot: str = kwargs.get("wait_for_boot", True)
+        password: Optional[str] = kwargs.get("password", None)
+        self._autoremove_container: bool = kwargs.get("autoremove_container", True)
+        self._wait_for_boot: bool = kwargs.get("wait_for_boot", True)
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
 
         graph: nx.Graph = kwargs.get("graph", None)
-        import_directory: str = kwargs.get("import_directory", None)
+        import_directory: Optional[str] = kwargs.get("import_directory", None)
 
         self._created_container = False
         self._tamarind_provisioner = None
@@ -183,7 +183,7 @@ class Neo4jExecutor(Executor):
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
             run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
-            wait=self._wait_for_boot
+            wait=self._wait_for_boot,
         )
         self._created_container = True
         container_is_ready = False
@@ -192,7 +192,7 @@ class Neo4jExecutor(Executor):
             try:
                 self.G = self._tamarind_provisioner[self._tamarind_container_id]
                 container_is_ready = True
-            except:
+            except Exception as e:
                 tries += 1
                 if tries > self.max_retries:
                     raise IOError(
@@ -288,13 +288,10 @@ class Neo4jExecutor(Executor):
         delim = "\n" if motif.pretty_print else " "
 
         conditions = []
-
         if es_neg:
-            q_match = delim.join(
-                [delim.join(es), "WHERE " + f"{delim} AND ".join(es_neg)]
-            )
-        else:
-            q_match = delim.join([delim.join(es)])
+            conditions = es_neg  # f"{delim} AND ".join(es_neg)
+
+        q_match = delim.join([delim.join(es)])
 
         # Edge constraints:
         cypher_edge_constraints = []
@@ -345,18 +342,13 @@ class Neo4jExecutor(Executor):
             q_limit = ""
 
         if motif.enforce_inequality:
-            conditions.extend(
-                list(
-                    set(
-                        [
-                            "<>".join(sorted(a))
-                            for a in list(
-                                product(motif_graph.nodes(), motif_graph.nodes())
-                            )
-                            if a[0] != a[1]
-                        ]
-                    )
-                )
+            _nodes = [str(a) for a in motif_graph.nodes()]
+            conditions.extend(sorted(
+                list({
+                    "<>".join(sorted(a))
+                    for a in list(product(_nodes, _nodes))
+                    if a[0] != a[1]
+                }))
             )
 
         automs = motif.list_automorphisms()
