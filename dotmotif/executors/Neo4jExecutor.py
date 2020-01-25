@@ -280,8 +280,8 @@ class Neo4jExecutor(Executor):
                 )
             else:
                 es_neg.append(
-                    "NOT ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
-                        u, edge_id, action, "" if motif.ignore_direction else ">", v
+                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
+                        u, action, "" if motif.ignore_direction else ">", v
                     )
                 )
 
