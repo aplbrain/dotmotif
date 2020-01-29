@@ -179,10 +179,48 @@ class NetworkXExecutor(Executor):
         """
         # TODO: Can add constraints on iso node assignment. If we do this a
         # little smarter, can save a lot of post-processing time-complexity.
-        gm = nx.algorithms.isomorphism.GraphMatcher(self.graph, motif.to_nx())
-        results = [
-            {v: k for k, v in r.items()} for r in gm.subgraph_isomorphisms_iter()
+
+        # We need to first remove "negative" nodes from the motif, and then
+        # filter them out later on. Though this reduces the speed of the graph-
+        # matching, NetworkX does not seem to support this out of the box.
+        # TODO: Confirm that networkx does not support this out of the box.
+        only_positive_edges_motif = nx.DiGraph()
+        must_not_exist_edges = []
+        for u, v, attrs in motif.to_nx().edges(data=True):
+            if attrs["exists"] is True:
+                only_positive_edges_motif.add_edge(u, v, **attrs)
+            elif attrs["exists"] is False:
+                # Collect a list of neg-edges to check for again in a moment
+                must_not_exist_edges.append((u, v))
+        gm = nx.algorithms.isomorphism.GraphMatcher(
+            self.graph, only_positive_edges_motif
+        )
+
+        def _doesnt_have_any_of_motifs_negative_edges(mapping):
+            for u, v in must_not_exist_edges:
+                if self.graph.has_edge(mapping[u], mapping[v]):
+                    return False
+            return True
+
+        unfiltered_results = [
+            # Here, `mapping` has keys of self.graph node IDs and values of
+            # motif node names. We need the reverse for pretty much everything
+            # we do from here out, so we reverse the pairs.
+            {v: k for k, v in mapping.items()}
+            for mapping in gm.subgraph_isomorphisms_iter()
         ]
+        # Now, filter out those that have edges they should not:
+        results = [
+            mapping
+            for mapping in unfiltered_results
+            if _doesnt_have_any_of_motifs_negative_edges(mapping)
+        ]
+        # for node_var_name, node_graph_id in results:
+        # for u, v in must_not_exist_edges:
+
+        # ah shit need to look up the mapping for the nodes i guess
+
+        # Now, filter on attributes:
         res = [
             r
             for r in results
