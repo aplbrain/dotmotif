@@ -27,7 +27,7 @@ from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -96,9 +96,12 @@ class dotmotif:
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
-            self._g, self._edge_constraints, self._node_constraints, self._automorphisms = (
-                result
-            )
+            (
+                self._g,
+                self._edge_constraints,
+                self._node_constraints,
+                self._automorphisms,
+            ) = result
         else:
             # For backwards compatibility with parser v1
             self._g = result
