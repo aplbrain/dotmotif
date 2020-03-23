@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 from typing import Union, IO
+import copy
 import pickle
 import warnings
 
@@ -126,7 +127,10 @@ class dotmotif:
             "https://github.com/aplbrain/dotmotif/issues/43",
             DeprecationWarning,
         )
-        self._g = graph
+        self._g = copy.deepcopy(graph)
+        for u, v, edge_attrs in self._g.edges(data=True):
+            if "exists" not in edge_attrs:
+                self._g.edges[u, v]["exists"] = True
         return self
 
     def to_nx(self) -> nx.DiGraph:
