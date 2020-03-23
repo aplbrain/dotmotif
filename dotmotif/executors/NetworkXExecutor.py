@@ -184,7 +184,15 @@ class NetworkXExecutor(Executor):
         # filter them out later on. Though this reduces the speed of the graph-
         # matching, NetworkX does not seem to support this out of the box.
         # TODO: Confirm that networkx does not support this out of the box.
-        only_positive_edges_motif = nx.DiGraph()
+
+        if motif.ignore_direction or not self.graph.is_directed:
+            graph_constructor = nx.Graph
+            graph_matcher = nx.algorithms.isomorphism.GraphMatcher
+        else:
+            graph_constructor = nx.DiGraph
+            graph_matcher = nx.algorithms.isomorphism.DiGraphMatcher
+
+        only_positive_edges_motif = graph_constructor()
         must_not_exist_edges = []
         for u, v, attrs in motif.to_nx().edges(data=True):
             if attrs["exists"] is True:
@@ -192,9 +200,7 @@ class NetworkXExecutor(Executor):
             elif attrs["exists"] is False:
                 # Collect a list of neg-edges to check for again in a moment
                 must_not_exist_edges.append((u, v))
-        gm = nx.algorithms.isomorphism.GraphMatcher(
-            self.graph, only_positive_edges_motif
-        )
+        gm = graph_matcher(self.graph, only_positive_edges_motif)
 
         def _doesnt_have_any_of_motifs_negative_edges(mapping):
             for u, v in must_not_exist_edges:
@@ -209,16 +215,13 @@ class NetworkXExecutor(Executor):
             {v: k for k, v in mapping.items()}
             for mapping in gm.subgraph_isomorphisms_iter()
         ]
+
         # Now, filter out those that have edges they should not:
         results = [
             mapping
             for mapping in unfiltered_results
             if _doesnt_have_any_of_motifs_negative_edges(mapping)
         ]
-        # for node_var_name, node_graph_id in results:
-        # for u, v in must_not_exist_edges:
-
-        # ah shit need to look up the mapping for the nodes i guess
 
         # Now, filter on attributes:
         res = [
@@ -235,7 +238,10 @@ class NetworkXExecutor(Executor):
                 # sorted, so this comparison is _opposite_ the check that we
                 # use in the other executors. In other words, we usually check
                 # that A >= B; here we check A <= B.
-                and all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
+                and (
+                    (not motif.exclude_automorphisms)
+                    or all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
+                )
             )
         ]
         return res
