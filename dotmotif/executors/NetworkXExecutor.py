@@ -213,7 +213,7 @@ class NetworkXExecutor(Executor):
             # motif node names. We need the reverse for pretty much everything
             # we do from here out, so we reverse the pairs.
             {v: k for k, v in mapping.items()}
-            for mapping in gm.subgraph_isomorphisms_iter()
+            for mapping in gm.subgraph_monomorphisms_iter()
         ]
 
         # Now, filter out those that have edges they should not:

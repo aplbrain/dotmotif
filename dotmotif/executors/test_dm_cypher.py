@@ -18,7 +18,7 @@ C !> D
 _DEMO_G_MIN_CYPHER = """
 MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)
 MATCH (C:Neuron)-[C_A:SYN]->(A:Neuron)
-WHERE NOT (B:Neuron)-[B_A:INH]->(A:Neuron) AND NOT (C:Neuron)-[C_D:SYN]->(D:Neuron)
+WHERE NOT (B:Neuron)-[:INH]->(A:Neuron) AND NOT (C:Neuron)-[:SYN]->(D:Neuron)
 RETURN DISTINCT A,B,C,D
 """
 
@@ -172,7 +172,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
             (
                 "MATCH (A:Neuron)-[A_B:SYN]->(B:Neuron)\n"
                 "MATCH (A:Neuron)-[A_C:SYN]->(C:Neuron)\n"
-                "WHERE NOT (B:Neuron)-[B_C:SYN]->(C:Neuron) AND A<>B AND A<>C AND B<>C\n"
+                "WHERE NOT (B:Neuron)-[:SYN]->(C:Neuron) AND A<>B AND A<>C AND B<>C\n"
                 "RETURN DISTINCT A,B,C"
             ).strip(),
         )

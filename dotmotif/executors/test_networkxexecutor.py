@@ -349,6 +349,18 @@ class TestSmallMotifs(unittest.TestCase):
         )
 
         res = NetworkXExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 2)
+
+        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+            """
+            A -> C
+            B -> C
+
+            A === B
+            """
+        )
+
+        res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
 
     def test_automorphism_auto(self):

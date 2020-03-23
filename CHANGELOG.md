@@ -1,12 +1,14 @@
 # Changelog
 
-- **0.4.3**
+- **0.5.0**
     - Features:
         - Add `Executor#count()` function call to return only a motif count rather than a complete result set.
         - Improve speed response of automorphism detection (use internal Neo4j IDs)
         - Add optional wait when creating a `Neo4jExecutor`
     - Bugfixes:
         - Fix indexing of automorphisms to better jive with Neo4j's internal result ordering.
+        - Fix issue where `NetworkXExecutor` would fail to identify all isomorphisms. This was due to a nomenclature mismatch between NetworkX and other executors. More details [here](https://github.com/aplbrain/dotmotif/issues/64).
+        - Automatically add `exists=True` condition to edges added using dotmotif#from_nx().
     - Deprecations:
         - Warnings:
             - `dotmotif.parsers.v1.ParserV1`

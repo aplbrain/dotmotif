@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 from typing import Union, IO
+import copy
 import pickle
 import warnings
 
@@ -27,7 +28,7 @@ from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -96,9 +97,12 @@ class dotmotif:
 
         result = self.parser(validators=self.validators).parse(cmd)
         if isinstance(result, tuple):
-            self._g, self._edge_constraints, self._node_constraints, self._automorphisms = (
-                result
-            )
+            (
+                self._g,
+                self._edge_constraints,
+                self._node_constraints,
+                self._automorphisms,
+            ) = result
         else:
             # For backwards compatibility with parser v1
             self._g = result
@@ -123,7 +127,10 @@ class dotmotif:
             "https://github.com/aplbrain/dotmotif/issues/43",
             DeprecationWarning,
         )
-        self._g = graph
+        self._g = copy.deepcopy(graph)
+        for u, v, edge_attrs in self._g.edges(data=True):
+            if "exists" not in edge_attrs:
+                self._g.edges[u, v]["exists"] = True
         return self
 
     def to_nx(self) -> nx.DiGraph:
