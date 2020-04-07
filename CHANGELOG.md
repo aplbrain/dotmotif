@@ -5,6 +5,7 @@
         - Better search-operator support in `NetworkXExecutor`
     - Housekeeping:
         - Upgrade to networkx v2.4
+        - Include `Neo4jExecutor` in default package imports
 - **0.5.0** (April 07 2020)
     - Features:
         - Add `Executor#count()` function call to return only a motif count rather than a complete result set.
