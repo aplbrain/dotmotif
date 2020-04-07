@@ -1,0 +1,8 @@
+networkx>=2.4
+numpy
+lark-parser
+docker
+pandas
+py2neo
+dask[dataframe]
+tamarind>=0.1.5
