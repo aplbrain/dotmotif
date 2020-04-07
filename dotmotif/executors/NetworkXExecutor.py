@@ -60,6 +60,8 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
         "<": lambda x, y: x < y,
         ">": lambda x, y: x > y,
         "!=": lambda x, y: x != y,
+        "in": lambda x, y: x in y,
+        "contains": lambda x, y: y in x,
     }
 
     for key, clist in constraints.items():
@@ -112,7 +114,7 @@ class NetworkXExecutor(Executor):
         for motif_U, constraint_list in constraints.items():
             graph_u = node_isomorphism_map[motif_U]
 
-            if not _node_satisfies_constraints(graph.node[graph_u], constraint_list):
+            if not _node_satisfies_constraints(graph.nodes[graph_u], constraint_list):
                 return False
         return True
 

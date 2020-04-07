@@ -1,6 +1,11 @@
 # Changelog
 
-- **0.5.0**
+- **0.5.1**
+    - Features:
+        - Better search-operator support in `NetworkXExecutor`
+    - Housekeeping:
+        - Upgrade to networkx v2.4
+- **0.5.0** (April 07 2020)
     - Features:
         - Add `Executor#count()` function call to return only a motif count rather than a complete result set.
         - Improve speed response of automorphism detection (use internal Neo4j IDs)
