@@ -1,4 +1,5 @@
 # Standard installs:
+import abc
 import json
 import os
 import numbers
@@ -12,6 +13,36 @@ from typing import List
 import networkx as nx
 
 from .. import utils
+
+
+class NetworkXConverter(abc.ABC):
+    """
+    An abstract base class for import to the NetworkX format.
+
+    """
+    pass
+
+    def to_graph(self) -> nx.Graph:
+        ...
+
+
+class CSVEdgelistConverter(NetworkXConverter):
+    """
+    A converter that takes an arbitrary CSV file on disk and converts it to a graph.
+
+    """
+
+    def __init__(self, filepath: str, u_id_column: str, v_id_column: str, directed: bool=True):
+        data = pd.read_csv(filepath, dtype={
+            u_id_column: str,
+            v_id_column: str,
+        })
+        self._graph = nx.DiGraph() if directed else nx.Graph()
+        for i, row in data.iterrows():
+            self._graph.add_edge(str(row[u_id_column]), str(row[v_id_column]), **dict(row))
+
+    def to_graph(self):
+        return self._graph
 
 
 class Ingester:
@@ -174,11 +205,11 @@ class NetworkXIngester(Ingester):
         ]
 
 
-class PrincetonIngester(FileIngester):
+class _deprecated_Type2FileIngester(FileIngester):
     """
-    An Ingester that reads data in the Princeton CSV file format.
+    An Ingester that reads data in the Type 2 CSV file format.
 
-    The Princeton data are an edge-list, with extra columns that are currently
+    The data are an edge-list, with extra columns that are currently
     ignored after ingest.
     """
 
@@ -229,7 +260,7 @@ class PrincetonIngester(FileIngester):
         return node_fnames + [headerpath] + edge_fnames
 
 
-class HarvardIngester(FileIngester):
+class _deprecated_Type1FileIngester(FileIngester):
     def __init__(self, path: str, export_dir: str) -> None:
         """
         Create a new ingester.
