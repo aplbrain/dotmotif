@@ -52,3 +52,22 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 
 
 For more details on how to write a query, see [Getting Started](docs/start.md).
+
+
+# Citing
+
+If this tool is helpful to your research, please consider citing it with:
+
+```
+# https://www.biorxiv.org/content/10.1101/2020.06.08.140533v1
+@article{matelsky_2020_dotmotif,
+    doi = {10.1101/2020.06.08.140533},
+    url = {https://www.biorxiv.org/content/10.1101/2020.06.08.140533v1},
+    year = 2020,
+    month = {june},
+    publisher = {BiorXiv},
+    author = {Matelsky, Jordan K. and Reilly, Elizabeth P. and Johnson,Erik C. and Wester, Brock A. and Gray-Roncal, William},
+    title = {{Connectome subgraph isomorphisms and graph queries with DotMotif}},
+    journal = {BiorXiv}
+}
+```
