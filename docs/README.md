@@ -1,6 +1,6 @@
 # dotmotif
 
-* [Installing dotmotif](installation)
-* [Getting started](start)
-* [Usage](usage)
-* [Constraints](attributes)
+* [Installing dotmotif](installation.md)
+* [Getting started](start.md)
+* [Usage](usage.md)
+* [Constraints](attributes.md)
