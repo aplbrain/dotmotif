@@ -1,5 +1,10 @@
 # Changelog
 
+- **0.6.0**
+    - Features:
+        - Add dynamic node constraints for comparisons at runtime (#74)
+    - DSL:
+        - Add dynamic node constraints with `Node.key [op] Node.key` syntax (#74)
 - **0.5.1**
     - Features:
         - Better search-operator support in `NetworkXExecutor`
