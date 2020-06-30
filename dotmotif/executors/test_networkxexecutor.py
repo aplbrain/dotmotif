@@ -421,8 +421,8 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(res), 1)
 
 
-class TestDynammicNodeConstraints(unittest.TestCase):
-    def test_dynamic_constraints(self):
+class TestDynamicNodeConstraints(unittest.TestCase):
+    def test_dynamic_constraints_zero_results(self):
         """
         Test that comparisons may be made between variables, e.g.:
 
@@ -441,7 +441,50 @@ class TestDynammicNodeConstraints(unittest.TestCase):
         """
         dm = dotmotif.dotmotif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
-        self.assertEqual(len(res), 3)
+        self.assertEqual(len(res), 0)
+
+    def test_dynamic_constraints_one_result(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_node("A", radius=25)
+        G.add_node("B", radius=10)
+        exp = """\
+        A -> B
+        A.radius > B.radius
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 1)
+
+    def test_dynamic_constraints_two_results(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_node("A", radius=25)
+        G.add_node("B", radius=10)
+        G.add_node("C", radius=5)
+        exp = """\
+        A -> B
+        A.radius > B.radius
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
 
     # def test_dynamic_constraints_in_macros(self):
     #     """
