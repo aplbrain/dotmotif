@@ -63,7 +63,7 @@ class ParserDMv1(Parser):
         if len(_line) and _line.startswith("#"):
             return None
         line = [t for t in _line.split() if len(t)]
-        if len(line) is 0:
+        if len(line) == 0:
             return None
 
         # Format should be [NEURON_ID, ACTION, NEURON_ID]
