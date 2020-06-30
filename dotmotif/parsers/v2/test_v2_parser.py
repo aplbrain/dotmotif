@@ -446,20 +446,20 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm.from_motif(exp)
         self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
 
-    # def test_dynamic_constraints_in_macro(self):
-    #     """
-    #     Test that comparisons may be made between variables in a macro, e.g.:
+    def test_dynamic_constraints_in_macro(self):
+        """
+        Test that comparisons may be made between variables in a macro, e.g.:
 
-    #     A.type != B.type
+        A.type != B.type
 
-    #     """
-    #     exp = """\
-    #     macro(A, B) {
-    #         A.radius > B.radius
-    #     }
-    #     macro(A, B)
-    #     A -> B
-    #     """
-    #     dm = dotmotif.dotmotif(parser=ParserV2)
-    #     dm.from_motif(exp)
-    #     self.assertEqual(len(dm.list_node_constraints()), 1)
+        """
+        exp = """\
+        macro(A, B) {
+            A.radius > B.radius
+        }
+        macro(A, B)
+        A -> B
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
