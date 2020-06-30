@@ -87,10 +87,11 @@ edge_clause     : key op value
 
 
 // Node constraints:
-node_constraint : node_id "." key op value_or_quoted_value
-                | node_id "." key op node_id "." key
+node_constraint         : node_id "." key op value_or_quoted_value
+                        | node_id "." key op node_id "." key
 
-macro_node_constraint : node_id "." key op value_or_quoted_value
+macro_node_constraint   : node_id "." key op value_or_quoted_value
+                        | node_id "." key op node_id "." key
 
 
 // Automorphism notation:

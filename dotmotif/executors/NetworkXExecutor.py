@@ -134,7 +134,6 @@ class NetworkXExecutor(Executor):
                             return False
                         if that_key not in graph.nodes[that_node]:
                             return False
-                        # raise ValueError(graph[this_node][this_key], graph[that_node][that_key])
                         if not _OPERATORS[operator](
                             graph.nodes[this_node][this_key],
                             graph.nodes[that_node][that_key],

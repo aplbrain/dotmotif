@@ -462,4 +462,4 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         """
         dm = dotmotif.dotmotif(parser=ParserV2)
         dm.from_motif(exp)
-        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
