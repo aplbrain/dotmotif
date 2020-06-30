@@ -1,5 +1,5 @@
 """
-Copyright 2018 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -323,6 +323,21 @@ class Neo4jExecutor(Executor):
                             )
                         )
 
+        # Dynamic node constraints:
+        for n, a in motif.list_dynamic_node_constraints().items():
+            for key, constraints in a.items():
+                for operator, values in constraints.items():
+                    for value in values:
+                        cypher_node_constraints.append(
+                            "{}.{} {} {}.{}".format(
+                                n,
+                                key,
+                                _remapped_operator(operator),
+                                value[0],
+                                value[1],
+                            )
+                        )
+
         conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
         if count_only:
@@ -343,12 +358,16 @@ class Neo4jExecutor(Executor):
 
         if motif.enforce_inequality:
             _nodes = [str(a) for a in motif_graph.nodes()]
-            conditions.extend(sorted(
-                list({
-                    "<>".join(sorted(a))
-                    for a in list(product(_nodes, _nodes))
-                    if a[0] != a[1]
-                }))
+            conditions.extend(
+                sorted(
+                    list(
+                        {
+                            "<>".join(sorted(a))
+                            for a in list(product(_nodes, _nodes))
+                            if a[0] != a[1]
+                        }
+                    )
+                )
             )
 
         automs = motif.list_automorphisms()

@@ -199,8 +199,24 @@ class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
         )
 
 
+class TestDynamicNodeConstraints(unittest.TestCase):
+    def test_dynamic_constraints_in_cypher(self):
+        dm = dotmotif.dotmotif(enforce_inequality=True)
+        dm.from_motif(
+            """
+        A -> B
+        A.radius >= B.radius
+        A.zorf != B.zorf
+        """
+        )
+        self.assertIn(
+            "WHERE A.radius >= B.radius AND A.zorf <> B.zorf",
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
+        )
+
+
 class BugReports(unittest.TestCase):
-    def test_fix_where_clause_github_35(self):
+    def test_fix_where_clause__github_35(self):
         dm = dotmotif.dotmotif(enforce_inequality=True)
         dm.from_motif(
             """
@@ -208,3 +224,4 @@ class BugReports(unittest.TestCase):
         """
         )
         self.assertIn("WHERE", Neo4jExecutor.motif_to_cypher(dm).strip())
+
