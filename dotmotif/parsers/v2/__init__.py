@@ -94,15 +94,30 @@ class DotMotifTransformer(Transformer):
             )
 
         else:
-            raise ValueError("Something is wrong with the node comparison ", tup)
+            raise ValueError("Something is wrong with the node comparison", tup)
 
     def macro_node_constraint(self, tup):
-        node_id, key, op, val = tup
-        node_id = str(node_id)
-        key = str(key)
-        op = str(op)
-        val = untype_string(val)
-        return ("node_constraint", node_id, key, op, val)
+
+        if len(tup) == 4:
+            node_id, key, op, val = tup
+            node_id = str(node_id)
+            key = str(key)
+            op = str(op)
+            val = untype_string(val)
+            return ("node_constraint", node_id, key, op, val)
+
+        if len(tup) == 5:
+            this_node, this_key, op, that_node, that_key = tup
+            this_node = str(this_node)
+            this_key = str(this_key)
+            that_node = str(that_node)
+            that_key = str(that_key)
+            op = str(op)
+            return ("node_constraint", this_node, this_key, op, that_node, that_key)
+
+        raise ValueError(
+            "Something is wrong in this macro with the node comparison ", tup
+        )
 
     def key(self, key):
         return str(key)
@@ -134,7 +149,7 @@ class DotMotifTransformer(Transformer):
             # from all existing ones.
             candidate_edges = self.G.get_edge_data(u, v)
             # There are many of these because this is a multidigraph.
-            for i, edge in candidate_edges.items():
+            for _, edge in candidate_edges.items():
                 if edge["exists"] == rel["exists"] and edge["action"] == rel["type"]:
                     # Don't need to re-add an identical edge
                     return
@@ -243,11 +258,17 @@ class DotMotifTransformer(Transformer):
             elif len(rule) == 4:
                 # This is an edge with attributes.
                 left, rel, right, attrs = rule
-            else:
+            elif rule[0] == "node_constraint" and len(rule) == 5:
                 # This is a node constraint!
                 _, node, key, op, val = rule
                 node = args[macro_args.index(node)]
                 self.node_constraint((node, key, op, val))
+                continue
+            elif rule[0] == "node_constraint" and len(rule) == 6:
+                # This is a dynamic node constraint!
+                _, this_node, this_key, op, that_node, that_key = rule
+                this_node = args[macro_args.index(this_node)]
+                self.node_constraint((this_node, this_key, op, that_node, that_key))
                 continue
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace

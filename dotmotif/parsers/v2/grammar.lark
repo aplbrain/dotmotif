@@ -80,10 +80,10 @@ relation_type   : ">"                               -> rel_def
                 | "|"                               -> rel_neg
 
 // Edge attributes are separated from the main edge declaration with sqbrackets
-edge_clauses   : edge_clause ("," edge_clause)*
-macro_edge_clauses   : edge_clause ("," edge_clause)*
+edge_clauses            : edge_clause ("," edge_clause)*
+macro_edge_clauses      : edge_clause ("," edge_clause)*
 
-edge_clause     : key op value
+edge_clause             : key op value
 
 
 // Node constraints:
