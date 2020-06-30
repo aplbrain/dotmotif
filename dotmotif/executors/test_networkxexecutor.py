@@ -5,20 +5,18 @@ from dotmotif.executors.NetworkXExecutor import (
     _edge_satisfies_constraints,
     _node_satisfies_constraints,
 )
+from dotmotif.parsers.v2 import ParserV2
 import networkx as nx
 
 
-# class TestNodeConstraintsSatisfy(unittest.TestCase):
-#
-# TODO: Don't need this class because the two functions (edge/node) are
-# currently the same. See todo note in networkx executor file.
-# def test_edge_satisfies_eq(self):
-#     constraints = {"radius": {"==": [10]}}
-#     node = {"radius": 10}
-#     self.assertTrue(_node_satisfies_constraints(node, constraints))
-#     constraints = {"radius": {"==": [-10.5]}}
-#     node = {"radius": -21/2}
-#     self.assertTrue(_node_satisfies_constraints(node, constraints))
+class TestNodeConstraintsSatisfy(unittest.TestCase):
+    def test_edge_satisfies_eq(self):
+        constraints = {"radius": {"==": [10]}}
+        node = {"radius": 10}
+        self.assertTrue(_node_satisfies_constraints(node, constraints))
+        constraints = {"radius": {"==": [-10.5]}}
+        node = {"radius": -21 / 2}
+        self.assertTrue(_node_satisfies_constraints(node, constraints))
 
 
 class TestEdgeConstraintsSatisfy(unittest.TestCase):
@@ -421,3 +419,48 @@ class TestSmallMotifs(unittest.TestCase):
         )
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
+
+    def test_dynamic_constraints(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_node("A", radius=5)
+        G.add_node("B", radius=10)
+        exp = """\
+        A -> B
+        A.radius > B.radius
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 3)
+
+    def test_dynamic_constraints_in_macros(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_node("A", radius=5)
+        G.add_node("B", radius=10)
+        exp = """\
+        macro(A, B) {
+            A.radius > B.radius
+        }
+        macro(A, B)
+        A -> B
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 3)

@@ -428,3 +428,36 @@ class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
         dm.from_motif(exp)
         self.assertEqual(len(dm.list_node_constraints()), 2)
         self.assertEqual(list(dm.list_node_constraints().keys()), ["Aaa", "Ba"])
+
+    def test_dynamic_constraints(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B
+        A.radius > B.radius
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+
+    def test_dynamic_constraints_in_macro(self):
+        """
+        Test that comparisons may be made between variables in a macro, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        macro(A, B) {
+            A.radius > B.radius
+        }
+        macro(A, B)
+        A -> B
+        """
+        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm.from_motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
