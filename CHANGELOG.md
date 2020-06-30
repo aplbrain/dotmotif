@@ -8,6 +8,8 @@
     - Executors:
         - `NetworkXExecutor`: Support dynamic node constraints
         - `Neo4jExecutor`: Support dynamic node constraints
+    - Housekeeping:
+        - Add GitHub actions for Python 3.6, 3.7, and 3.8 tests
 - **0.5.1**
     - Features:
         - Better search-operator support in `NetworkXExecutor`
