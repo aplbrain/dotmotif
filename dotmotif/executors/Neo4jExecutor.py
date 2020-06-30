@@ -1,5 +1,5 @@
 """
-Copyright 2018 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

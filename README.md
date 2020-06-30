@@ -11,6 +11,7 @@
 You can currently write motifs in dotmotif form, which is a DSL that specializes in subgraph query notation.
 
 `threecycle.motif`
+
 ```
 # A excites B
 A -> B [type = "excitatory"]
@@ -50,9 +51,7 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 | `enforce_inequality`    | `bool`: `False` | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, in `A->B->C`; if `A!=C`, then set to `True` |
 | `exclude_automorphisms` | `bool`: `False` | Whether to return only a single example for each detected automorphism. See more in [the documentation](docs/Automorphisms.md)                                                 |
 
-
 For more details on how to write a query, see [Getting Started](docs/start.md).
-
 
 # Citing
 

@@ -35,7 +35,7 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
                     # # TODO: unless you tried a comparison
-                    # against an undefined value (i.e. VALUE >= undefined)
+                    # against an undefined value (i.e. VALUE != undefined)
                     return False
                 if not operator_success:
                     # Fail fast, if any edge attributes fail the test
@@ -47,11 +47,7 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
     """
     Check if a single node satisfies the constraints.
 
-    TODO: This function is distinct from the above because I anticipate that
-    differences will emerge as the implementation matures. But these are
-    currently identical functions otherwise. -- @j6k4m8 Jan 2019
     """
-
     for key, clist in constraints.items():
         for operator, values in clist.items():
             for value in values:

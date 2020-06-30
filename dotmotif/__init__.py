@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright 2018 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ from .validators import DisagreeingEdgesValidator
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
