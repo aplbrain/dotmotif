@@ -5,6 +5,9 @@
         - Add dynamic node constraints for comparisons at runtime (#74)
     - DSL:
         - Add dynamic node constraints with `Node.key [op] Node.key` syntax (#74)
+    - Executors:
+        - `NetworkXExecutor`: Support dynamic node constraints
+        - `Neo4jExecutor`: Support dynamic node constraints
 - **0.5.1**
     - Features:
         - Better search-operator support in `NetworkXExecutor`
