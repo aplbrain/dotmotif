@@ -24,12 +24,21 @@ class DotMotifTransformer(Transformer):
         self.G = nx.MultiDiGraph()
         self.edge_constraints: dict = {}
         self.node_constraints: dict = {}
+        self.dynamic_edge_constraints: dict = {}
+        self.dynamic_node_constraints: dict = {}
         self.automorphisms: list = []
         super().__init__(*args, **kwargs)
 
     def transform(self, tree):
         self._transform_tree(tree)
-        return self.G, self.edge_constraints, self.node_constraints, self.automorphisms
+        return (
+            self.G,
+            self.edge_constraints,
+            self.node_constraints,
+            self.dynamic_edge_constraints,
+            self.dynamic_node_constraints,
+            self.automorphisms,
+        )
 
     def edge_clauses(self, tup):
         attrs = {}
@@ -47,18 +56,45 @@ class DotMotifTransformer(Transformer):
         return str(key), str(op), val
 
     def node_constraint(self, tup):
-        node_id, key, op, val = tup
-        node_id = str(node_id)
-        key = str(key)
-        op = str(op)
-        val = untype_string(val)
-        if node_id not in self.node_constraints:
-            self.node_constraints[node_id] = {}
-        if key not in self.node_constraints[node_id]:
-            self.node_constraints[node_id][key] = {}
-        if op not in self.node_constraints[node_id][key]:
-            self.node_constraints[node_id][key][op] = []
-        self.node_constraints[node_id][key][op].append(val)
+
+        if len(tup) == 4:
+            # This is of the form "Node.Key [OP] Value"
+            node_id, key, op, val = tup
+            node_id = str(node_id)
+            key = str(key)
+            op = str(op)
+            val = untype_string(val)
+            if node_id not in self.node_constraints:
+                self.node_constraints[node_id] = {}
+            if key not in self.node_constraints[node_id]:
+                self.node_constraints[node_id][key] = {}
+            if op not in self.node_constraints[node_id][key]:
+                self.node_constraints[node_id][key][op] = []
+            self.node_constraints[node_id][key][op].append(val)
+
+        elif len(tup) == 5:
+            # This is of the form "ThisNode.Key [OP] ThatNode.Key"
+            this_node_id, this_key, op, that_node_id, that_key = tup
+
+            this_node_id = str(this_node_id)
+            this_key = str(this_key)
+            that_node_id = str(that_node_id)
+            that_key = str(that_key)
+            op = str(op)
+
+            if this_node_id not in self.dynamic_node_constraints:
+                self.dynamic_node_constraints[this_node_id] = {}
+
+            if this_key not in self.dynamic_node_constraints[this_node_id]:
+                self.dynamic_node_constraints[this_node_id][this_key] = {}
+            if op not in self.dynamic_node_constraints[this_node_id][this_key]:
+                self.dynamic_node_constraints[this_node_id][this_key][op] = []
+            self.dynamic_node_constraints[this_node_id][this_key][op].append(
+                (that_node_id, that_key)
+            )
+
+        else:
+            raise ValueError("Something is wrong with the node comparison ", tup)
 
     def macro_node_constraint(self, tup):
         node_id, key, op, val = tup
@@ -272,7 +308,20 @@ class ParserV2(Parser):
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
-        G, edge_constraints, node_constraints, automorphisms = DotMotifTransformer(
-            validators=self.validators
-        ).transform(tree)
-        return G, edge_constraints, node_constraints, automorphisms
+        (
+            G,
+            edge_constraints,
+            node_constraints,
+            dynamic_edge_constraints,
+            dynamic_node_constraints,
+            automorphisms,
+        ) = DotMotifTransformer(validators=self.validators).transform(tree)
+        return (
+            G,
+            edge_constraints,
+            node_constraints,
+            dynamic_edge_constraints,
+            dynamic_node_constraints,
+            automorphisms,
+        )
+

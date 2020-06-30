@@ -88,6 +88,8 @@ edge_clause     : key op value
 
 // Node constraints:
 node_constraint : node_id "." key op value_or_quoted_value
+                | node_id "." key op node_id "." key
+
 macro_node_constraint : node_id "." key op value_or_quoted_value
 
 
@@ -108,7 +110,7 @@ iter_ops        : "contains"                        -> iter_op_contains
                 | "in"                              -> iter_op_in
 
 NAME            : /[a-zA-Z_-]\w*/
-OPERATOR        : /[\=\>\<\!]?[\=]/
+OPERATOR        : /(?:[\!=\>\<][=]?)|(?:\<\>)/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /#[^\n]+/
 DOUBLE_QUOTED_STRING  : /"[^"]*"/
