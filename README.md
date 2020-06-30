@@ -2,7 +2,7 @@
   <img align="center" src="./logo.png" / width="25%">
   <h1 align="center" fontsize="2em">d o t m o t i f</h1>
 </p>
-<p align="center">find graph motifs using friendly notation</p>
+<p align="center">Find graph motifs using intuitive notation</p>
 
 # Usage
 
