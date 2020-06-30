@@ -7,35 +7,35 @@ from .Executor import Executor
 if TYPE_CHECKING:
     from .. import dotmotif
 
+_OPERATORS = {
+    "=": lambda x, y: x == y,
+    "==": lambda x, y: x == y,
+    ">=": lambda x, y: x >= y,
+    "<=": lambda x, y: x <= y,
+    "<": lambda x, y: x < y,
+    ">": lambda x, y: x > y,
+    "!=": lambda x, y: x != y,
+    "in": lambda x, y: x in y,
+    "contains": lambda x, y: y in x,
+}
+
 
 def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> bool:
     """
     Check if a single edge satisfies the constraints.
     """
 
-    operators = {
-        "=": lambda x, y: x == y,
-        "==": lambda x, y: x == y,
-        ">=": lambda x, y: x >= y,
-        "<=": lambda x, y: x <= y,
-        "<": lambda x, y: x < y,
-        ">": lambda x, y: x > y,
-        "!=": lambda x, y: x != y,
-        "in": lambda x, y: x in y,
-        "contains": lambda x, y: y in x,
-    }
-
     for key, clist in constraints.items():
         for operator, values in clist.items():
             for value in values:
                 keyvalue_or_none = edge_attributes.get(key, None)
                 try:
-                    operator_success = operators[operator](keyvalue_or_none, value)
+                    operator_success = _OPERATORS[operator](keyvalue_or_none, value)
                 except TypeError:
                     # If you encounter a type error, that means the comparison
                     # could not possibly succeed,
                     # # TODO: unless you tried a comparison
-                    # against an undefined value (i.e. VALUE >= undefined)
+                    # against an undefined value (i.e. VALUE != undefined)
                     return False
                 if not operator_success:
                     # Fail fast, if any edge attributes fail the test
@@ -47,27 +47,11 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
     """
     Check if a single node satisfies the constraints.
 
-    TODO: This function is distinct from the above because I anticipate that
-    differences will emerge as the implementation matures. But these are
-    currently identical functions otherwise. -- @j6k4m8 Jan 2019
     """
-
-    operators = {
-        "=": lambda x, y: x == y,
-        "==": lambda x, y: x == y,
-        ">=": lambda x, y: x >= y,
-        "<=": lambda x, y: x <= y,
-        "<": lambda x, y: x < y,
-        ">": lambda x, y: x > y,
-        "!=": lambda x, y: x != y,
-        "in": lambda x, y: x in y,
-        "contains": lambda x, y: y in x,
-    }
-
     for key, clist in constraints.items():
         for operator, values in clist.items():
             for value in values:
-                if not operators[operator](node_attributes.get(key, None), value):
+                if not _OPERATORS[operator](node_attributes.get(key, None), value):
                     # Fail fast, if any node attributes fail the test
                     return False
     return True
@@ -116,6 +100,41 @@ class NetworkXExecutor(Executor):
 
             if not _node_satisfies_constraints(graph.nodes[graph_u], constraint_list):
                 return False
+        return True
+
+    def _validate_dynamic_node_constraints(
+        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+    ) -> bool:
+        """
+        Validate a graph against its dynamic node constraints.
+
+        Dynamic node constraints are constraints that compare two attributes
+        from the graph (rather than one key/val from the graph and a static
+        value that is known a priori).
+
+        Arguments:
+            ...
+
+        Returns:
+            bool
+        """
+        # `constraints` is of the form:
+        # { thisNodeId: { thisKey: { operator: [ ( thatNodeId, thatKey )]}}}
+        for motif_U, constraint_list in constraints.items():
+            this_node = node_isomorphism_map[motif_U]
+            for this_key, operators in constraint_list.items():
+                for operator, that_node_list in operators.items():
+                    for (that_node_V, that_key) in that_node_list:
+                        that_node = node_isomorphism_map[that_node_V]
+                        if this_key not in graph.nodes[this_node]:
+                            return False
+                        if that_key not in graph.nodes[that_node]:
+                            return False
+                        if not _OPERATORS[operator](
+                            graph.nodes[this_node][this_key],
+                            graph.nodes[that_node][that_key],
+                        ):
+                            return False
         return True
 
     def _validate_edge_constraints(
@@ -215,6 +234,7 @@ class NetworkXExecutor(Executor):
             # motif node names. We need the reverse for pretty much everything
             # we do from here out, so we reverse the pairs.
             {v: k for k, v in mapping.items()}
+            # TODO: Use isomorphism here if requested
             for mapping in gm.subgraph_monomorphisms_iter()
         ]
 
@@ -235,6 +255,9 @@ class NetworkXExecutor(Executor):
                 )
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
+                )
+                and self._validate_dynamic_node_constraints(
+                    r, self.graph, motif.list_dynamic_node_constraints()
                 )
                 # by default, networkx returns the automorphism that is left-
                 # sorted, so this comparison is _opposite_ the check that we

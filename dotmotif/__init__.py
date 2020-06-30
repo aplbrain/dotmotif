@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright 2018 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ from .validators import DisagreeingEdgesValidator
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -56,6 +56,13 @@ class dotmotif:
             enforce_inequality (bool: False): Whether to enforce inequality; in
                 other words, whether two nodes should be permitted to be aliases
                 for the same node. For example, A>B>C; if A!=C, then set to True
+            pretty_print (bool: True)
+            parser (dotmotif.parsers.Parser: DEFAULT_MOTIF_PARSER): The parser
+                to use to parse the document. Defaults to the v2 parser.
+            exclude_automorphisms (bool: False): Whether to exclude automorphism
+                variants of the motif when rturning results.
+            validators (List[Validator]): A list of dotmotif.Validators to use
+                when verifying the motif for correctness and executability.
 
         """
         self.ignore_direction = kwargs.get("ignore_direction", False)
@@ -77,6 +84,8 @@ class dotmotif:
 
         self._edge_constraints = {}
         self._node_constraints = {}
+        self._dynamic_edge_constraints = {}
+        self._dynamic_node_constraints = {}
         self._automorphisms = []
 
     def from_motif(self, cmd: str):
@@ -90,7 +99,7 @@ class dotmotif:
             A pointer to this dotmotif object, for chaining
 
         """
-        if len(cmd.split("\n")) is 1:
+        if len(cmd.split("\n")) == 1:
             try:
                 cmd = open(cmd, "r").read()
             except FileNotFoundError:
@@ -102,6 +111,8 @@ class dotmotif:
                 self._g,
                 self._edge_constraints,
                 self._node_constraints,
+                self._dynamic_edge_constraints,
+                self._dynamic_node_constraints,
                 self._automorphisms,
             ) = result
         else:
@@ -147,8 +158,14 @@ class dotmotif:
     def list_edge_constraints(self):
         return self._edge_constraints
 
+    def list_dynamic_edge_constraints(self):
+        return self._dynamic_edge_constraints
+
     def list_node_constraints(self):
         return self._node_constraints
+
+    def list_dynamic_node_constraints(self):
+        return self._dynamic_node_constraints
 
     def list_automorphisms(self):
         if not self.exclude_automorphisms:
@@ -197,4 +214,6 @@ class dotmotif:
             f = open(fname, "rb")
         else:
             f = fname
-        return pickle.load(f)
+        result = pickle.load(f)
+        f.close()
+        return result

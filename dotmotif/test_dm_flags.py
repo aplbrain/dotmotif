@@ -79,7 +79,7 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif().from_nx(g)
 
         E = NetworkXExecutor(graph=G)
-        self.assertEquals(len(E.find(dm)), 4)
+        self.assertEqual(len(E.find(dm)), 4)
 
     def test_from_nx_import(self):
         G = nx.Graph()
@@ -91,4 +91,4 @@ class TestDotmotifFlags(unittest.TestCase):
         dm = dotmotif.dotmotif(ignore_direction=True).from_nx(g)
 
         E = NetworkXExecutor(graph=G)
-        self.assertEquals(len(E.find(dm)), 4)
+        self.assertEqual(len(E.find(dm)), 4)

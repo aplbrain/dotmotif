@@ -37,3 +37,4 @@ class TestSaveLoad(TestCase):
         self.assertEqual(m.limit, f.limit)
         self.assertEqual(m.enforce_inequality, f.enforce_inequality)
         self.assertEqual(m.pretty_print, f.pretty_print)
+        tf.close()

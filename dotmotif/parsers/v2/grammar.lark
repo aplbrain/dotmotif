@@ -80,15 +80,18 @@ relation_type   : ">"                               -> rel_def
                 | "|"                               -> rel_neg
 
 // Edge attributes are separated from the main edge declaration with sqbrackets
-edge_clauses   : edge_clause ("," edge_clause)*
-macro_edge_clauses   : edge_clause ("," edge_clause)*
+edge_clauses            : edge_clause ("," edge_clause)*
+macro_edge_clauses      : edge_clause ("," edge_clause)*
 
-edge_clause     : key op value
+edge_clause             : key op value
 
 
 // Node constraints:
-node_constraint : node_id "." key op value_or_quoted_value
-macro_node_constraint : node_id "." key op value_or_quoted_value
+node_constraint         : node_id "." key op value_or_quoted_value
+                        | node_id "." key op node_id "." key
+
+macro_node_constraint   : node_id "." key op value_or_quoted_value
+                        | node_id "." key op node_id "." key
 
 
 // Automorphism notation:
@@ -108,7 +111,7 @@ iter_ops        : "contains"                        -> iter_op_contains
                 | "in"                              -> iter_op_in
 
 NAME            : /[a-zA-Z_-]\w*/
-OPERATOR        : /[\=\>\<\!]?[\=]/
+OPERATOR        : /(?:[\!=\>\<][=]?)|(?:\<\>)/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /#[^\n]+/
 DOUBLE_QUOTED_STRING  : /"[^"]*"/
