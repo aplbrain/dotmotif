@@ -261,7 +261,9 @@ class Neo4jExecutor(Executor):
         return self.G.run(qry)
 
     @staticmethod
-    def motif_to_cypher(motif: "dotmotif", count_only: bool = False) -> str:
+    def motif_to_cypher(
+        motif: "dotmotif", count_only: bool = False, edge_name_lookup: dict = None
+    ) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
 
@@ -269,6 +271,7 @@ class Neo4jExecutor(Executor):
             str: A Cypher query
 
         """
+        edge_name_lookup = edge_name_lookup or _LOOKUP
         # Edges and negative edges
         es = []
         es_neg = []
@@ -279,7 +282,7 @@ class Neo4jExecutor(Executor):
         edge_mapping = {}
 
         for u, v, a in motif_graph.edges(data=True):
-            action = motif._LOOKUP[a["action"]]
+            action = edge_name_lookup[a["action"]]
             edge_id = "{}_{}".format(u, v)
             edge_mapping[(u, v)] = edge_id
             if a["exists"]:
