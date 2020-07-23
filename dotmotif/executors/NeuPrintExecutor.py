@@ -14,7 +14,35 @@ _LOOKUP = {
 
 
 class NeuPrintExecutor(Neo4jExecutor):
+    """
+    A NeuPrintExecutor may be used to access an existing neuPrint server.
+
+    This class converts a DotMotif motif object into a neuPrint-compatible
+    query. Not all neuPrint datatypes or query types are available, but this
+    adds complete support for DotMotif motif searches by passing raw Cypher
+    queries to the neuPrint server over the HTTP API.
+
+    Note that the neuPrint default timeout is quite short, and slower motif
+    queries may not run in time.
+
+    """
+
     def __init__(self, host: str, dataset: str, token: str) -> None:
+        """
+        Create a new NeuPrintExecutor that points to a deployed neuPrint DB.
+
+        Arguments:
+            host (str): The host of the neuPrint server (for example,
+                'neuprint.janelia.org')
+            dataset (str): The name of the dataset to reference (for example,
+                'hemibrain:v1.1`)
+            token (str): The user's neuPrint access token. To retrieve this
+                token, go to https://[host]/account.
+
+        Returns:
+            None
+
+        """
         self._created_container = False
         self.host = host
         self.dataset = dataset
@@ -68,6 +96,12 @@ class NeuPrintExecutor(Neo4jExecutor):
     def motif_to_cypher(
         motif: "dotmotif", count_only: bool = False, edge_name_lookup: dict = None
     ) -> str:
+        """
+        Convert a motif to neuprint-flavored Cypher.
+
+        This is currently a thin passthrough for Neo4jExecutor.motif_to_cypher.
+
+        """
         edge_name_lookup = edge_name_lookup or _LOOKUP
         return Neo4jExecutor.motif_to_cypher(motif, count_only, edge_name_lookup)
 
