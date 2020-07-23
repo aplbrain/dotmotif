@@ -48,7 +48,10 @@ You should usually ignore this, and use .find() instead.
 Count a motif in a larger graph.
 
 ### Arguments
-    motif (dotmotif.dotmotif)
+> - **motif** (`dotmotif.dotmotif`: `None`): The motif to search for
+
+### Returns
+> - **int** (`None`: `None`): The count of this motif in the host graph
 
 
 
@@ -58,5 +61,8 @@ Count a motif in a larger graph.
 Find a motif in a larger graph.
 
 ### Arguments
-    motif (dotmotif.dotmotif)
+> - **motif** (`dotmotif.dotmotif`: `None`): The motif to search for
+
+### Returns
+> - **pd.DataFrame** (`None`: `None`): The results of the search
 

@@ -69,7 +69,10 @@ class NeuPrintExecutor(Neo4jExecutor):
         Count a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif)
+            motif (dotmotif.dotmotif): The motif to search for
+
+        Returns:
+            int: The count of this motif in the host graph
 
         """
         qry = self.motif_to_cypher(motif, count_only=True, edge_name_lookup=_LOOKUP)
@@ -84,7 +87,10 @@ class NeuPrintExecutor(Neo4jExecutor):
         Find a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif)
+            motif (dotmotif.dotmotif): The motif to search for
+
+        Returns:
+            pd.DataFrame: The results of the search
 
         """
         qry = self.motif_to_cypher(motif, edge_name_lookup=_LOOKUP)
