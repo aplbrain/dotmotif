@@ -6,3 +6,4 @@ pandas
 py2neo
 dask[dataframe]
 tamarind>=0.1.5
+neuprint-python
