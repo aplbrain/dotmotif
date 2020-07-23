@@ -1,6 +1,9 @@
 # Changelog
 
--   **0.6.0**
+-   **??**
+    -   Executors:
+        -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
+-   **0.6.0** (July 23 2020)
     -   Features:
         -   Add dynamic node constraints for comparisons at runtime (#74)
     -   DSL:
@@ -8,7 +11,6 @@
     -   Executors:
         -   `NetworkXExecutor`: Support dynamic node constraints
         -   `Neo4jExecutor`: Support dynamic node constraints
-        -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
     -   Housekeeping:
         -   Add GitHub actions for Python 3.6, 3.7, and 3.8 tests
 -   **0.5.1**
