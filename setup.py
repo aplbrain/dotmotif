@@ -22,7 +22,7 @@ setup(
     version=VERSION,
     author="Jordan Matelsky",
     author_email="jordan.matelsky@jhuapl.edu",
-    description=("Find graph motifs using friendly notation"),
+    description=("Find graph motifs using simple, intuitive notation"),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="ISC",
@@ -42,5 +42,6 @@ setup(
         "py2neo",
         "dask[dataframe]",
         "tamarind>=0.1.5",
+        "neuprint-python",
     ],
 )
