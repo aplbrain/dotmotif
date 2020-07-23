@@ -1,6 +1,8 @@
+import os
+
 HOST = "neuprint.janelia.org"
 DATASET = "hemibrain:v1.1"
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imo2azRtOEBnbWFpbC5jb20iLCJsZXZlbCI6Im5vYXV0aCIsImltYWdlLXVybCI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hLS9BT2gxNEdqbDVDTWpRY2J2aE9YSFQxN29MajB1R0VhbVRqZml3akdhaGRFeXFzND9zej01MD9zej01MCIsImV4cCI6MTc3NTUyMjA0Nn0.IYncHmPApzYCEJV2QSiqnFJlqyBXFFjof5nP5hVk_xo"
+TOKEN = os.getenv("NEUPRINT_TOKEN")
 
 import unittest
 
