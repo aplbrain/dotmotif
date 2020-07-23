@@ -72,14 +72,6 @@ class dotmotif:
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
         self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
-        self._LOOKUP = {
-            "INHIBITS": "INH",
-            "EXCITES": "EXC",
-            "SYNAPSES": "SYN",
-            "INH": "INH",
-            "EXC": "EXC",
-            "SYN": "SYN",
-        }
         self._g = nx.MultiDiGraph()
 
         self._edge_constraints = {}

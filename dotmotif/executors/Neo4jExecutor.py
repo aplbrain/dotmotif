@@ -49,6 +49,16 @@ def _remapped_operator(op):
     }[op]
 
 
+_LOOKUP = {
+    "INHIBITS": "INH",
+    "EXCITES": "EXC",
+    "SYNAPSES": "SYN",
+    "INH": "INH",
+    "EXC": "EXC",
+    "SYN": "SYN",
+}
+
+
 class Neo4jExecutor(Executor):
     """
     A Neo4j executor that runs Cypher queries against a running Neo4j database.
