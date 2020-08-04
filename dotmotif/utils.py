@@ -36,10 +36,10 @@ def draw_motif(dm, negative_edge_color: str = "r", pos=None):
     if pos is None:
         pos = nx.spring_layout(dm._g)
     exc_edges = list(
-        filter(lambda e: e[2].get("action", "") == "EXCITES", dm._g.edges(data=True))
+        filter(lambda e: e[2].get("action", "") == "SYN", dm._g.edges(data=True))
     )
     inh_edges = list(
-        filter(lambda e: e[2].get("action", "") == "INHIBITS", dm._g.edges(data=True))
+        filter(lambda e: e[2].get("action", "") != "SYN", dm._g.edges(data=True))
     )
     nx.draw_networkx_edges(
         dm._g,
