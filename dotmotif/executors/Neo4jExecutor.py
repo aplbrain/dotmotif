@@ -282,7 +282,7 @@ class Neo4jExecutor(Executor):
         edge_mapping = {}
 
         for u, v, a in motif_graph.edges(data=True):
-            action = edge_name_lookup[a["action"]]
+            action = edge_name_lookup[a.get("action", "SYN")]
             edge_id = "{}_{}".format(u, v)
             edge_mapping[(u, v)] = edge_id
             if a["exists"]:
