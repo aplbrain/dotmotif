@@ -1,8 +1,10 @@
 # Changelog
 
--   **??**
+-   **0.6.1**
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
+    -   Improve `utils.draw_motif` rendering style
+    -   Improve networkx import for Neo4j databases to use better datatype inference
 -   **0.6.0** (July 23 2020)
     -   Features:
         -   Add dynamic node constraints for comparisons at runtime (#74)
@@ -27,7 +29,7 @@
     -   Bugfixes:
         -   Fix indexing of automorphisms to better jive with Neo4j's internal result ordering.
         -   Fix issue where `NetworkXExecutor` would fail to identify all isomorphisms. This was due to a nomenclature mismatch between NetworkX and other executors. More details [here](https://github.com/aplbrain/dotmotif/issues/64).
-        -   Automatically add `exists=True` condition to edges added using dotmotif#from_nx().
+        -   Automatically add `exists=True` condition to edges added using `dotmotif#from_nx()`.
     -   Deprecations:
         -   Warnings:
             -   `dotmotif.parsers.v1.ParserV1`
