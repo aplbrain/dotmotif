@@ -7,3 +7,4 @@ py2neo
 dask[dataframe]
 tamarind>=0.1.5
 neuprint-python
+grandiso>=0.1.0
