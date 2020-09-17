@@ -4,8 +4,11 @@
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
         -   Add new `GrandIsoExecutor` as a fully-python drop-in replacement for `NetworkXExecutor` (#80)
-    -   Improve `utils.draw_motif` rendering style
-    -   Improve networkx import for Neo4j databases to use better datatype inference
+    -   Features:
+        -   Improve `utils.draw_motif` rendering style
+        -   Improve networkx import for Neo4j databases to use better datatype inference
+    -   Bugfixes:
+        -   Improve pip-installation process by including EBNF grammar definitions
 -   **0.6.0** (July 23 2020)
     -   Features:
         -   Add dynamic node constraints for comparisons at runtime (#74)

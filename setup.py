@@ -29,9 +29,6 @@ setup(
     keywords=["graph", "motif"],
     url="https://github.com/aplbrain/dotmotif/tarball/" + VERSION,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    scripts=[
-        #  'scripts/'
-    ],
     classifiers=[],
     install_requires=[
         "networkx",
@@ -43,5 +40,6 @@ setup(
         "dask[dataframe]",
         "tamarind>=0.1.5",
         "neuprint-python",
+        "grandiso",
     ],
 )
