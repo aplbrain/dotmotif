@@ -23,7 +23,6 @@ from py2neo import Graph
 import tamarind
 
 # Types only:
-from py2neo.data import Table
 import networkx as nx
 from typing import TYPE_CHECKING, Optional
 
@@ -215,7 +214,7 @@ class Neo4jExecutor(Executor):
     def _teardown_container(self):
         self._tamarind_provisioner.stop(self._tamarind_container_id)
 
-    def run(self, cypher: str, cursor=True) -> Table:
+    def run(self, cypher: str, cursor=True):
         """
         Run an arbitrary cypher command.
 
@@ -225,7 +224,7 @@ class Neo4jExecutor(Executor):
             cypher (str): The command to run
 
         Returns:
-            The result of the cypher query
+            The result of the cypher query (py2neo.Table)
 
         """
         if not cursor:
@@ -245,7 +244,7 @@ class Neo4jExecutor(Executor):
             qry += f" LIMIT {limit}"
         return int(self.G.run(qry).to_ndarray())
 
-    def find(self, motif: "dotmotif", limit=None, cursor=True) -> Table:
+    def find(self, motif: "dotmotif", limit=None, cursor=True):
         """
         Find a motif in a larger graph.
 
