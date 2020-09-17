@@ -29,7 +29,7 @@ from .validators import DisagreeingEdgesValidator
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
