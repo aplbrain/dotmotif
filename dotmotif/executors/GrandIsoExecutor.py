@@ -21,7 +21,7 @@ from .NetworkXExecutor import NetworkXExecutor
 
 
 class GrandIsoExecutor(NetworkXExecutor):
-    def find(self, motif: "dotmotif", limit: int = None):
+    def find(self, motif, limit: int = None):
         """
         Find a motif in a larger graph.
 
