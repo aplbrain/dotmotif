@@ -27,6 +27,7 @@ from .parsers.v2 import ParserV2
 from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
+from .executors.GrandIsoExecutor import GrandIsoExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
 __version__ = "0.7.0"

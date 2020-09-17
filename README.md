@@ -4,6 +4,12 @@
 </p>
 <p align="center">Find graph motifs using intuitive notation</p>
 
+<p align="center">
+<a href="https://pypi.org/project/dotmotif/"><img alt="PyPI" src="https://img.shields.io/pypi/v/dotmotif?style=for-the-badge"></a>
+<a href="https://bossdb.org/tools/DotMotif"><img src="https://img.shields.io/badge/Pretty Dope-👌-00ddcc.svg?style=for-the-badge" /></a>
+<a href="https://bossdb.org/tools/DotMotif"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge" /></a>
+</p>
+
 # Usage
 
 ## Writing a motif
