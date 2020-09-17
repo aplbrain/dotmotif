@@ -1,8 +1,9 @@
 # Changelog
 
--   **0.6.1**
+-   **0.7.0**
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
+        -   Add new `GrandIsoExecutor` as a fully-python drop-in replacement for `NetworkXExecutor` (#80)
     -   Improve `utils.draw_motif` rendering style
     -   Improve networkx import for Neo4j databases to use better datatype inference
 -   **0.6.0** (July 23 2020)
