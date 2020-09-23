@@ -1,8 +1,8 @@
-# Getting started with dotmotif
+# Getting started with DotMotif
 
-Once you have [installed `dotmotif`](installation.md), you can start writing queries.
+Once you have [installed `DotMotif`](installation.md), you can start writing queries.
 
-Queries are written in `.motif` syntax, the task-specific motif-finding language designed for use with `dotmotif`.
+Queries are written in `.motif` syntax, the task-specific motif-finding language.
 
 
 ## 1. Write your motif
@@ -40,11 +40,11 @@ D !> B
 
 We've introduced a few new concepts here, so let's break down the new syntax. First, note that lines starting with `#` are ignored by the compiler, so you can add comments to your .motif files.
 
-Next, see that we indicated a _synapse_ with the `->` notation. The first component can be negated using the `!` operator to tell the compiler that we want to _prohibit_ that edge. If you do not prohibit an edge, your search results may include places where those nodes have OR do not have an edge.
+Next, see that we indicated a _synapse_ with the `->` notation. An edge can be negated using the `!` operator to tell the compiler that we want to _prohibit_ that edge. If you do not prohibit an edge, your search results may include places where those nodes have OR do not have an edge.
 
 ## 3. Refactor the motif
 
-You can use dotmotif "macros" to simplify the process of writing a motif. You can think of macros as a type of template that enables you to write a pattern once and then reuse it (like a function in other languages). This reduces the possibility of typos, and also enables you to write more complex structures without confusion.
+You can use DotMotif "macros" to simplify the process of writing a motif. You can think of macros as a type of template that enables you to write a pattern once and then reuse it (like a function in other languages). This reduces the possibility of typos, and also enables you to write more complex structures without confusion.
 
 Let's say we want to find three triangles where edges connect in one direction (say, clockwise), but not in the other direction.
 
@@ -147,7 +147,7 @@ unitriangle(C, B, A)
 
 If you're paying attention, you'll notice right away that something is wrong here: There's no way that a `unitriangle` can exist between `ABC` _and_ `CBA` simultaneously. This is still perfectly valid dotmotif _syntax_, but the motif itself is impossible.
 
-Luckily, the dotmotif Python package will complain when you try to compile this:
+Luckily, the DotMotif Python package will complain when you try to compile this:
 
 ```python
 from dotmotif import dotmotif
