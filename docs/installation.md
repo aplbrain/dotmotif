@@ -1,14 +1,16 @@
 # Installation
 
+You can either install the latest stable version of DotMotif with:
+
+```shell
+pip install dotmotif
+```
+
+...or you can clone this repository and install from source:
 
 ```shell
 git clone https://https://github.com/aplbrain/dotmotif/
 cd dotmotif
-```
-
-You can most easily install dotmotif with pip:
-
-```shell
 pip3 install -U .
 ```
 
