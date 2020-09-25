@@ -1,6 +1,5 @@
-# dotmotif
+# DotMotif
 
-* [Installing dotmotif](installation.md)
-* [Getting started](start.md)
-* [Usage](usage.md)
-* [Constraints](attributes.md)
+Examples and walk-through documentation has been moved to [the Wiki](https://github.com/aplbrain/dotmotif/wiki).
+
+API reference documentation is available in [reference/](reference). 
