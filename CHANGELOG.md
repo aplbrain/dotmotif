@@ -9,6 +9,8 @@
         -   Improve networkx import for Neo4j databases to use better datatype inference
     -   Bugfixes:
         -   Improve pip-installation process by including EBNF grammar definitions
+    -   Documentation:
+        -   Moved documentation from `docs/` to [the wiki](https://github.com/aplbrain/dotmotif/wiki) for a more permanent and organized home (#81)
 -   **0.6.0** (July 23 2020)
     -   Features:
         -   Add dynamic node constraints for comparisons at runtime (#74)
