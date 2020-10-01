@@ -1,4 +1,4 @@
-from dotmotif import dotmotif, NetworkXExecutor
+from dotmotif import dotmotif, GrandIsoExecutor
 from dotmotif.ingest import CSVEdgelistConverter
 
 
@@ -7,7 +7,7 @@ graph = CSVEdgelistConverter(
     "pre_root_id", "post_root_id"
 ).to_graph()
 
-E = NetworkXExecutor(graph=graph)
+E = GrandIsoExecutor(graph=graph)
 
 motif = dotmotif().from_motif("""
 A -> B
