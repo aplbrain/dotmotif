@@ -1,12 +1,14 @@
 # Changelog
 
--   **0.7.0**
+-   **0.7.0** (October 14 2020)
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
-        -   Add new `GrandIsoExecutor` as a fully-python drop-in replacement for `NetworkXExecutor` (#80)
+        -   Add new `GrandIsoExecutor` as a Python-only drop-in replacement for `NetworkXExecutor` (#80). If you're still using `NetworkXExecutor`, you should really switch!
     -   Features:
         -   Improve `utils.draw_motif` rendering style
         -   Improve networkx import for Neo4j databases to use better datatype inference
+        -   New `dotmotif.Motif` class. This is just a naming thing; all your old `dotmotif.dotmotif` code will still work! (#84)
+        -   Short motifs can now be written on a single line, with semicolons to delimit commands (#84)
     -   Bugfixes:
         -   Improve pip-installation process by including EBNF grammar definitions
     -   Documentation:

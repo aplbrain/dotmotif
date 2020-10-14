@@ -39,18 +39,20 @@ class MotifError(ValueError):
     pass
 
 
-class dotmotif:
+class Motif:
     """
     Container class for dotmotif operations.
 
     See __init__ documentation for more details.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, input_motif: str = None, **kwargs):
         """
         Create a new dotmotif object.
 
         Arguments:
+            input_motif (str: None): Optionally, a DotMotif DSL defined motif,
+                or a path to a .motif file that contains a motif.
             ignore_direction (bool: False): Whether to disregard direction when
                 generating the database query
             limit (int: None): A limit (if any) to impose on the query results
@@ -80,6 +82,9 @@ class dotmotif:
         self._dynamic_edge_constraints = {}
         self._dynamic_node_constraints = {}
         self._automorphisms = []
+
+        if input_motif:
+            self.from_motif(input_motif)
 
     def from_motif(self, cmd: str):
         """
@@ -210,3 +215,6 @@ class dotmotif:
         result = pickle.load(f)
         f.close()
         return result
+
+
+dotmotif = Motif

@@ -4,6 +4,7 @@ start: comment_or_block+
 
 // Contents may be either comment or block.
 comment_or_block: block
+                | block ";"
 
 // Comments are signified by a hash followed by anything. Any line that follows
 // a comment hash is thrown away.

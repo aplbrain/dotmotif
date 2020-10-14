@@ -28,9 +28,9 @@ B -> C [type = "inhibitory"]
 ## Ingesting the motif into dotmotif
 
 ```python
-from dotmotif import dotmotif
+import dotmotif
 
-dm = dotmotif().from_motif("threecycle.motif")
+dm = dotmotif.Motif("threecycle.motif")
 ```
 
 ## Inline code in Python
@@ -38,7 +38,7 @@ dm = dotmotif().from_motif("threecycle.motif")
 Alternatively, you can inline your motif in the python code when creating your `dotmotif` object:
 
 ```python
-dm = dotmotif().from_motif("""
+dm = dotmotif.Motif("""
 # A excites B
 A -> B [type = "excitatory"]
 # B inhibits C
@@ -57,7 +57,7 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 | `enforce_inequality`    | `bool`: `False` | Whether to enforce inequality; in other words, whether two nodes should be permitted to be aliases for the same node. For example, in `A->B->C`; if `A!=C`, then set to `True` |
 | `exclude_automorphisms` | `bool`: `False` | Whether to return only a single example for each detected automorphism. See more in [the documentation](docs/Automorphisms.md)                                                 |
 
-For more details on how to write a query, see [Getting Started](docs/start.md).
+For more details on how to write a query, see [Getting Started](https://github.com/aplbrain/dotmotif/wiki/Getting-Started).
 
 # Citing
 
