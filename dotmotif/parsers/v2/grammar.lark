@@ -110,6 +110,8 @@ variable       : NAME
 
 iter_ops        : "contains"                        -> iter_op_contains
                 | "in"                              -> iter_op_in
+                | "!contains"                       -> iter_op_not_contains
+                | "!in"                             -> iter_op_not_in
 
 NAME            : /[a-zA-Z_-]\w*/
 OPERATOR        : /(?:[\!=\>\<][=]?)|(?:\<\>)/
