@@ -2,7 +2,9 @@
 
 -   **0.7.1**
     -   Features:
-        -   Add `!contains` and `!in` attribute constraints to the parser.
+        -   Add `!contains` and `!in` attribute constraints to the parser. (#88)
+    -   Bugfixes:
+        -   Fix issue where lark grammar file is excluded from pip-based installs (#89)
 -   **0.7.0** (October 14 2020)
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
