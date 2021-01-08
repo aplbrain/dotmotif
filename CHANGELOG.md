@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.7.1**
+    -   Features:
+        -   Add `!contains` and `!in` attribute constraints to the parser.
 -   **0.7.0** (October 14 2020)
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)

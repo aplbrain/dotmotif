@@ -558,3 +558,38 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm = dotmotif.dotmotif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
+
+
+class TestNotInAndNotContains(unittest.TestCase):
+    def test_not_contains(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        A.name !contains "foo"
+        """
+        )
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B")
+        host.add_edge("B", "A")
+        host.add_node("A", name="the foobar")
+        host.add_node("B", name="Barbaz")
+
+        res = NetworkXExecutor(graph=host).find(m)
+        self.assertEqual(len(res), 1)
+
+    def test_not_in(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        A.name !in "foo"
+        """
+        )
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B")
+        host.add_node("A", name="the foobar")
+        host.add_node("B", name="Barbaz")
+
+        res = NetworkXExecutor(graph=host).find(m)
+        self.assertEqual(len(res), 1)

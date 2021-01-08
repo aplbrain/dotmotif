@@ -17,6 +17,8 @@ _OPERATORS = {
     "!=": lambda x, y: x != y,
     "in": lambda x, y: x in y,
     "contains": lambda x, y: y in x,
+    "!in": lambda x, y: x not in y,
+    "!contains": lambda x, y: y not in x,
 }
 
 

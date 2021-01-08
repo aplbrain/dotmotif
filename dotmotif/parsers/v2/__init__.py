@@ -194,6 +194,12 @@ class DotMotifTransformer(Transformer):
     def iter_op_in(self, _):
         return "in"
 
+    def iter_op_not_contains(self, _):
+        return "!contains"
+
+    def iter_op_not_in(self, _):
+        return "!in"
+
     # Macros
     def macro(self, arg):
         name, args, rules = arg
