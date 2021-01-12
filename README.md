@@ -18,7 +18,7 @@ You can currently write motifs in dotmotif form, which is a DSL that specializes
 
 `threecycle.motif`
 
-```
+```dot
 # A excites B
 A -> B [type = "excitatory"]
 # B inhibits C
@@ -63,7 +63,7 @@ For more details on how to write a query, see [Getting Started](https://github.c
 
 If this tool is helpful to your research, please consider citing it with:
 
-```
+```bibtex
 # https://www.biorxiv.org/content/10.1101/2020.06.08.140533v1
 @article{matelsky_2020_dotmotif,
     doi = {10.1101/2020.06.08.140533},
