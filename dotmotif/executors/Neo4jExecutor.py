@@ -55,6 +55,12 @@ _LOOKUP = {
     "INH": "INH",
     "EXC": "EXC",
     "SYN": "SYN",
+    "DEFAULT": "SYN",
+}
+
+_DEFAULT_ENTITY_LABELS = {
+    "node": "Neuron",
+    "edge": _LOOKUP,
 }
 
 
@@ -102,6 +108,8 @@ class Neo4jExecutor(Executor):
                 connect to the neo4j container before giving up.
             wait_for_boot (bool: True): Whether the process should pause to
                 wait for a provisioned Docker container to come online.
+            entity_labels (dict: _DEFAULT_ENTITY_LABELS): The set of labels to
+                use for nodes and edges.
 
         """
         db_bolt_uri: Optional[str] = kwargs.get("db_bolt_uri", None)
@@ -112,6 +120,7 @@ class Neo4jExecutor(Executor):
         self._max_memory_size: str = kwargs.get("max_memory", "4G")
         self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
         self.max_retries: int = kwargs.get("max_retries", 20)
+        self._entity_labels = kwargs.get("entity_labels", _DEFAULT_ENTITY_LABELS)
 
         graph: nx.Graph = kwargs.get("graph", None)
         import_directory: Optional[str] = kwargs.get("import_directory", None)
@@ -128,7 +137,7 @@ class Neo4jExecutor(Executor):
                 "Specify EXACTLY ONE of db_bolt_uri/graph/import_directory."
             )
 
-        if db_bolt_uri and password:
+        if db_bolt_uri:
             # Authentication information was provided. Use this to log in and
             # connect to the existing database.
             self._connect_to_existing_graph(db_bolt_uri, username, password)
@@ -191,7 +200,7 @@ class Neo4jExecutor(Executor):
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
-            run_before="""./bin/neo4j-admin import --id-type STRING --nodes:Neuron "/import/export-neurons-.*.csv" --relationships:SYN "/import/export-synapses-.*.csv" """,
+            run_before=f"""./bin/neo4j-admin import --id-type STRING --nodes:{entity_labels['node']} "/import/export-neurons-.*.csv" --relationships:{entity_labels['edge']['DEFAULT']} "/import/export-synapses-.*.csv" """,
             wait=self._wait_for_boot,
         )
         self._created_container = True
@@ -261,7 +270,10 @@ class Neo4jExecutor(Executor):
 
     @staticmethod
     def motif_to_cypher(
-        motif: "dotmotif", count_only: bool = False, edge_name_lookup: dict = None
+        motif: "dotmotif",
+        count_only: bool = False,
+        edge_name_lookup: dict = None,
+        static_entity_labels: dict = None,
     ) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
@@ -271,6 +283,7 @@ class Neo4jExecutor(Executor):
 
         """
         edge_name_lookup = edge_name_lookup or _LOOKUP
+        static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
         # Edges and negative edges
         es = []
         es_neg = []
@@ -281,20 +294,32 @@ class Neo4jExecutor(Executor):
         edge_mapping = {}
 
         for u, v, a in motif_graph.edges(data=True):
-            action = edge_name_lookup[a.get("action", "SYN")]
+            action = edge_name_lookup[
+                a.get("action", static_entity_labels["edge"]["DEFAULT"])
+            ]
             edge_id = "{}_{}".format(u, v)
             edge_mapping[(u, v)] = edge_id
             if a["exists"]:
                 es.append(
-                    "MATCH ({}:Neuron)-[{}:{}]-{}({}:Neuron)".format(
+                    (
+                        "MATCH ({}:"
+                        + static_entity_labels["node"]
+                        + ")-[{}:{}]-{}({}:"
+                        + static_entity_labels["node"]
+                        + ")"
+                    ).format(
                         u, edge_id, action, "" if motif.ignore_direction else ">", v
                     )
                 )
             else:
                 es_neg.append(
-                    "NOT ({}:Neuron)-[:{}]-{}({}:Neuron)".format(
-                        u, action, "" if motif.ignore_direction else ">", v
-                    )
+                    (
+                        "NOT ({}:"
+                        + static_entity_labels["node"]
+                        + ")-[:{}]-{}({}:"
+                        + static_entity_labels["node"]
+                        + ")"
+                    ).format(u, action, "" if motif.ignore_direction else ">", v)
                 )
 
         delim = "\n" if motif.pretty_print else " "
