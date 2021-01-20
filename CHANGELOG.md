@@ -1,8 +1,9 @@
 # Changelog
 
--   **0.7.1**
+-   **0.8.0**
     -   Features:
         -   Add `!contains` and `!in` attribute constraints to the parser. (#88)
+        -   Neo4j and NeuPrintExecutors now support custom node/edge labels (#91).
     -   Bugfixes:
         -   Fix issue where lark grammar file is excluded from pip-based installs (#89)
 -   **0.7.0** (October 14 2020)

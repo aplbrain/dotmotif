@@ -200,7 +200,7 @@ class Neo4jExecutor(Executor):
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
-            run_before=f"""./bin/neo4j-admin import --id-type STRING --nodes:{entity_labels['node']} "/import/export-neurons-.*.csv" --relationships:{entity_labels['edge']['DEFAULT']} "/import/export-synapses-.*.csv" """,
+            run_before=f"""./bin/neo4j-admin import --id-type STRING --nodes:{self._entity_labels['node']} "/import/export-neurons-.*.csv" --relationships:{self._entity_labels['edge']['DEFAULT']} "/import/export-synapses-.*.csv" """,
             wait=self._wait_for_boot,
         )
         self._created_container = True
@@ -248,7 +248,9 @@ class Neo4jExecutor(Executor):
             motif (dotmotif.dotmotif)
 
         """
-        qry = self.motif_to_cypher(motif, count_only=True)
+        qry = self.motif_to_cypher(
+            motif, count_only=True, static_entity_labels=self._entity_labels
+        )
         if limit:
             qry += f" LIMIT {limit}"
         return int(self.G.run(qry).to_ndarray())
@@ -261,7 +263,7 @@ class Neo4jExecutor(Executor):
             motif (dotmotif.dotmotif)
 
         """
-        qry = self.motif_to_cypher(motif)
+        qry = self.motif_to_cypher(motif, static_entity_labels=self._entity_labels)
         if limit:
             qry += f" LIMIT {limit}"
         if not cursor:
@@ -270,10 +272,7 @@ class Neo4jExecutor(Executor):
 
     @staticmethod
     def motif_to_cypher(
-        motif: "dotmotif",
-        count_only: bool = False,
-        edge_name_lookup: dict = None,
-        static_entity_labels: dict = None,
+        motif: "dotmotif", count_only: bool = False, static_entity_labels: dict = None,
     ) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
@@ -282,7 +281,6 @@ class Neo4jExecutor(Executor):
             str: A Cypher query
 
         """
-        edge_name_lookup = edge_name_lookup or _LOOKUP
         static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
         # Edges and negative edges
         es = []
@@ -294,7 +292,7 @@ class Neo4jExecutor(Executor):
         edge_mapping = {}
 
         for u, v, a in motif_graph.edges(data=True):
-            action = edge_name_lookup[
+            action = static_entity_labels["edge"][
                 a.get("action", static_entity_labels["edge"]["DEFAULT"])
             ]
             edge_id = "{}_{}".format(u, v)
@@ -302,22 +300,42 @@ class Neo4jExecutor(Executor):
             if a["exists"]:
                 es.append(
                     (
-                        "MATCH ({}:"
-                        + static_entity_labels["node"]
-                        + ")-[{}:{}]-{}({}:"
-                        + static_entity_labels["node"]
+                        "MATCH ({}"
+                        + (
+                            (":" + static_entity_labels["node"])
+                            if static_entity_labels["node"]
+                            else ""
+                        )
+                        + ")-[{}{}]-{}({}"
+                        + (
+                            (":" + static_entity_labels["node"])
+                            if static_entity_labels["node"]
+                            else ""
+                        )
                         + ")"
                     ).format(
-                        u, edge_id, action, "" if motif.ignore_direction else ">", v
+                        u,
+                        edge_id,
+                        ((":" + action) if action else ""),
+                        "" if motif.ignore_direction else ">",
+                        v,
                     )
                 )
             else:
                 es_neg.append(
                     (
-                        "NOT ({}:"
-                        + static_entity_labels["node"]
-                        + ")-[:{}]-{}({}:"
-                        + static_entity_labels["node"]
+                        "NOT ({}"
+                        + (
+                            (":" + static_entity_labels["node"])
+                            if static_entity_labels["node"]
+                            else ""
+                        )
+                        + ")-[:{}]-{}({}"
+                        + (
+                            (":" + static_entity_labels["node"])
+                            if static_entity_labels["node"]
+                            else ""
+                        )
                         + ")"
                     ).format(u, action, "" if motif.ignore_direction else ">", v)
                 )
