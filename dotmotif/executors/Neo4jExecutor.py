@@ -374,8 +374,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_edge_constraints.append(
-                            "{} ({}.{} {} {})".format(
-                                "NOT" if _operator_negation_infix(operator) else "",
+                            (
+                                "NOT ({}.{} {} {})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}"
+                            ).format(
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
@@ -390,8 +393,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_node_constraints.append(
-                            "{} ({}.{} {} {})".format(
-                                "NOT" if _operator_negation_infix(operator) else "",
+                            (
+                                "NOT ({}.{} {} {})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}"
+                            ).format(
                                 n,
                                 key,
                                 _remapped_operator(operator),
@@ -405,8 +411,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_node_constraints.append(
-                            "{} ({}.{} {} {}.{})".format(
-                                "NOT" if _operator_negation_infix(operator) else "",
+                            (
+                                "NOT ({}.{} {} {}.{})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}.{}"
+                            ).format(
                                 n,
                                 key,
                                 _remapped_operator(operator),
