@@ -45,6 +45,25 @@ def _remapped_operator(op):
         "<>": "<>",
         "in": "IN",
         "contains": "CONTAINS",
+        "!in": "IN",
+        "!contains": "CONTAINS",
+    }[op]
+
+
+def _operator_negation_infix(op):
+    return {
+        "=": False,
+        "==": False,
+        ">=": False,
+        "<=": False,
+        "<": False,
+        ">": False,
+        "!=": False,
+        "<>": False,
+        "in": False,
+        "contains": False,
+        "!in": True,
+        "!contains": True,
     }[op]
 
 
@@ -215,7 +234,7 @@ class Neo4jExecutor(Executor):
                 if tries > self.max_retries:
                     raise IOError(
                         f"Could not connect to neo4j container {self._running_container}. "
-                        "For more information, see Troubleshooting-Neo4jExecutor.md in docs/."
+                        "For more information, see https://github.com/aplbrain/dotmotif/wiki/Troubleshooting-Neo4jExecutor."
                     )
                 time.sleep(5)
         self.G = self._tamarind_provisioner[self._tamarind_container_id]
@@ -355,7 +374,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_edge_constraints.append(
-                            "{}.{} {} {}".format(
+                            (
+                                "NOT ({}.{} {} {})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}"
+                            ).format(
                                 edge_mapping[(u, v)],
                                 key,
                                 _remapped_operator(operator),
@@ -370,7 +393,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_node_constraints.append(
-                            "{}.{} {} {}".format(
+                            (
+                                "NOT ({}.{} {} {})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}"
+                            ).format(
                                 n,
                                 key,
                                 _remapped_operator(operator),
@@ -384,7 +411,11 @@ class Neo4jExecutor(Executor):
                 for operator, values in constraints.items():
                     for value in values:
                         cypher_node_constraints.append(
-                            "{}.{} {} {}.{}".format(
+                            (
+                                "NOT ({}.{} {} {}.{})"
+                                if _operator_negation_infix(operator)
+                                else "{}.{} {} {}.{}"
+                            ).format(
                                 n,
                                 key,
                                 _remapped_operator(operator),

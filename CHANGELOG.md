@@ -3,9 +3,10 @@
 -   **0.8.0**
     -   Features:
         -   Add `!contains` and `!in` attribute constraints to the parser. (#88)
-        -   Neo4j and NeuPrintExecutors now support custom node/edge labels (#91).
+        -   Neo4j and NeuPrintExecutors now support custom node/edge labels (#91)
     -   Bugfixes:
         -   Fix issue where lark grammar file is excluded from pip-based installs (#89)
+        -   Fix an issue introduced in 0.8.0 where !contains/!in operators failed to parse for Neo4j/NeuPrint executors. If you are installing DotMotif from pip/pypi, this issue is already fixed. (#92)
 -   **0.7.0** (October 14 2020)
     -   Executors:
         -   Add new `NeuPrintExecutor` with motif-search support for neuPrint databases (#76)
