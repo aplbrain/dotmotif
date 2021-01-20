@@ -11,6 +11,12 @@ _LOOKUP = {
     "INH": "ConnectsTo",
     "EXC": "ConnectsTo",
     "SYN": "ConnectsTo",
+    "DEFAULT": "ConnectsTo",
+}
+
+_DEFAULT_ENTITY_LABELS = {
+    "node": "Neuron",
+    "edge": _LOOKUP,
 }
 
 
@@ -76,7 +82,9 @@ class NeuPrintExecutor(Neo4jExecutor):
             int: The count of this motif in the host graph
 
         """
-        qry = self.motif_to_cypher(motif, count_only=True, edge_name_lookup=_LOOKUP)
+        qry = self.motif_to_cypher(
+            motif, count_only=True, static_entity_labels=_DEFAULT_ENTITY_LABELS
+        )
         if limit:
             qry += f" LIMIT {limit}"
         res = self.client.fetch_custom(qry)
@@ -94,14 +102,14 @@ class NeuPrintExecutor(Neo4jExecutor):
             pd.DataFrame: The results of the search
 
         """
-        qry = self.motif_to_cypher(motif, edge_name_lookup=_LOOKUP)
+        qry = self.motif_to_cypher(motif, static_entity_labels=_DEFAULT_ENTITY_LABELS)
         if limit:
             qry += f" LIMIT {limit}"
         return self.client.fetch_custom(qry)
 
     @staticmethod
     def motif_to_cypher(
-        motif: dotmotif, count_only: bool = False, edge_name_lookup: dict = None
+        motif: dotmotif, count_only: bool = False, static_entity_labels: dict = None
     ) -> str:
         """
         Convert a motif to neuprint-flavored Cypher.
@@ -109,6 +117,6 @@ class NeuPrintExecutor(Neo4jExecutor):
         This is currently a thin passthrough for Neo4jExecutor.motif_to_cypher.
 
         """
-        edge_name_lookup = edge_name_lookup or _LOOKUP
-        return Neo4jExecutor.motif_to_cypher(motif, count_only, edge_name_lookup)
+        static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
+        return Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
 
