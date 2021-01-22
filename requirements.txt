@@ -5,6 +5,6 @@ docker
 pandas
 py2neo
 dask[dataframe]
-tamarind>=0.1.5
+tamarind>=0.2.0
 neuprint-python
 grandiso>=0.1.0

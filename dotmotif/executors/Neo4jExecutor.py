@@ -174,7 +174,7 @@ class Neo4jExecutor(Executor):
                 raise ValueError(f"Could not export graph: {e}")
 
             self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
-                autoremove_container=self._autoremove_container,
+                autoremove_containers=self._autoremove_container,
                 max_memory_size=self._max_memory_size,
                 initial_heap_size=self._initial_heap_size,
             )
@@ -182,7 +182,7 @@ class Neo4jExecutor(Executor):
 
         elif import_directory:
             self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
-                autoremove_container=self._autoremove_container,
+                autoremove_containers=self._autoremove_container,
                 max_memory_size=self._max_memory_size,
                 initial_heap_size=self._initial_heap_size,
             )
@@ -212,6 +212,13 @@ class Neo4jExecutor(Executor):
 
     def _create_container(self, import_dir: str):
         # Create a docker container:
+
+        _run_before = (
+            f"""./bin/neo4j-admin import --id-type STRING --nodes={self._entity_labels['node']}="""
+            + f""""/import/export-neurons-.*.csv" --relationships={self._entity_labels['edge']['DEFAULT']}="""
+            + """"/import/export-synapses-.*.csv" """
+        )
+
         self._tamarind_container_id = str(uuid4())
         (
             self._running_container,
@@ -219,8 +226,9 @@ class Neo4jExecutor(Executor):
         ) = self._tamarind_provisioner.start(
             self._tamarind_container_id,
             import_path=f"{os.getcwd()}/{import_dir}",
-            run_before=f"""./bin/neo4j-admin import --id-type STRING --nodes:{self._entity_labels['node']} "/import/export-neurons-.*.csv" --relationships:{self._entity_labels['edge']['DEFAULT']} "/import/export-synapses-.*.csv" """,
+            run_before=_run_before,
             wait=self._wait_for_boot,
+            wait_attempt_limit=self.max_retries,
         )
         self._created_container = True
         container_is_ready = False
@@ -236,7 +244,7 @@ class Neo4jExecutor(Executor):
                         f"Could not connect to neo4j container {self._running_container}. "
                         "For more information, see https://github.com/aplbrain/dotmotif/wiki/Troubleshooting-Neo4jExecutor."
                     )
-                time.sleep(5)
+                time.sleep(3)
         self.G = self._tamarind_provisioner[self._tamarind_container_id]
 
     def _teardown_container(self):
