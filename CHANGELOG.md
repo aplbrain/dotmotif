@@ -1,6 +1,9 @@
 # Changelog
 
--   **0.8.0**
+-   **0.8.1**
+    -   Chores:
+        -   Upgraded to the latest version of Tamarind, with Neo4j v4.2 support.
+-   **0.8.0** (January 12 2021)
     -   Features:
         -   Add `!contains` and `!in` attribute constraints to the parser. (#88)
         -   Neo4j and NeuPrintExecutors now support custom node/edge labels (#91)
