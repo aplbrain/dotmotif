@@ -42,7 +42,7 @@ You should usually ignore this, and use .find() instead.
 
 
 
-## *Function* `count(self, motif: "dotmotif", limit=None) -> int`
+## *Function* `count(self, motif: dotmotif, limit=None) -> int`
 
 
 Count a motif in a larger graph.
@@ -55,7 +55,7 @@ Count a motif in a larger graph.
 
 
 
-## *Function* `find(self, motif: "dotmotif", limit=None) -> pd.DataFrame`
+## *Function* `find(self, motif: dotmotif, limit=None) -> pd.DataFrame`
 
 
 Find a motif in a larger graph.

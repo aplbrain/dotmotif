@@ -40,12 +40,12 @@ Store the path and export directory of this ingester.
 All ingesters must have an input file(s) and an output directory which can be used by the dotmotif class for input to, say, a Neo4j docker container, among other platforms.
 
 
-## *Class* `NetworkXIngester(Ingester)`
+## *Class* `NetworkXIngester`
 
 
-An ingester from the NetworkX in-memory format.
+### files
 
-.
+One file contains the node IDs and their attrs, and the other contains the edges and the edge attrs. Each column must contain a type annotation in order for Neo4j to be able to interpret the attributes as variables.
 
 
 ## *Function* `__init__(self, graph: nx.Graph, export_dir: str) -> None`
@@ -57,14 +57,6 @@ Create a new ingester from networkx format.
 > - **graph** (`nx.Graph`: `None`): The in-memory graph to ingest
 > - **export_dir** (`str`: `None`): The path to the CSV directory to use
 
-
-
-## *Function* `ingest(self) -> List[str]`
-
-
-Perform the ingest into a list of CSV filenames.
-
-.
 
 
 ## *Class* `_deprecated_Type2FileIngester(FileIngester)`
