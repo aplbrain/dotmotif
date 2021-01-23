@@ -1,4 +1,4 @@
-## *Class* `dotmotif`
+## *Class* `Motif`
 
 
 Container class for dotmotif operations.
@@ -6,12 +6,14 @@ Container class for dotmotif operations.
 See __init__ documentation for more details.
 
 
-## *Function* `__init__(self, **kwargs)`
+## *Function* `__init__(self, input_motif: str = None, **kwargs)`
 
 
 Create a new dotmotif object.
 
 ### Arguments
+> - **input_motif** (`str`: `None`): Optionally, a DotMotif DSL defined motif,
+        or a path to a .motif file that contains a motif.
 > - **ignore_direction** (`bool`: `False`): Whether to disregard direction when
         generating the database query
 > - **limit** (`int`: `None`): A limit (if any) to impose on the query results

@@ -36,6 +36,8 @@ If there is no existing database and you do not pass in a graph, you must pass a
         connect to the neo4j container before giving up.
 > - **wait_for_boot** (`bool`: `True`): Whether the process should pause to
         wait for a provisioned Docker container to come online.
+> - **entity_labels** (`dict`: `_DEFAULT_ENTITY_LABELS`): The set of labels to
+        use for nodes and edges.
 
 
 
@@ -47,7 +49,15 @@ Destroy the docker container from the running processes.
 Also will handle (TODO) other teardown actions.
 
 
-## *Function* `run(self, cypher: str, cursor=True) -> Table`
+## *Function* `create_index(self, attribute_name: str)`
+
+
+Create a new index on the given node attribute.
+
+Note that edge attributes are NOT supported.
+
+
+## *Function* `run(self, cypher: str, cursor=True)`
 
 
 Run an arbitrary cypher command.
@@ -58,7 +68,7 @@ You should usually ignore this, and use .find() instead.
 > - **cypher** (`str`: `None`): The command to run
 
 ### Returns
-    The result of the cypher query
+    The result of the cypher query (py2neo.Table)
 
 
 
@@ -72,7 +82,7 @@ Count a motif in a larger graph.
 
 
 
-## *Function* `find(self, motif: "dotmotif", limit=None, cursor=True) -> Table`
+## *Function* `find(self, motif: "dotmotif", limit=None, cursor=True)`
 
 
 Find a motif in a larger graph.
