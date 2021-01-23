@@ -250,6 +250,19 @@ class Neo4jExecutor(Executor):
     def _teardown_container(self):
         self._tamarind_provisioner.stop(self._tamarind_container_id)
 
+    def create_index(self, attribute_name: str):
+        """
+        Create a new index on the given node attribute.
+
+        Note that edge attributes are NOT supported.
+        """
+        self.run(
+            f"""
+        CREATE INDEX index_name IF NOT EXISTS FOR (n:{self._entity_labels["node"]})
+        ON (n.{attribute_name})
+        """
+        )
+
     def run(self, cypher: str, cursor=True):
         """
         Run an arbitrary cypher command.
