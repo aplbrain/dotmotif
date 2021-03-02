@@ -6,6 +6,7 @@
         -   Upgraded to the latest version of GrandIso, v1.1.0
     -   Features:
         -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
+        -   `dotmotif.ingest.EdgelistConverter` now supports importing from a dask or pandas dataframe edgelist in addition to files on disk (#99)
 -   **0.8.0** (January 12 2021)
     -   Features:
         -   Add `!contains` and `!in` attribute constraints to the parser. (#88)

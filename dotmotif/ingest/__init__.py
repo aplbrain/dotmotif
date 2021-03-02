@@ -27,16 +27,28 @@ class NetworkXConverter(abc.ABC):
         ...
 
 
-class CSVEdgelistConverter(NetworkXConverter):
+class EdgelistConverter(NetworkXConverter):
     """
-    A converter that takes an arbitrary CSV file on disk and converts it to a graph.
+    Convert an edgelist dataframe or CSV to a graph.
 
     """
 
     def __init__(
-        self, filepath: str, u_id_column: str, v_id_column: str, directed: bool = True
+        self,
+        filepath_or_dataframe: str,
+        u_id_column: str,
+        v_id_column: str,
+        directed: bool = True,
+        file_reader_kwargs: dict = None,
     ):
-        data = pd.read_csv(filepath, dtype={u_id_column: str, v_id_column: str,})
+        if isinstance(filepath_or_dataframe, pd.DataFrame):
+            data = filepath_or_dataframe
+        else:
+            data = pd.read_table(
+                filepath_or_dataframe,
+                dtype={u_id_column: str, v_id_column: str},
+                **(file_reader_kwargs or {"sep": ","}),
+            )
         self._graph = nx.DiGraph() if directed else nx.Graph()
         for i, row in data.iterrows():
             self._graph.add_edge(
@@ -45,6 +57,9 @@ class CSVEdgelistConverter(NetworkXConverter):
 
     def to_graph(self):
         return self._graph
+
+
+CSVEdgelistConverter = EdgelistConverter
 
 
 class Ingester:
