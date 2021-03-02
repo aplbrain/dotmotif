@@ -1,7 +1,7 @@
 from unittest import TestCase
 import networkx as nx
-from .utils import untype_string
-from . import dotmotif
+from ..utils import untype_string
+from .. import dotmotif
 from tempfile import NamedTemporaryFile
 
 

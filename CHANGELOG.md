@@ -1,12 +1,15 @@
 # Changelog
 
+-   **0.9.0**
+    -   Features:
+        -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
+        -   `dotmotif.ingest.EdgelistConverter` now supports importing from a dask or pandas dataframe edgelist in addition to files on disk (#99)
+    -   Chores:
+        -   Put lingering top-level tests into their own directory (#100)
 -   **0.8.1**
     -   Chores:
         -   Upgraded to the latest version of Tamarind, with Neo4j v4.2 support (#93)
         -   Upgraded to the latest version of GrandIso, v1.1.0
-    -   Features:
-        -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
-        -   `dotmotif.ingest.EdgelistConverter` now supports importing from a dask or pandas dataframe edgelist in addition to files on disk (#99)
 -   **0.8.0** (January 12 2021)
     -   Features:
         -   Add `!contains` and `!in` attribute constraints to the parser. (#88)

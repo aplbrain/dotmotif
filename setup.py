@@ -11,7 +11,7 @@ python setup.py sdist
 twine upload dist/*
 """
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 
 here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
