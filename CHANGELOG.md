@@ -1,6 +1,6 @@
 # Changelog
 
--   **0.9.0**
+-   **0.9.0** (March 23 2021)
     -   Features:
         -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
         -   `dotmotif.ingest.EdgelistConverter` now supports importing from a dask or pandas dataframe edgelist in addition to files on disk (#99)

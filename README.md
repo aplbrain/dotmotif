@@ -11,43 +11,65 @@
 <a href="https://codecov.io/gh/aplbrain/dotmotif"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/aplbrain/dotmotif?style=for-the-badge"></a>
 </p>
 
-# Usage
+---
 
-## Writing a motif
-
-DotMotif is a custom language that specializes in subgraph query notation:
-
-`threecycle.motif`
+DotMotif is a custom language that specializes in subgraph query notation. It looks like this:
 
 ```yml
-# A excites B
+# Neuron A excites B:
 A -> B [type = "excitatory"]
-# B inhibits C
+# ...and B inhibits C:
 B -> C [type = "inhibitory"]
 ```
 
-## Ingesting the motif into dotmotif
+Or like this:
 
-```python
-import dotmotif
+```yml
+TwitterInfluencer(person) {
+    # An influencer has more than a million
+    # followers and is verified.
+    person.followers > 1000000
+    person.verified = true
+}
 
-dm = dotmotif.Motif("threecycle.motif")
+InfluencerAwkward(person1, person2) {
+    # Two people who are both influencers...
+    TwitterInfluencer(person1)
+    TwitterInfluencer(person2)
+    # ...where one follows the other, but...
+    person1 -> person2
+    # ...the other doesn't follow back
+    person2 !> person1
+}
+
+# Search for all awkward twitter influencer
+# relationships in the dataset:
+InfluencerAwkward(X, Y)
 ```
 
-## Inline code in Python
+# Get Started
 
-Alternatively, you can inline your motif in the python code when creating your `dotmotif` object:
+> To follow along in an interactive Binder without installing anything, launch a Jupyter Notebook here:
+>
+> [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gist/j6k4m8/7da63dc9c049c4263fc2749d4ce880cd#file-get-started-dotmotif-ipynb/HEAD)
+
+If you have [DotMotif](https://github.com/aplbrain/dotmotif/wiki/Installation), a NetworkX graph, and a curious mind, you already have everything you need to start using DotMotif:
 
 ```python
-dm = dotmotif.Motif("""
-# A excites B
-A -> B [type = "excitatory"]
-# B inhibits C
-B -> C [type = "inhibitory"]
+from dotmotif import Motif, GrandIsoExecutor
+
+executor = GrandIsoExecutor(graph=my_networkx_graph)
+
+triangle = Motif("""
+A -> B
+B -> C
+C -> A
 """)
+
+results = executor.find(triangle)
 ```
 
-## Parameters
+# Parameters
 
 You can also pass optional parameters into the constructor for the `dotmotif` object. Those arguments are:
 
@@ -59,6 +81,8 @@ You can also pass optional parameters into the constructor for the `dotmotif` ob
 | `exclude_automorphisms` | `bool`: `False` | Whether to return only a single example for each detected automorphism. See more in [the documentation](https://github.com/aplbrain/dotmotif/wiki/Automorphisms)               |
 
 For more details on how to write a query, see [Getting Started](https://github.com/aplbrain/dotmotif/wiki/Getting-Started).
+
+---
 
 # Citing
 
