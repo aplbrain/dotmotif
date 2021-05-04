@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.9.1**
+    -   Features:
+        -   `GrandIsoExecutor`: Adds support for the `grandiso.find_motifs_iter` generator API in grandiso v1.2.0; this reduces the runtime of queries with nonzero `limit` #102
 -   **0.9.0** (March 23 2021)
     -   Features:
         -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
