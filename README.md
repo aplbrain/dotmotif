@@ -13,9 +13,11 @@
 
 ---
 
-DotMotif is a custom language that specializes in subgraph query notation. It looks like this:
+DotMotif is a library that identifies subgraphs or motifs in a large graph. It looks like this:
 
 ```yml
+# Look for all motifs of the form,
+
 # Neuron A excites B:
 A -> B [type = "excitatory"]
 # ...and B inhibits C:
