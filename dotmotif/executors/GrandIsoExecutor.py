@@ -15,7 +15,7 @@ limitations under the License.`
 """
 
 import networkx as nx
-from grandiso import find_motifs
+from grandiso import find_motifs_iter
 
 from .NetworkXExecutor import NetworkXExecutor
 
@@ -52,7 +52,7 @@ class GrandIsoExecutor(NetworkXExecutor):
         # should be smart enough to know what you want while avoiding adding
         # complexity. Anyway, soapbox over.) To that end, this confirmation
         # that the motif is directed is kinda... Unimportant.
-        graph_matcher = find_motifs
+        graph_matcher = find_motifs_iter
 
         if motif.ignore_direction or not self.graph.is_directed:
             graph_constructor = nx.Graph
@@ -67,7 +67,6 @@ class GrandIsoExecutor(NetworkXExecutor):
             elif attrs["exists"] is False:
                 # Collect a list of neg-edges to check for again in a moment
                 must_not_exist_edges.append((u, v))
-        graph_matches = graph_matcher(only_positive_edges_motif, self.graph)
 
         def _doesnt_have_any_of_motifs_negative_edges(mapping):
             for u, v in must_not_exist_edges:
@@ -75,25 +74,11 @@ class GrandIsoExecutor(NetworkXExecutor):
                     return False
             return True
 
-        # Another note. In the NetworkX executor, results are returned in what
-        # I perceive to be silly order. Why would you tell me "what nodes are
-        # the result of the mapping to B from A" rather that just "here's the
-        # mapping from A to B"...? I digress. Anyhow, in the NX executor we
-        # have to flip the results. Here, we don't. That's why there's a code
-        # block dict-comprehension missing from this function. Neato.
+        graph_matches = graph_matcher(only_positive_edges_motif, self.graph)
 
-        # Now, filter out those that have edges they should not:
-        results = [
-            mapping
-            for mapping in graph_matches
-            if _doesnt_have_any_of_motifs_negative_edges(mapping)
-        ]
-
-        # Now, filter on attributes:
-        res = [
-            r
-            for r in results
-            if (
+        results = []
+        for r in graph_matches:
+            if _doesnt_have_any_of_motifs_negative_edges(r) and (
                 self._validate_edge_constraints(
                     r, self.graph, motif.list_edge_constraints()
                 )
@@ -111,6 +96,9 @@ class GrandIsoExecutor(NetworkXExecutor):
                     (not motif.exclude_automorphisms)
                     or all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
                 )
-            )
-        ]
-        return res
+            ):
+                results.append(r)
+                if limit and len(results) >= limit:
+                    return results
+
+        return results
