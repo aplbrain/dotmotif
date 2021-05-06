@@ -1,5 +1,5 @@
 <p align="center">
-  <img align="center" src="./logo.png" / width="25%">
+  <img align="center" src="https://user-images.githubusercontent.com/693511/117350563-b58b9900-ae7a-11eb-83ce-9f5f9213145e.png" / width="25%">
   <h1 align="center" fontsize="2em">d o t m o t i f</h1>
 </p>
 <p align="center">Find graph motifs using intuitive notation</p>
