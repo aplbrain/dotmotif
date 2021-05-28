@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.`
 """
-
+from functools import lru_cache
 import networkx as nx
 from grandiso import find_motifs_iter
 
@@ -68,6 +68,7 @@ class GrandIsoExecutor(NetworkXExecutor):
 
         constraints = motif.list_node_constraints()
 
+        @lru_cache()
         def _node_attr_match_fn(
             motif_node_id: str, host_node_id: str, motif_nx: nx.Graph, host_nx: nx.Graph
         ):
