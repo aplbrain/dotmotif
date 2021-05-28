@@ -1,8 +1,11 @@
 # Changelog
 
+-   **0.9.2**
+    -   Features:
+        -   `GrandIsoExecutor`: Utilizes the node attribute matching flow available in grandiso≥2.0.0 to reduce complexity of attribute-heavy searches (#104)
 -   **0.9.1**
     -   Features:
-        -   `GrandIsoExecutor`: Adds support for the `grandiso.find_motifs_iter` generator API in grandiso v1.2.0; this reduces the runtime of queries with nonzero `limit` #102
+        -   `GrandIsoExecutor`: Adds support for the `grandiso.find_motifs_iter` generator API in grandiso v1.2.0; this reduces the runtime of queries with nonzero `limit` (#102)
 -   **0.9.0** (March 23 2021)
     -   Features:
         -   `Neo4jExecutor#create_index`. This function call adds an index to the database on the node attribute specified, in order to improve query performance (#95)
