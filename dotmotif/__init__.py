@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2021 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
-__version__ = "0.9.0"
+__version__ = "0.9.2"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
