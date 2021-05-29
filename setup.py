@@ -11,7 +11,7 @@ python setup.py sdist
 twine upload dist/*
 """
 
-VERSION = "0.9.1"
+VERSION = "0.9.2"
 
 here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
@@ -40,7 +40,7 @@ setup(
         "dask[dataframe]",
         "tamarind>=0.1.5",
         "neuprint-python",
-        "grandiso>=1.2.0",
+        "grandiso>=2.0.0",
     ],
     include_package_data=True,
 )

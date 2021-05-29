@@ -1,9 +1,9 @@
 # Changelog
 
--   **0.9.2**
+-   **0.9.2** (May 28 2021)
     -   Features:
         -   `GrandIsoExecutor`: Utilizes the node attribute matching flow available in grandiso≥2.0.0 to reduce complexity of attribute-heavy searches (#104)
--   **0.9.1**
+-   **0.9.1** (May 6 2021)
     -   Features:
         -   `GrandIsoExecutor`: Adds support for the `grandiso.find_motifs_iter` generator API in grandiso v1.2.0; this reduces the runtime of queries with nonzero `limit` (#102)
 -   **0.9.0** (March 23 2021)
