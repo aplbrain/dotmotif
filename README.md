@@ -91,17 +91,18 @@ For more details on how to write a query, see [Getting Started](https://github.c
 If this tool is helpful to your research, please consider citing it with:
 
 ```bibtex
-# https://doi.org/10.1101/2020.06.08.140533
-@article {Matelsky_DotMotif,
-    author = {Matelsky, Jordan K. and Reilly, Elizabeth P. and Johnson, Erik C. and Stiso, Jennifer and Bassett, Danielle S. and Wester, Brock A. and Gray-Roncal, William},
-    title = {DotMotif: An open-source tool for connectome subgraph isomorphism search and graph queries},
-    elocation-id = {2020.06.08.140533},
-    year = {2021},
-    doi = {10.1101/2020.06.08.140533},
-    publisher = {Cold Spring Harbor Laboratory},
-    URL = {https://www.biorxiv.org/content/early/2021/01/14/2020.06.08.140533},
-    eprint = {https://www.biorxiv.org/content/early/2021/01/14/2020.06.08.140533.full.pdf},
-    journal = {bioRxiv}
+# https://doi.org/10.1038/s41598-021-91025-5
+@article{Matelsky_Motifs_2021, 
+    title={{DotMotif: an open-source tool for connectome subgraph isomorphism search and graph queries}},
+    volume={11}, 
+    ISSN={2045-2322}, 
+    url={http://dx.doi.org/10.1038/s41598-021-91025-5}, 
+    DOI={10.1038/s41598-021-91025-5}, 
+    number={1}, 
+    journal={Scientific Reports}, 
+    publisher={Springer Science and Business Media LLC}, 
+    author={Matelsky, Jordan K. and Reilly, Elizabeth P. and Johnson, Erik C. and Stiso, Jennifer and Bassett, Danielle S. and Wester, Brock A. and Gray-Roncal, William},
+    year={2021}, 
+    month={Jun}
 }
-
 ```
