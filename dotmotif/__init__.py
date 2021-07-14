@@ -63,7 +63,7 @@ class Motif:
             parser (dotmotif.parsers.Parser: DEFAULT_MOTIF_PARSER): The parser
                 to use to parse the document. Defaults to the v2 parser.
             exclude_automorphisms (bool: False): Whether to exclude automorphism
-                variants of the motif when rturning results.
+                variants of the motif when returning results.
             validators (List[Validator]): A list of dotmotif.Validators to use
                 when verifying the motif for correctness and executability.
 
