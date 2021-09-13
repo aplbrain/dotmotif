@@ -17,6 +17,7 @@ limitations under the License.`
 from typing import TYPE_CHECKING
 import networkx as nx
 import pandas as pd
+import numpy as np
 
 from .Executor import Executor
 
@@ -156,7 +157,8 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_edge_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        #self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph, constraints: dict,mult_edge: bool
     ):
         """
         Validate all edge constraints on a subgraph.
@@ -195,9 +197,16 @@ class NetworkXExecutor(Executor):
             # Check edge in graph for constraints
             edge_attrs = graph.get_edge_data(graph_u, graph_v)
 
-            if not _edge_satisfies_constraints(edge_attrs, constraint_list):
-                # Fail fast
-                return False
+            if not mult_edge:
+                if not _edge_satisfies_constraints(edge_attrs, constraint_list):
+                    # Fail fast
+                    return False
+            else:
+                constraint_results = [] 
+                for ed_idx,e_attr in edge_attrs:
+                    constraint_results.append(_edge_satisfies_constraints(e_attr, constraint_list))
+                if not any(constraint_results):
+                    return False
         return True
 
     def count(self, motif: "dotmotif", limit: int = None):
@@ -224,12 +233,18 @@ class NetworkXExecutor(Executor):
         # matching, NetworkX does not seem to support this out of the box.
         # TODO: Confirm that networkx does not support this out of the box.
 
+        multi_edge = False
+        if "Multi" in str(type(self.graph)):
+            multi_edge = True
+        
         if motif.ignore_direction or not self.graph.is_directed:
             graph_constructor = nx.Graph
             graph_matcher = nx.algorithms.isomorphism.GraphMatcher
         else:
             graph_constructor = nx.DiGraph
             graph_matcher = nx.algorithms.isomorphism.DiGraphMatcher
+            
+            
 
         only_positive_edges_motif = graph_constructor()
         must_not_exist_edges = []
@@ -269,7 +284,7 @@ class NetworkXExecutor(Executor):
             for r in results
             if (
                 self._validate_edge_constraints(
-                    r, self.graph, motif.list_edge_constraints()
+                    r, self.graph, motif.list_edge_constraints(),multi_edge=multi_edge
                 )
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
