@@ -203,8 +203,10 @@ class NetworkXExecutor(Executor):
                     return False
             else:
                 constraint_results = [] 
-                for ed_idx,e_attr in edge_attrs:
+                for ed_idx,e_attr in edge_attrs.items():
                     constraint_results.append(_edge_satisfies_constraints(e_attr, constraint_list))
+                    
+                #print(f"constraint_results = {constraint_results} and not any(constraint_results) = {not any(constraint_results)}")
                 if not any(constraint_results):
                     return False
         return True
@@ -236,6 +238,8 @@ class NetworkXExecutor(Executor):
         multi_edge = False
         if "Multi" in str(type(self.graph)):
             multi_edge = True
+            
+        #print(f"multi_edge = {multi_edge}")
         
         if motif.ignore_direction or not self.graph.is_directed:
             graph_constructor = nx.Graph

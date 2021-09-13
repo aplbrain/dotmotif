@@ -40,7 +40,7 @@ setup(
         "dask[dataframe]",
         "tamarind>=0.1.5",
         "neuprint-python",
-        "grandiso>=2.0.0",
+        "grandiso<2.0.0",
     ],
     include_package_data=True,
 )

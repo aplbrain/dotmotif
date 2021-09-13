@@ -17,4 +17,4 @@ limitations under the License.
 from .Executor import Executor
 from .Neo4jExecutor import Neo4jExecutor
 from .NetworkXExecutor import NetworkXExecutor
-from .GrandIsoExecutor import GrandIsoExecutor
+#from .GrandIsoExecutor import GrandIsoExecutor
