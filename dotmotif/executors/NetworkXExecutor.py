@@ -158,7 +158,7 @@ class NetworkXExecutor(Executor):
 
     def _validate_edge_constraints(
         #self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
-        self, node_isomorphism_map: dict, graph, constraints: dict,mult_edge: bool
+        self, node_isomorphism_map: dict, graph, constraints: dict,multi_edge=False
     ):
         """
         Validate all edge constraints on a subgraph.
@@ -197,7 +197,7 @@ class NetworkXExecutor(Executor):
             # Check edge in graph for constraints
             edge_attrs = graph.get_edge_data(graph_u, graph_v)
 
-            if not mult_edge:
+            if not multi_edge:
                 if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                     # Fail fast
                     return False
