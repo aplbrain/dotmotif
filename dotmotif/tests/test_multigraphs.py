@@ -9,11 +9,11 @@ then the user can specify whether they would like to match all edges or any edge
 
 If the user wants ALL edges between two nodes to satisfy the constraints (e.g.,
 `a -> b [size > 10]`) for all edges between nodes `a` and `b`) then they should
-set `multigraph_match_all_edges = True`.
+set `multigraph_edge_match = 'all'`.
 
 If the user wants the mapping to succeed if ANY edge between two nodes satisfies
 the constraints (e.g., `a -> b [size > 10]` is true for at least one of the
-edges between `a` and `b`) then they should set `multigraph_match_any_edge = True`.
+edges between `a` and `b`) then they should set `multigraph_edge_match = 'any'`.
 
 
 """
@@ -136,6 +136,36 @@ def test_complex_multigraph(executor):
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
     assert len(results) == 2
+
+    results = executor(graph=haystack, multigraph_edge_match="all").find(motif)
+    assert len(results) == 0
+
+    results = executor(graph=nx.DiGraph(haystack)).find(motif)
+    assert len(results) == 0
+
+
+@pytest.mark.parametrize("executor", [NetworkXExecutor, GrandIsoExecutor])
+def test_complex_multigraph_fails(executor):
+    """
+    Tests that an "impossible" constraint on a simple graph works on a multigraph.
+    """
+
+    haystack = nx.MultiDiGraph()
+    haystack.add_edge("A", "B", size=10)
+    haystack.add_edge("A", "B", size=20)
+    haystack.add_edge("B", "C", size=3)
+    haystack.add_edge("B", "C", size=4)
+    haystack.add_edge("C", "A", size=5)
+    haystack.add_edge("C", "A", size=6)
+
+    motif = Motif("""
+    a -> b [size > 15, size > 21]
+    b -> c [size > 20]
+    c -> a [size > 55]
+    """)
+
+    results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
+    assert len(results) == 0
 
     results = executor(graph=haystack, multigraph_edge_match="all").find(motif)
     assert len(results) == 0
