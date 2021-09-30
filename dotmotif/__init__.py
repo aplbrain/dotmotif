@@ -215,6 +215,3 @@ class Motif:
         result = pickle.load(f)
         f.close()
         return result
-
-
-dotmotif = Motif

@@ -6,7 +6,7 @@ TOKEN = os.getenv("NEUPRINT_TOKEN")
 
 import unittest
 
-from .. import dotmotif
+from .. import Motif
 from .NeuPrintExecutor import NeuPrintExecutor
 
 if TOKEN:
@@ -18,7 +18,7 @@ if TOKEN:
 
     class TestNeuPrintKnownMotifs(unittest.TestCase):
         def test_known_edge(self):
-            motif = dotmotif().from_motif(
+            motif = Motif().from_motif(
                 """
                 input -> output
                 input.type == "KCab-p"
@@ -30,7 +30,7 @@ if TOKEN:
             self.assertEqual(len(E.find(motif, limit=5)), 5)
 
         def test_bigger_motif(self):
-            motif = dotmotif().from_motif(
+            motif = Motif().from_motif(
                 """
                 diedge(a, b) {
                     a -> b
