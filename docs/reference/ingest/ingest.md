@@ -5,10 +5,10 @@ An abstract base class for import to the NetworkX format.
 
 
 
-## *Class* `CSVEdgelistConverter(NetworkXConverter)`
+## *Class* `EdgelistConverter(NetworkXConverter)`
 
 
-A converter that takes an arbitrary CSV file on disk and converts it to a graph.
+Convert an edgelist dataframe or CSV to a graph.
 
 
 
