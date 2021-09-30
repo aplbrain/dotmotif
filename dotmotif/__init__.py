@@ -119,7 +119,7 @@ class Motif:
 
         return self
 
-    def from_nx(self, graph: nx.DiGraph) -> "dotmotif":
+    def from_nx(self, graph: nx.DiGraph) -> "Motif":
         """
         Ingest directly from a graph.
 
