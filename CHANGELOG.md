@@ -1,5 +1,10 @@
 # Changelog
 
+-   **0.10.0**
+    -   Features:
+        -   `GrandIsoExecutor` and `NetworkXExecutor`: Support for `networkx.MultiGraph` and `networkx.MultiDiGraph` search through the use of the `multigraph_edge_match` executor argument (#107).
+    -   Deprecations:
+        -   Removed `dotmotif.dotmotif` method-style API (#107).
 -   **0.9.2** (May 28 2021)
     -   Features:
         -   `GrandIsoExecutor`: Utilizes the node attribute matching flow available in grandiso≥2.0.0 to reduce complexity of attribute-heavy searches (#104)

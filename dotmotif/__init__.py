@@ -119,7 +119,7 @@ class Motif:
 
         return self
 
-    def from_nx(self, graph: nx.DiGraph) -> "dotmotif":
+    def from_nx(self, graph: nx.DiGraph) -> "Motif":
         """
         Ingest directly from a graph.
 
@@ -197,7 +197,7 @@ class Motif:
         return fname
 
     @staticmethod
-    def load(fname: Union[str, IO[bytes]]) -> "dotmotif":
+    def load(fname: Union[str, IO[bytes]]) -> "Motif":
         """
         Load the motif from a file on disk.
 
@@ -215,6 +215,3 @@ class Motif:
         result = pickle.load(f)
         f.close()
         return result
-
-
-dotmotif = Motif

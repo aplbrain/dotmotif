@@ -47,7 +47,7 @@ RETURN DISTINCT A,B,X,Y
 
 class TestDotmotif_Cypher(unittest.TestCase):
     def test_cypher(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(_DEMO_G_MIN)
         self.assertEqual(
             Neo4jExecutor.motif_to_cypher(dm).strip(), _DEMO_G_MIN_CYPHER.strip()
@@ -56,7 +56,7 @@ class TestDotmotif_Cypher(unittest.TestCase):
 
 class TestDotmotif_edges_Cypher(unittest.TestCase):
     def test_cypher_edge_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B [weight=4, area<=10]
@@ -69,7 +69,7 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
         )
 
     def test_cypher_edge_many_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
             A -> B [weight=4, area<=10, area<=20]
@@ -83,7 +83,7 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
 
     #   TODO      # Issue with arbitrary ordering of inequalities
     # def test_cypher_edge_many_attributes_and_enforce_inequality(self):
-    #     dm = dotmotif.dotmotif(enforce_inequality=True)
+    #     dm = dotmotif.Motif(enforce_inequality=True)
     #     dm.from_motif(
     #         """
     #         A -> B [weight=4, area<=10, area<=20]
@@ -99,7 +99,7 @@ class TestDotmotif_edges_Cypher(unittest.TestCase):
 
 class TestDotmotif_nodes_Cypher(unittest.TestCase):
     def test_cypher_node_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B
@@ -113,7 +113,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
         )
 
     def test_cypher_node_many_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B
@@ -128,7 +128,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
         )
 
     def test_cypher_node_same_node_many_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B
@@ -143,7 +143,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
         )
 
     def test_cypher_node_many_node_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B
@@ -158,7 +158,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
         )
 
     def test_cypher_negative_edge_and_inequality(self):
-        dm = dotmotif.dotmotif(enforce_inequality=True)
+        dm = dotmotif.Motif(enforce_inequality=True)
         dm.from_motif(
             """
         A -> B
@@ -180,7 +180,7 @@ class TestDotmotif_nodes_Cypher(unittest.TestCase):
 
 class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
     def test_cypher_node_and_edge_attributes(self):
-        dm = dotmotif.dotmotif()
+        dm = dotmotif.Motif()
         dm.from_motif(
             """
         A -> B [area != 10]
@@ -201,7 +201,7 @@ class TestDotmotif_nodes_edges_Cypher(unittest.TestCase):
 
 class TestDynamicNodeConstraints(unittest.TestCase):
     def test_dynamic_constraints_in_cypher(self):
-        dm = dotmotif.dotmotif(enforce_inequality=True)
+        dm = dotmotif.Motif(enforce_inequality=True)
         dm.from_motif(
             """
         A -> B
@@ -217,7 +217,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
 
 class BugReports(unittest.TestCase):
     def test_fix_where_clause__github_35(self):
-        dm = dotmotif.dotmotif(enforce_inequality=True)
+        dm = dotmotif.Motif(enforce_inequality=True)
         dm.from_motif(
             """
         A -> B

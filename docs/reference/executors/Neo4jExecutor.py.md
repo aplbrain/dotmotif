@@ -72,21 +72,21 @@ You should usually ignore this, and use .find() instead.
 
 
 
-## *Function* `count(self, motif: "dotmotif", limit=None) -> int`
+## *Function* `count(self, motif: "dotmotif.Motif", limit=None) -> int`
 
 
 Count a motif in a larger graph.
 
 ### Arguments
-    motif (dotmotif.dotmotif)
+    motif (dotmotif.Motif)
 
 
 
-## *Function* `find(self, motif: "dotmotif", limit=None, cursor=True)`
+## *Function* `find(self, motif: "dotmotif.Motif", limit=None, cursor=True)`
 
 
 Find a motif in a larger graph.
 
 ### Arguments
-    motif (dotmotif.dotmotif)
+    motif (dotmotif.Motif)
 

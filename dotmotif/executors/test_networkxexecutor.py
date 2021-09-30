@@ -196,8 +196,7 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
 class TestSmallMotifs(unittest.TestCase):
     def test_edgecount_motif(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif("""A->B""")
+        dm = dotmotif.Motif("""A->B""")
 
         H = nx.DiGraph()
         H.add_edge("x", "y")
@@ -208,8 +207,7 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(dm)), 2)
 
     def test_fullyconnected_triangle_motif(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif(
+        dm = dotmotif.Motif(
             """
         A->B
         B->C
@@ -226,8 +224,7 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(dm)), 3)
 
     def test_edge_attribute_equality(self):
-        dm = dotmotif.dotmotif()
-        dm.from_motif(
+        dm = dotmotif.Motif(
             """
         A->B [weight==10, area==4]
         """
@@ -245,7 +242,7 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("x", "y", weight=1)
         H.add_edge("y", "z", weight=10)
         H.add_edge("z", "x", weight=5)
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
         A -> B [weight>=11]
         """.strip()
@@ -262,7 +259,7 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("a", "b", weight=1)
         H.add_edge("b", "c", weight=10)
         H.add_edge("c", "a", weight=5)
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
         A -> B [weight>=7]
         """.strip()
@@ -279,7 +276,7 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("a", "b", weight=1)
         H.add_edge("b", "c", weight=10)
         H.add_edge("c", "a", weight=5)
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
         A -> B [weight>=7]
         B -> C
@@ -294,7 +291,7 @@ class TestSmallMotifs(unittest.TestCase):
         H = nx.DiGraph()
         H.add_edge("y", "x", ATTRIBUTE=7)
         H.add_edge("y", "z", ATTRIBUTE=7)
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
         A -> B [ATTRIBUTE>=7]
         """.strip()
@@ -308,7 +305,7 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("X", "Y", weight=10)
         H.add_edge("Y", "Z", weight=9)
         H.add_edge("Z", "X", weight=8)
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
             A -> B [weight>=7]
         """.strip()
@@ -337,7 +334,7 @@ class TestSmallMotifs(unittest.TestCase):
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
 
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
             A -> C
             B -> C
@@ -349,7 +346,7 @@ class TestSmallMotifs(unittest.TestCase):
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 2)
 
-        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+        motif = dotmotif.Motif(exclude_automorphisms=True).from_motif(
             """
             A -> C
             B -> C
@@ -367,7 +364,7 @@ class TestSmallMotifs(unittest.TestCase):
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
 
-        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+        motif = dotmotif.Motif(exclude_automorphisms=True).from_motif(
             """
             A -> C
             B -> C
@@ -383,7 +380,7 @@ class TestSmallMotifs(unittest.TestCase):
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
 
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
             A -> C
             B -> C
@@ -400,7 +397,7 @@ class TestSmallMotifs(unittest.TestCase):
         G.add_edge("B", "C")
         G.add_edge("C", "A")
 
-        motif = dotmotif.dotmotif().from_motif(
+        motif = dotmotif.Motif(
             """
             A -> B
             B -> C
@@ -410,7 +407,7 @@ class TestSmallMotifs(unittest.TestCase):
         res = NetworkXExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 3)
 
-        motif = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(
+        motif = dotmotif.Motif(exclude_automorphisms=True).from_motif(
             """
             A -> B
             B -> C
@@ -439,7 +436,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         A -> B
         A.radius > B.radius
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 0)
 
@@ -460,7 +457,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         A -> B
         A.radius > B.radius
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 1)
 
@@ -482,7 +479,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         A -> B
         A.radius > B.radius
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
 
@@ -506,7 +503,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         macro(A, B)
         A -> B
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 0)
 
@@ -530,7 +527,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         macro(A, B)
         A -> B
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 1)
 
@@ -555,7 +552,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         macro(A, B)
         A -> B
         """
-        dm = dotmotif.dotmotif(parser=ParserV2)
+        dm = dotmotif.Motif(parser=ParserV2)
         res = NetworkXExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
 

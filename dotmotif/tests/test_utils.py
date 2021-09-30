@@ -1,7 +1,7 @@
 from unittest import TestCase
 import networkx as nx
 from ..utils import untype_string
-from .. import dotmotif
+from .. import Motif
 from tempfile import NamedTemporaryFile
 
 
@@ -21,7 +21,7 @@ class TestConverter(TestCase):
 
 class TestSaveLoad(TestCase):
     def test_saveload(self):
-        m = dotmotif().from_motif(
+        m = Motif().from_motif(
             """
         A -> B [type=6]
         """
@@ -29,7 +29,7 @@ class TestSaveLoad(TestCase):
         tf = NamedTemporaryFile()
         m.save(tf)
         tf.flush()
-        f = dotmotif.load(tf.name)
+        f = Motif.load(tf.name)
         self.assertTrue(nx.is_isomorphic(m._g, f._g))
         self.assertEqual(m.list_edge_constraints(), f.list_edge_constraints())
         self.assertEqual(m.list_node_constraints(), f.list_node_constraints())

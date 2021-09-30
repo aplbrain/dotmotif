@@ -42,26 +42,26 @@ You should usually ignore this, and use .find() instead.
 
 
 
-## *Function* `count(self, motif: dotmotif, limit=None) -> int`
+## *Function* `count(self, motif: Motif, limit=None) -> int`
 
 
 Count a motif in a larger graph.
 
 ### Arguments
-> - **motif** (`dotmotif.dotmotif`: `None`): The motif to search for
+> - **motif** (`dotmotif.Motif`: `None`): The motif to search for
 
 ### Returns
 > - **int** (`None`: `None`): The count of this motif in the host graph
 
 
 
-## *Function* `find(self, motif: dotmotif, limit=None) -> pd.DataFrame`
+## *Function* `find(self, motif: Motif, limit=None) -> pd.DataFrame`
 
 
 Find a motif in a larger graph.
 
 ### Arguments
-> - **motif** (`dotmotif.dotmotif`: `None`): The motif to search for
+> - **motif** (`dotmotif.Motif`: `None`): The motif to search for
 
 ### Returns
 > - **pd.DataFrame** (`None`: `None`): The results of the search
