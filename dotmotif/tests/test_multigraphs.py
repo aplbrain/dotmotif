@@ -1,3 +1,23 @@
+
+"""
+
+## Multigraph Support
+
+The host graph argument to `NetworkXExecutor` and `GrandIsoExecutor` can be a
+`nx.MultiDiGraph` or `nx.MultiGraph`. If the host graph is a `nx.MultiDiGraph`,
+then the user can specify whether they would like to match all edges or any edge.
+
+If the user wants ALL edges between two nodes to satisfy the constraints (e.g.,
+`a -> b [size > 10]`) for all edges between nodes `a` and `b`) then they should
+set `multigraph_match_all_edges = True`.
+
+If the user wants the mapping to succeed if ANY edge between two nodes satisfies
+the constraints (e.g., `a -> b [size > 10]` is true for at least one of the
+edges between `a` and `b`) then they should set `multigraph_match_any_edge = True`.
+
+
+"""
+
 import networkx as nx
 import pytest
 
