@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.`
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Tuple
+import copy
 import networkx as nx
 
 from .Executor import Executor
@@ -59,6 +60,27 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
                     return False
     return True
 
+
+def _edge_satisfies_many_constraints_for_muligraph_any_edges(edge_attributes: dict, constraints: dict) -> List[Tuple[str, str, str]]:
+    """
+    Returns a subset of constraints that this edge matches, in the form (key, op, val).
+    """
+    matched_constraints = []
+    for key, clist in constraints.items():
+        for operator, values in clist.items():
+            for value in values:
+                keyvalue_or_none = edge_attributes.get(key, None)
+                try:
+                    operator_success = _OPERATORS[operator](keyvalue_or_none, value)
+                except TypeError:
+                    # If you encounter a type error, that means the comparison
+                    # could not possibly succeed
+                    # # TODO: unless you tried a comparison
+                    # against an undefined value (i.e. VALUE != undefined)
+                    operator_success = False
+                if operator_success:
+                    matched_constraints.append((key, operator, value))
+    return matched_constraints
 
 def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> bool:
     """
@@ -106,19 +128,8 @@ class NetworkXExecutor(Executor):
         self._host_is_multigraph = False
         if self.graph.is_multigraph():
             self._host_is_multigraph = True
-            self._multigraph_match_all_edges = kwargs.get("multigraph_match_all_edges", None)
-            self._multigraph_match_any_edge = kwargs.get("multigraph_match_any_edge", None)
-
-            # Disallow the setting of both all_edges and any_edge to True:
-            if self._multigraph_match_all_edges and self._multigraph_match_any_edge:
-                raise ValueError(
-                    "You cannot set both multigraph_match_all_edges and multigraph_match_any_edge to True."
-                )
-
-            # If both are set to None, then the user did not specify behavior
-            # and we will default to matching any edge.
-            if self._multigraph_match_all_edges is None and self._multigraph_match_any_edge is None:
-                self._multigraph_match_any_edge = True
+            self._multigraph_edge_match = kwargs.get("multigraph_edge_match", "any")
+            assert self._multigraph_edge_match in ("all", "any"), "_multigraph_edge_match must be one of 'all' or 'any'."
 
     def _validate_node_constraints(
         self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
@@ -258,17 +269,36 @@ class NetworkXExecutor(Executor):
             graph_u = node_isomorphism_map[motif_U]
             graph_v = node_isomorphism_map[motif_V]
 
+            # check each edge in the graph for the constraints.
+            # if you find an edge that matches, REMOVE that constraint from
+            # the list and continue checking.
+            # if you get to the end of the list of edges and there are any
+            # constrains left, the mapping fails.
+
             # Check each edge in graph for constraints
-            at_least_one_edge_matches = False
+            constraint_list_copy = copy.deepcopy(constraint_list)
             for _, _, edge_attrs in graph.edges((graph_u, graph_v), data=True):
-                if _edge_satisfies_constraints(edge_attrs, constraint_list):
-                    at_least_one_edge_matches = True
-                    break
-            if not at_least_one_edge_matches:
+                matched_constraints = _edge_satisfies_many_constraints_for_muligraph_any_edges(edge_attrs, constraint_list_copy)
+                if matched_constraints:
+                    # Remove matched constraints from the list
+                    for constraint in matched_constraints:
+                        (key, operator, value) = constraint
+                        # remove `value` from the list of [key][operator].
+                        # if the list is empty, remove the entire key.
+                        constraint_list_copy[key][operator].remove(value)
+                        if len(constraint_list_copy[key][operator]) == 0:
+                            del constraint_list_copy[key][operator]
+                        if not constraint_list_copy[key]:
+                            del constraint_list_copy[key]
+
+            # if there are any constraints left over, the mapping failed
+            if len(constraint_list_copy) > 0:
                 return False
+
         return True
 
-    def count(self, motif: "dotmotif", limit: int = None):
+
+    def count(self, motif: "dotmotif.Motif", limit: int = None):
         """
         Count the occurrences of a motif in a graph.
 
@@ -276,12 +306,12 @@ class NetworkXExecutor(Executor):
         """
         return len(self.find(motif, limit))
 
-    def find(self, motif: "dotmotif", limit: int = None):
+    def find(self, motif: "dotmotif.Motif", limit: int = None):
         """
         Find a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif)
+            motif (dotmotif.Motif)
 
         """
         # TODO: Can add constraints on iso node assignment. If we do this a
@@ -331,7 +361,13 @@ class NetworkXExecutor(Executor):
             if _doesnt_have_any_of_motifs_negative_edges(mapping)
         ]
 
-        _edge_constraint_validator = self._validate_edge_constraints if not self._host_is_multigraph else (self._validate_multigraph_all_edge_constraints if self._multigraph_match_all_edges else self._validate_multigraph_any_edge_constraints)
+        _edge_constraint_validator = (
+            self._validate_edge_constraints if not self._host_is_multigraph else (
+                self._validate_multigraph_all_edge_constraints
+                if self._multigraph_edge_match == "all"
+                else self._validate_multigraph_any_edge_constraints
+            )
+        )
         # Now, filter on attributes:
         res = [
             r
