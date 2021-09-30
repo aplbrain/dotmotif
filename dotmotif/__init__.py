@@ -30,7 +30,7 @@ from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
 from .executors.Neo4jExecutor import Neo4jExecutor
 
-__version__ = "0.9.2"
+__version__ = "0.10.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
