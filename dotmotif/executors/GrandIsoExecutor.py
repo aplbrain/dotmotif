@@ -83,7 +83,14 @@ class GrandIsoExecutor(NetworkXExecutor):
             is_node_attr_match=_node_attr_match_fn,
         )
 
-        _edge_constraint_validator = self._validate_edge_constraints if not self._host_is_multigraph else (self._validate_multigraph_all_edge_constraints if self._multigraph_edge_match == "all" else self._validate_multigraph_any_edge_constraints)
+        _edge_constraint_validator = (
+            self._validate_edge_constraints if not self._host_is_multigraph
+            else (
+                self._validate_multigraph_all_edge_constraints
+                if self._multigraph_edge_match == "all"
+                else self._validate_multigraph_any_edge_constraints
+            )
+        )
 
         results = []
         for r in graph_matches:
