@@ -57,3 +57,32 @@ def test_cannot_specify_both_all_and_any(executor):
     haystack = nx.MultiDiGraph()
     with pytest.raises(ValueError):
         executor(graph=haystack, multigraph_match_all_edges=True, multigraph_match_any_edge=True)
+
+@pytest.mark.parametrize("executor", [NetworkXExecutor, GrandIsoExecutor])
+def test_impossible_constraint_works_on_multigraph(executor):
+    """
+    Tests that an "impossible" constraint on a simple graph works on a multigraph.
+    """
+
+    haystack = nx.MultiDiGraph()
+    haystack.add_edge("A", "B", size=10)
+    haystack.add_edge("A", "B", size=20)
+    haystack.add_edge("B", "C", size=30)
+    haystack.add_edge("B", "C", size=40)
+
+    motif = Motif("""
+    a -> b [size >= 15, size < 19]
+    """)
+
+    results = executor(graph=haystack, multigraph_match_any_edge=True).find(motif)
+
+    assert len(results) == 1
+
+    results = executor(graph=haystack, multigraph_match_all_edges=True).find(motif)
+
+    assert len(results) == 0
+
+    results = executor(graph=nx.DiGraph(haystack)).find(motif)
+
+    assert len(results) == 0
+

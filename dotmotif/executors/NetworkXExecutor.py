@@ -16,7 +16,6 @@ limitations under the License.`
 
 from typing import TYPE_CHECKING
 import networkx as nx
-import pandas as pd
 
 from .Executor import Executor
 
