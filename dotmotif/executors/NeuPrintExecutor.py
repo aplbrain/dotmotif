@@ -1,7 +1,7 @@
 import pandas as pd
 from neuprint import Client
 
-from .. import dotmotif
+from .. import Motif
 from .Neo4jExecutor import Neo4jExecutor
 
 _LOOKUP = {
@@ -71,12 +71,12 @@ class NeuPrintExecutor(Neo4jExecutor):
         """
         return self.client.fetch_custom(cypher)
 
-    def count(self, motif: dotmotif, limit=None) -> int:
+    def count(self, motif: Motif, limit=None) -> int:
         """
         Count a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif): The motif to search for
+            motif (dotmotif.Motif): The motif to search for
 
         Returns:
             int: The count of this motif in the host graph
@@ -91,12 +91,12 @@ class NeuPrintExecutor(Neo4jExecutor):
         print(res)
         return int(res.to_numpy())
 
-    def find(self, motif: dotmotif, limit=None) -> pd.DataFrame:
+    def find(self, motif: Motif, limit=None) -> pd.DataFrame:
         """
         Find a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif): The motif to search for
+            motif (dotmotif.Motif): The motif to search for
 
         Returns:
             pd.DataFrame: The results of the search
@@ -109,7 +109,7 @@ class NeuPrintExecutor(Neo4jExecutor):
 
     @staticmethod
     def motif_to_cypher(
-        motif: dotmotif, count_only: bool = False, static_entity_labels: dict = None
+        motif: Motif, count_only: bool = False, static_entity_labels: dict = None
     ) -> str:
         """
         Convert a motif to neuprint-flavored Cypher.

@@ -1,5 +1,5 @@
 """
-Copyright 2020 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2021 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -280,12 +280,12 @@ class Neo4jExecutor(Executor):
             return self.G.run(cypher).to_table()
         return self.G.run(cypher)
 
-    def count(self, motif: "dotmotif", limit=None) -> int:
+    def count(self, motif: "dotmotif.Motif", limit=None) -> int:
         """
         Count a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif)
+            motif (dotmotif.Motif)
 
         """
         qry = self.motif_to_cypher(
@@ -295,12 +295,12 @@ class Neo4jExecutor(Executor):
             qry += f" LIMIT {limit}"
         return int(self.G.run(qry).to_ndarray())
 
-    def find(self, motif: "dotmotif", limit=None, cursor=True):
+    def find(self, motif: "dotmotif.Motif", limit=None, cursor=True):
         """
         Find a motif in a larger graph.
 
         Arguments:
-            motif (dotmotif.dotmotif)
+            motif (dotmotif.Motif)
 
         """
         qry = self.motif_to_cypher(motif, static_entity_labels=self._entity_labels)
@@ -312,7 +312,7 @@ class Neo4jExecutor(Executor):
 
     @staticmethod
     def motif_to_cypher(
-        motif: "dotmotif", count_only: bool = False, static_entity_labels: dict = None,
+        motif: "dotmotif.Motif", count_only: bool = False, static_entity_labels: dict = None,
     ) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).

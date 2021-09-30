@@ -19,7 +19,7 @@ class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
         B -> C
         A === B
         """
-        dm = dotmotif.dotmotif().from_motif(exp)
+        dm = dotmotif.Motif(exp)
         cypher = Neo4jExecutor.motif_to_cypher(dm)
         self.assertIn("id(A) < id(B)", cypher)
 
@@ -28,6 +28,6 @@ class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
         A -> C
         B -> C
         """
-        dm = dotmotif.dotmotif(exclude_automorphisms=True).from_motif(exp)
+        dm = dotmotif.Motif(exp, exclude_automorphisms=True)
         cypher = Neo4jExecutor.motif_to_cypher(dm)
         self.assertIn("id(A) < id(B)", cypher)
