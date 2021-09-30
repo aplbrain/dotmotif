@@ -197,7 +197,7 @@ class Motif:
         return fname
 
     @staticmethod
-    def load(fname: Union[str, IO[bytes]]) -> "dotmotif":
+    def load(fname: Union[str, IO[bytes]]) -> "Motif":
         """
         Load the motif from a file on disk.
 

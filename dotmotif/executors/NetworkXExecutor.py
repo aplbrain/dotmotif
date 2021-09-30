@@ -110,6 +110,11 @@ class NetworkXExecutor(Executor):
 
         Arguments:
             graph (networkx.Graph)
+            multigraph_edge_match (str: 'any'): A string ('any' or 'all') that
+                determines how to match edges between nodes in the graph. If
+                'any', then any edge between nodes can match the constraints
+                to satisfy the motif. If 'all', then all edges between nodes
+                must match the constraints to satisfy the motif.
 
         Returns:
             None
