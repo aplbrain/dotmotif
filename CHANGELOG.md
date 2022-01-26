@@ -1,5 +1,7 @@
 # Changelog
 
+-   **0.10.1** (January 26 2022)
+    -   Bugfixes: Fixed compatibility with grandiso 2.1 and up
 -   **0.10.0** (September 30 2021)
     -   Features:
         -   `GrandIsoExecutor` and `NetworkXExecutor`: Support for `networkx.MultiGraph` and `networkx.MultiDiGraph` search through the use of the `multigraph_edge_match` executor argument (#107).
