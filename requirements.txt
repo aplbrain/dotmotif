@@ -1,6 +1,7 @@
 networkx>=2.4
 numpy
-lark-parser
+lark
+lark-cython
 docker
 pandas
 py2neo

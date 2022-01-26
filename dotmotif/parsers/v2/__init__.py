@@ -2,6 +2,7 @@
 
 from typing import List
 from lark import Lark, Transformer
+from lark_cython import lark_cython
 import networkx as nx
 import os
 
@@ -10,7 +11,10 @@ from .. import Parser
 from ...validators import Validator
 
 
-dm_parser = Lark(open(os.path.join(os.path.dirname(__file__), "grammar.lark"), "r"))
+dm_parser = Lark(
+    open(os.path.join(os.path.dirname(__file__), "grammar.lark"), "r"),
+    _plugins=lark_cython.plugins,
+)
 
 
 class DotMotifTransformer(Transformer):
@@ -330,8 +334,7 @@ class ParserV2(Parser):
             self.validators = validators
 
     def parse(self, dm: str) -> nx.MultiDiGraph:
-        """
-        """
+        """ """
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
@@ -351,4 +354,3 @@ class ParserV2(Parser):
             dynamic_node_constraints,
             automorphisms,
         )
-
