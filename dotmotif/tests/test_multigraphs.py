@@ -1,4 +1,3 @@
-
 """
 
 ## Multigraph Support
@@ -25,6 +24,7 @@ from dotmotif.executors.NetworkXExecutor import NetworkXExecutor
 from dotmotif.executors.GrandIsoExecutor import GrandIsoExecutor
 from dotmotif import Motif
 
+
 @pytest.mark.parametrize("executor", [NetworkXExecutor, GrandIsoExecutor])
 def test_multidigraph_all_edges(executor):
     """
@@ -37,9 +37,11 @@ def test_multidigraph_all_edges(executor):
     haystack.add_edge("A", "B", size=10)
     haystack.add_edge("A", "B", size=20)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size > 9]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_match_all_edges=True).find(motif)
 
@@ -58,9 +60,11 @@ def test_multigraph_any_edges(executor):
     haystack.add_edge("A", "B", size=10)
     haystack.add_edge("A", "B", size=20)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size > 15]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
 
@@ -79,14 +83,17 @@ def test_multigraph_basic(executor):
     haystack.add_edge("A", "B", size=20)
     haystack.add_edge("B", "C", size=20)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size > 15]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
     assert len(results) == 2
     results = executor(graph=haystack, multigraph_edge_match="all").find(motif)
     assert len(results) == 1
+
 
 @pytest.mark.parametrize("executor", [NetworkXExecutor, GrandIsoExecutor])
 def test_impossible_constraint_works_on_multigraph(executor):
@@ -100,9 +107,11 @@ def test_impossible_constraint_works_on_multigraph(executor):
     haystack.add_edge("B", "C", size=30)
     haystack.add_edge("B", "C", size=40)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size >= 15, size < 19]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
     assert len(results) == 1
@@ -128,11 +137,13 @@ def test_complex_multigraph(executor):
     haystack.add_edge("C", "A", size=50)
     haystack.add_edge("C", "A", size=60)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size >= 15, size < 19]
     b -> c [size > 20]
     c -> a [size > 55]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
     assert len(results) == 2
@@ -158,11 +169,13 @@ def test_complex_multigraph_fails(executor):
     haystack.add_edge("C", "A", size=5)
     haystack.add_edge("C", "A", size=6)
 
-    motif = Motif("""
+    motif = Motif(
+        """
     a -> b [size > 15, size > 21]
     b -> c [size > 20]
     c -> a [size > 55]
-    """)
+    """
+    )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
     assert len(results) == 0
@@ -172,4 +185,3 @@ def test_complex_multigraph_fails(executor):
 
     results = executor(graph=nx.DiGraph(haystack)).find(motif)
     assert len(results) == 0
-
