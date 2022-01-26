@@ -1,4 +1,3 @@
-from . import ParserV2
 import dotmotif
 
 import unittest
@@ -7,10 +6,8 @@ _THREE_CYCLE = """A -> B\nB -> C\nC -> A\n"""
 _THREE_CYCLE_NEG = """A !> B\nB !> C\nC !> A\n"""
 _THREE_CYCLE_INH = """A -| B\nB -| C\nC -| A\n"""
 _THREE_CYCLE_NEG_INH = """A !| B\nB !| C\nC !| A\n"""
-_ABC_TO_D = """\nA -> D\nB -> D\nC -> D\n"""
 
-_THREE_CYCLE_CSV = """\nA,B\nB,C\nC,A\n"""
-_THREE_CYCLE_NEG_CSV = """\nA,B\nB,C\nC,A\n"""
+_SEMICOLON_TRIANGLE = """A->B;B->C;C->A"""
 
 
 class TestDotmotif_Parserv2_DM(unittest.TestCase):
@@ -18,6 +15,11 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
         self.assertEqual(1, 1)
 
     def test_dm_parser(self):
+        dm = dotmotif.Motif(_THREE_CYCLE)
+        self.assertEqual(len(dm._g.edges()), 3)
+        self.assertEqual(len(dm._g.nodes()), 3)
+
+    def test_dm_parser_with_semicolons(self):
         dm = dotmotif.Motif(_THREE_CYCLE)
         self.assertEqual(len(dm._g.edges()), 3)
         self.assertEqual(len(dm._g.nodes()), 3)
