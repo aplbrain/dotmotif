@@ -20,7 +20,7 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
         self.assertEqual(len(dm._g.nodes()), 3)
 
     def test_dm_parser_with_semicolons(self):
-        dm = dotmotif.Motif(_THREE_CYCLE)
+        dm = dotmotif.Motif(_SEMICOLON_TRIANGLE)
         self.assertEqual(len(dm._g.edges()), 3)
         self.assertEqual(len(dm._g.nodes()), 3)
 
