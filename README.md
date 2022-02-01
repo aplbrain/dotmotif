@@ -15,7 +15,7 @@
 
 DotMotif is a library that identifies subgraphs or motifs in a large graph. It looks like this:
 
-```yml
+```py
 # Look for all motifs of the form,
 
 # Neuron A excites B:
@@ -26,7 +26,7 @@ B -> C [type = "inhibitory"]
 
 Or like this:
 
-```yml
+```py
 TwitterInfluencer(person) {
     # An influencer has more than a million
     # followers and is verified.
