@@ -13,7 +13,8 @@ from ...validators import Validator
 
 dm_parser = Lark(
     open(os.path.join(os.path.dirname(__file__), "grammar.lark"), "r"),
-    _plugins=lark_cython.plugins,
+    parser="lalr",
+    # _plugins=lark_cython.plugins,
 )
 
 
