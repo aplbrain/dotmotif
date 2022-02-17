@@ -2,7 +2,7 @@
 
 import os
 import io
-from setuptools import find_packages, setup, Command
+from setuptools import find_packages, setup
 
 """
 git tag {VERSION}
@@ -11,7 +11,7 @@ python setup.py sdist
 twine upload dist/*
 """
 
-VERSION = "0.10.0"
+VERSION = "0.10.1"
 
 here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
