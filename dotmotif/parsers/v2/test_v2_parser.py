@@ -349,6 +349,16 @@ class TestDotmotif_Parserv2_DM_NodeAttributes(unittest.TestCase):
         self.assertEqual(len(dm.list_node_constraints()), 1)
         self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa"])
 
+    def test_basic_node_attr_bracket_keying(self):
+        exp = """\
+        Aa -> Ba
+
+        Aa['type'] = "excitatory"
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_node_constraints()), 1)
+        self.assertEqual(list(dm.list_node_constraints().keys()), ["Aa"])
+
     def test_node_multi_attr(self):
         exp = """\
         Aa -> Ba
@@ -416,6 +426,20 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm = dotmotif.Motif(exp)
         self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
 
+    def test_dynamic_constraints_brackets(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B
+        A['radius'] < B["radius"]
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
+
     def test_dynamic_constraints_in_macro(self):
         """
         Test that comparisons may be made between variables in a macro, e.g.:
@@ -426,6 +450,24 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         exp = """\
         macro(A, B) {
             A.radius > B.radius
+        }
+        macro(A, B)
+        A -> B
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
+
+    def test_dynamic_constraints_bracketed_in_macro(self):
+        """
+        Test that comparisons may be made between variables in a macro, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        macro(A, B) {
+            # A.radius > B.radius
+            A["radius"] > B['radius']
         }
         macro(A, B)
         A -> B

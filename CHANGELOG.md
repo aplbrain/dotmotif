@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.11.0** (April 12 2022)
+    -   Features:
+        -   Added support for attributes that include spaces and other non-word/variable characters, and updated Cypher syntax for these attributes when searching with Neo4j and neuPrint (#112)
 -   **0.10.1** (January 26 2022)
     -   Bugfixes: Fixed compatibility with grandiso 2.1 and up
 -   **0.10.0** (September 30 2021)

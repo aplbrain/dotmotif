@@ -88,11 +88,41 @@ edge_clause             : key op value
 
 
 // Node constraints:
+                        // Dot Notation
 node_constraint         : node_id "." key op value_or_quoted_value
                         | node_id "." key op node_id "." key
+                        // Left-Hand Bracket Notation
+                        | node_id "[" flex_key "]" op value_or_quoted_value
+                        | node_id "['" flex_key "']" op value_or_quoted_value
+                        | node_id "[\"" flex_key "\"]" op value_or_quoted_value
+                        // LH and RH Bracket Notation
+                        | node_id "[" flex_key "]" op node_id "[" flex_key "]"
+                        | node_id "['" flex_key "']" op node_id "[" flex_key "]"
+                        | node_id "[\"" flex_key "\"]" op node_id "[" flex_key "]"
+                        | node_id "[" flex_key "]" op node_id "['" flex_key "']"
+                        | node_id "['" flex_key "']" op node_id "['" flex_key "']"
+                        | node_id "[\"" flex_key "\"]" op node_id "['" flex_key "']"
+                        | node_id "[" flex_key "]" op node_id "[\"" flex_key "\"]"
+                        | node_id "['" flex_key "']" op node_id "[\"" flex_key "\"]"
+                        | node_id "[\"" flex_key "\"]" op node_id "[\"" flex_key "\"]"
 
+                        // Dot Notation
 macro_node_constraint   : node_id "." key op value_or_quoted_value
                         | node_id "." key op node_id "." key
+                        // Left-Hand Bracket Notation
+                        | node_id "[" flex_key "]" op value_or_quoted_value
+                        | node_id "['" flex_key "']" op value_or_quoted_value
+                        | node_id "[\"" flex_key "\"]" op value_or_quoted_value
+                        // LH and RH Bracket Notation
+                        | node_id "[" flex_key "]" op node_id "[" flex_key "]"
+                        | node_id "['" flex_key "']" op node_id "[" flex_key "]"
+                        | node_id "[\"" flex_key "\"]" op node_id "[" flex_key "]"
+                        | node_id "[" flex_key "]" op node_id "['" flex_key "']"
+                        | node_id "['" flex_key "']" op node_id "['" flex_key "']"
+                        | node_id "[\"" flex_key "\"]" op node_id "['" flex_key "']"
+                        | node_id "[" flex_key "]" op node_id "[\"" flex_key "\"]"
+                        | node_id "['" flex_key "']" op node_id "[\"" flex_key "\"]"
+                        | node_id "[\"" flex_key "\"]" op node_id "[\"" flex_key "\"]"
 
 
 // Automorphism notation:
@@ -102,6 +132,7 @@ automorphism_notation: node_id "===" node_id
 
 
 ?key            : WORD | variable
+?flex_key       : WORD | variable | FLEXIBLE_KEY
 ?value          : WORD | NUMBER
 ?op             : OPERATOR | iter_ops
 
@@ -114,6 +145,7 @@ iter_ops        : "contains"                        -> iter_op_contains
                 | "!in"                             -> iter_op_not_in
 
 NAME            : /[a-zA-Z_-]\w*/
+FLEXIBLE_KEY    : "\"" /.+?/ /(?<!\\)(\\\\)*?/ "\"" | "'" /.+?/ /(?<!\\)(\\\\)*?/ "'"
 OPERATOR        : /(?:[\!=\>\<][=]?)|(?:\<\>)/
 VAR_SEP         : /[\_\-]/
 COMMENT         : /#[^\n]+/
@@ -121,6 +153,7 @@ DOUBLE_QUOTED_STRING  : /"[^"]*"/
 %ignore COMMENT
 
 %import common.WORD -> WORD
+%import common._STRING_ESC_INNER -> _STRING_ESC_INNER
 %import common.SIGNED_NUMBER  -> NUMBER
 %import common.WS
 %ignore WS
