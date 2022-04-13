@@ -88,11 +88,41 @@ edge_clause             : key op value
 
 
 // Node constraints:
+                        // Dot Notation
 node_constraint         : node_id "." key op value_or_quoted_value
                         | node_id "." key op node_id "." key
+                        // Left-Hand Bracket Notation
+                        | node_id "[" key "]" op value_or_quoted_value
+                        | node_id "['" key "']" op value_or_quoted_value
+                        | node_id "[\"" key "\"]" op value_or_quoted_value
+                        // LH and RH Bracket Notation
+                        | node_id "[" key "]" op node_id "[" key "]"
+                        | node_id "['" key "']" op node_id "[" key "]"
+                        | node_id "[\"" key "\"]" op node_id "[" key "]"
+                        | node_id "[" key "]" op node_id "['" key "']"
+                        | node_id "['" key "']" op node_id "['" key "']"
+                        | node_id "[\"" key "\"]" op node_id "['" key "']"
+                        | node_id "[" key "]" op node_id "[\"" key "\"]"
+                        | node_id "['" key "']" op node_id "[\"" key "\"]"
+                        | node_id "[\"" key "\"]" op node_id "[\"" key "\"]"
 
+                        // Dot Notation
 macro_node_constraint   : node_id "." key op value_or_quoted_value
                         | node_id "." key op node_id "." key
+                        // Left-Hand Bracket Notation
+                        | node_id "[" key "]" op value_or_quoted_value
+                        | node_id "['" key "']" op value_or_quoted_value
+                        | node_id "[\"" key "\"]" op value_or_quoted_value
+                        // LH and RH Bracket Notation
+                        | node_id "[" key "]" op node_id "[" key "]"
+                        | node_id "['" key "']" op node_id "[" key "]"
+                        | node_id "[\"" key "\"]" op node_id "[" key "]"
+                        | node_id "[" key "]" op node_id "['" key "']"
+                        | node_id "['" key "']" op node_id "['" key "']"
+                        | node_id "[\"" key "\"]" op node_id "['" key "']"
+                        | node_id "[" key "]" op node_id "[\"" key "\"]"
+                        | node_id "['" key "']" op node_id "[\"" key "\"]"
+                        | node_id "[\"" key "\"]" op node_id "[\"" key "\"]"
 
 
 // Automorphism notation:
