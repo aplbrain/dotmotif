@@ -1,5 +1,5 @@
 """
-Copyright 2021 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2022 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -65,6 +65,29 @@ def _operator_negation_infix(op):
         "!in": True,
         "!contains": True,
     }[op]
+
+
+def _quoted_if_necessary(val: str) -> str:
+    """
+    If the value is already quoted, return it.
+
+    If it has single quotes in it, nest it in double quotes.
+    If it has double quotes in it, nest it in single quotes.
+    If it has both, nest it in double quotes and escape the double quotes in
+    the existing text (i.e., [foo"bar] becomes ["foo\"bar"])
+    """
+    if val.startswith('"') and val.endswith('"'):
+        return val
+    elif val.startswith("'") and val.endswith("'"):
+        return val
+    elif '"' in val and "'" in val:
+        return '"' + val.replace('"', '\\"') + '"'
+    elif '"' in val:
+        return "'" + val + "'"
+    elif "'" in val:
+        return '"' + val + '"'
+    else:
+        return '"' + val + '"'
 
 
 _LOOKUP = {
@@ -403,7 +426,7 @@ class Neo4jExecutor(Executor):
                                 else "{}[{}] {} {}"
                             ).format(
                                 edge_mapping[(u, v)],
-                                key,
+                                _quoted_if_necessary(key),
                                 _remapped_operator(operator),
                                 f'"{value}"' if isinstance(value, str) else value,
                             )
@@ -422,7 +445,7 @@ class Neo4jExecutor(Executor):
                                 else "{}[{}] {} {}"
                             ).format(
                                 n,
-                                key,
+                                _quoted_if_necessary(key),
                                 _remapped_operator(operator),
                                 f'"{value}"' if isinstance(value, str) else value,
                             )
@@ -440,10 +463,10 @@ class Neo4jExecutor(Executor):
                                 else "{}[{}] {} {}[{}]"
                             ).format(
                                 n,
-                                key,
+                                _quoted_if_necessary(key),
                                 _remapped_operator(operator),
                                 value[0],
-                                value[1],
+                                _quoted_if_necessary(value[1]),
                             )
                         )
 
