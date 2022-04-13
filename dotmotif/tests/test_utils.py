@@ -1,6 +1,6 @@
 from unittest import TestCase
 import networkx as nx
-from ..utils import untype_string
+from ..utils import untype_string, _hashed_dict
 from .. import Motif
 from tempfile import NamedTemporaryFile
 
@@ -15,7 +15,6 @@ class TestConverter(TestCase):
         self.assertEqual(untype_string("0.0"), 0)
 
     def test_untype_string_string(self):
-
         self.assertEqual(untype_string("3.5.5"), "3.5.5")
 
 
@@ -38,3 +37,15 @@ class TestSaveLoad(TestCase):
         self.assertEqual(m.enforce_inequality, f.enforce_inequality)
         self.assertEqual(m.pretty_print, f.pretty_print)
         tf.close()
+
+
+class TestHashColor(TestCase):
+    def test_hash_color(self):
+        assert _hashed_dict({}) == "#00babe"
+        assert _hashed_dict({"a": 1}) != "#00babe"
+
+    def test_order_invariant(self):
+        assert _hashed_dict({"a": 1}) == _hashed_dict({"a": 1})
+        assert _hashed_dict({"a": 1, "b": 2}) == _hashed_dict({"b": 2, "a": 1})
+        assert _hashed_dict({"a": 1, "b": 2}) != _hashed_dict({"b": 2, "a": 2})
+        assert _hashed_dict({"a": 1, "b": 2}) != _hashed_dict({"b": 2, "a": 1, "c": 3})

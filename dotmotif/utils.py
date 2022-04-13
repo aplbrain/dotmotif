@@ -5,6 +5,8 @@ Utilities for dotmotif.
 
 Requires nx>=2.0
 """
+import hashlib
+import json
 import networkx as nx
 
 
@@ -20,7 +22,29 @@ def untype_string(string):
             return str(string)
 
 
-def draw_motif(dm, negative_edge_color: str = "r", pos=None):
+def _hashed_dict(data: dict) -> str:
+    """
+    Return a unique hex color for a dictionary (six hex digits)
+
+    Dicts with the same data (even in a different order) should return the same
+    color hash.
+
+    Arguments:
+        data (dict): The data to hash
+
+    Returns:
+        str: A unique hex color for the data
+
+    """
+    if len(data) == 0:
+        return "#00babe"
+    encoded = json.dumps(data, sort_keys=True).encode()
+    return "#" + hashlib.sha256(encoded).hexdigest()[:6]
+
+
+def draw_motif(
+    dm, negative_edge_color: str = "r", pos=None, labels: bool = True, **kwargs
+):
     """
     Draw a dotmotif motif object.
 
@@ -41,22 +65,40 @@ def draw_motif(dm, negative_edge_color: str = "r", pos=None):
     inh_edges = list(
         filter(lambda e: e[2].get("action", "") != "SYN", dm._g.edges(data=True))
     )
+
+    positive_width = kwargs.get("edge_width", 3)
+    negative_width = kwargs.get("negative_edge_width", kwargs.get("edge_width", 3))
     nx.draw_networkx_edges(
         dm._g,
         pos=pos,
         edgelist=exc_edges,
+        width=[
+            positive_width if e["exists"] else negative_width for u, v, e in exc_edges
+        ],
         edge_color=[
             "k" if e["exists"] else negative_edge_color for u, v, e in exc_edges
         ],
+        arrowsize=20,
+        connectionstyle="arc3,rad=0.1",
     )
     nx.draw_networkx_edges(
         dm._g,
         pos=pos,
         edgelist=inh_edges,
+        width=[
+            positive_width if e["exists"] else negative_width for u, v, e in exc_edges
+        ],
         edge_color=[
             "k" if e["exists"] else negative_edge_color for u, v, e in inh_edges
         ],
+        arrowsize=20,
         arrowstyle="-[",
+        connectionstyle="arc3,rad=0.1",
     )
-    nx.draw_networkx_nodes(dm._g, pos=pos, c="b")
-    nx.draw_networkx_labels(dm._g, pos=pos)
+    nx.draw_networkx_nodes(
+        dm._g,
+        pos=pos,
+        node_color=[_hashed_dict(dm._node_constraints.get(n, {})) for n in dm._g.nodes],
+    )
+    if labels:
+        nx.draw_networkx_labels(dm._g, pos=pos)

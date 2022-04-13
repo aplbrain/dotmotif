@@ -1,5 +1,8 @@
 # Changelog
 
+-   **?.?.?** (Unreleased)
+    -   Housekeeping:
+        -   Removed old, deprecated code like the v1 parser (deprecated in `v0.5.0`) and some unused ingest tools (#113)
 -   **0.11.0** (April 12 2022)
     -   Features:
         -   Added support for attributes that include spaces and other non-word/variable characters, and updated Cypher syntax for these attributes when searching with Neo4j and neuPrint (#112)
