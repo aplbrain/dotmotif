@@ -104,18 +104,14 @@ class Motif:
                 pass
 
         result = self.parser(validators=self.validators).parse(cmd)
-        if isinstance(result, tuple):
-            (
-                self._g,
-                self._edge_constraints,
-                self._node_constraints,
-                self._dynamic_edge_constraints,
-                self._dynamic_node_constraints,
-                self._automorphisms,
-            ) = result
-        else:
-            # For backwards compatibility with parser v1
-            self._g = result
+        (
+            self._g,
+            self._edge_constraints,
+            self._node_constraints,
+            self._dynamic_edge_constraints,
+            self._dynamic_node_constraints,
+            self._automorphisms,
+        ) = result
 
         return self
 
