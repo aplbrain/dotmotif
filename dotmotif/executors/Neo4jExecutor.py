@@ -312,7 +312,9 @@ class Neo4jExecutor(Executor):
 
     @staticmethod
     def motif_to_cypher(
-        motif: "dotmotif.Motif", count_only: bool = False, static_entity_labels: dict = None,
+        motif: "dotmotif.Motif",
+        count_only: bool = False,
+        static_entity_labels: dict = None,
     ) -> str:
         """
         Output a query suitable for Cypher-compatible engines (e.g. Neo4j).
@@ -396,9 +398,9 @@ class Neo4jExecutor(Executor):
                     for value in values:
                         cypher_edge_constraints.append(
                             (
-                                "NOT ({}.{} {} {})"
+                                "NOT ({}[{}] {} {})"
                                 if _operator_negation_infix(operator)
-                                else "{}.{} {} {}"
+                                else "{}[{}] {} {}"
                             ).format(
                                 edge_mapping[(u, v)],
                                 key,
@@ -415,9 +417,9 @@ class Neo4jExecutor(Executor):
                     for value in values:
                         cypher_node_constraints.append(
                             (
-                                "NOT ({}.{} {} {})"
+                                "NOT ({}[{}] {} {})"
                                 if _operator_negation_infix(operator)
-                                else "{}.{} {} {}"
+                                else "{}[{}] {} {}"
                             ).format(
                                 n,
                                 key,
@@ -433,9 +435,9 @@ class Neo4jExecutor(Executor):
                     for value in values:
                         cypher_node_constraints.append(
                             (
-                                "NOT ({}.{} {} {}.{})"
+                                "NOT ({}[{}] {} {}[{}])"
                                 if _operator_negation_infix(operator)
-                                else "{}.{} {} {}.{}"
+                                else "{}[{}] {} {}[{}]"
                             ).format(
                                 n,
                                 key,
