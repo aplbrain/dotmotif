@@ -18,42 +18,18 @@ DotMotif is a library that identifies subgraphs or motifs in a large graph. It l
 ```py
 # Look for all motifs of the form,
 
-# Neuron A excites B:
-A -> B [type = "excitatory"]
+# Neuron A synapses on Neuron B:
+A -> B
 # ...and B inhibits C:
 B -> C [type = "inhibitory"]
 ```
 
-Or like this:
-
-```py
-TwitterInfluencer(person) {
-    # An influencer has more than a million
-    # followers and is verified.
-    person.followers > 1000000
-    person.verified = true
-}
-
-InfluencerAwkward(person1, person2) {
-    # Two people who are both influencers...
-    TwitterInfluencer(person1)
-    TwitterInfluencer(person2)
-    # ...where one follows the other, but...
-    person1 -> person2
-    # ...the other doesn't follow back
-    person2 !> person1
-}
-
-# Search for all awkward twitter influencer
-# relationships in the dataset:
-InfluencerAwkward(X, Y)
-```
 
 # Get Started
 
 > To follow along in an interactive Binder without installing anything, launch a Jupyter Notebook here:
 >
-> [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gist/j6k4m8/7da63dc9c049c4263fc2749d4ce880cd#file-get-started-dotmotif-ipynb/HEAD)
+> <a href="https://colab.research.google.com/gist/j6k4m8/7c5cf55e7feb24685bd13a217cedda1d/dotmotif-search-in-pinky100.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 If you have [DotMotif](https://github.com/aplbrain/dotmotif/wiki/Installation), a NetworkX graph, and a curious mind, you already have everything you need to start using DotMotif:
 
