@@ -28,7 +28,12 @@ from .validators import DisagreeingEdgesValidator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
-from .executors.Neo4jExecutor import Neo4jExecutor
+
+try:
+    # For backwards compatibility:
+    from .executors.Neo4jExecutor import Neo4jExecutor
+except ImportError:
+    pass
 
 __version__ = "0.11.0"
 

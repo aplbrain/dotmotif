@@ -2,10 +2,6 @@ import unittest
 import dotmotif
 from dotmotif import Motif
 from dotmotif.executors import GrandIsoExecutor
-from dotmotif.executors.NetworkXExecutor import (
-    _edge_satisfies_constraints,
-    _node_satisfies_constraints,
-)
 from dotmotif.parsers.v2 import ParserV2
 import networkx as nx
 

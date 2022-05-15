@@ -1,7 +1,8 @@
 import unittest
 import dotmotif
 import networkx as nx
-from dotmotif.executors import Neo4jExecutor, NetworkXExecutor
+from dotmotif.executors.Neo4jExecutor import Neo4jExecutor
+from dotmotif.executors.GrandIsoExecutor import GrandIsoExecutor
 
 
 _DEMO_G_MIN = """
@@ -78,7 +79,7 @@ class TestDotmotifFlags(unittest.TestCase):
         g.add_edge("A", "B")
         dm = dotmotif.Motif().from_nx(g)
 
-        E = NetworkXExecutor(graph=G)
+        E = GrandIsoExecutor(graph=G)
         self.assertEqual(len(E.find(dm)), 4)
 
     def test_from_nx_import(self):
@@ -90,5 +91,5 @@ class TestDotmotifFlags(unittest.TestCase):
         g.add_edge("A", "B")
         dm = dotmotif.Motif(ignore_direction=True).from_nx(g)
 
-        E = NetworkXExecutor(graph=G)
+        E = GrandIsoExecutor(graph=G)
         self.assertEqual(len(E.find(dm)), 4)
