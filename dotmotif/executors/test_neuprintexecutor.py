@@ -3,13 +3,12 @@ import os
 HOST = "neuprint.janelia.org"
 DATASET = "hemibrain:v1.1"
 TOKEN = os.getenv("NEUPRINT_TOKEN")
-
-import unittest
-
-from .. import Motif
-from .NeuPrintExecutor import NeuPrintExecutor
-
 if TOKEN:
+
+    import unittest
+
+    from .. import Motif
+    from .NeuPrintExecutor import NeuPrintExecutor
 
     class TestNeuPrintConnection(unittest.TestCase):
         def test_can_get_version(self):

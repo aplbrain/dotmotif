@@ -31,16 +31,21 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     classifiers=[],
     install_requires=[
-        "networkx",
+        "networkx>2.4",
         "numpy",
         "lark-parser",
-        "docker",
         "pandas",
-        "py2neo",
-        "dask[dataframe]",
-        "tamarind>=0.1.5",
-        "neuprint-python",
         "grandiso>=2.0.0",
     ],
+    extras_require={
+        "neo4j": [
+            "docker",
+            "tamarind>=0.1.5",
+            "py2neo",
+        ],
+        "neuprint": [
+            "neuprint-python",
+        ],
+    },
     include_package_data=True,
 )
