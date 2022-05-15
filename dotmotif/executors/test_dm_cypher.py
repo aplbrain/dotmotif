@@ -6,7 +6,7 @@ Doesn't check validity of output; just matchiness to test strings.
 
 import unittest
 import dotmotif
-from dotmotif.executors import Neo4jExecutor
+from dotmotif.executors.Neo4jExecutor import Neo4jExecutor
 
 
 _DEMO_G_MIN = """
