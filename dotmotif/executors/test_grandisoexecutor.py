@@ -367,3 +367,138 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm = dotmotif.Motif(parser=ParserV2)
         res = GrandIsoExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
+
+
+class TestNamedEdgeConstraints(unittest.TestCase):
+    def test_equality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+    def test_inequality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparison(self):
+        exp = """\
+        A -> B as ab
+        A -> C as ac
+        ab.type = ac.type
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", type="a")
+        host.add_edge("A", "C", type="b")
+        host.add_edge("A", "D", type="b")
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparisons(self):
+        exp = """\
+        A -> B as ab
+        B -> C as bc
+        C -> D as cd
+
+        ab.length >= bc.length
+        bc.length >= cd.length
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", length=1)
+        host.add_edge("B", "C", length=1)
+        host.add_edge("C", "D", length=1)
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 1)
+
+    def test_aliased_edge_comparisons_with_different_edge_attributes(self):
+        exp = """\
+        B -> C as bc
+        C -> D as cd
+
+        bc.length > cd.weight
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "C", length=2)
+        host.add_edge("B", "C", length=2)
+        host.add_edge("C", "D", length=1, weight=1)
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)
+
+
+# class TestEdgeConstraintsInMacros(unittest.TestCase):
+#     def test_edge_comparison_in_macro(self):
+#         host = nx.DiGraph()
+#         host.add_edge("A", "B", foo=1)
+#         host.add_edge("A", "C", foo=2)
+#         host.add_edge("B", "C", foo=0.5)
+#         host.add_edge("C", "D", foo=0.25)
+#         host.add_edge("D", "C", foo=1)
+#         host.add_edge("C", "B", foo=2)
+#         host.add_edge("B", "A", foo=2)
+#         E = GrandIsoExecutor(graph=host)
+
+#         M = Motif(
+#             """
+
+#         descending(a, b, c) {
+#             a -> b as Edge1
+#             b -> c as Edge2
+#             Edge1.foo > Edge2.foo
+#         }
+
+#         descending(a, b, c)
+#         descending(b, c, d)
+
+#         """
+#         )
+#         assert E.count(M) == 1

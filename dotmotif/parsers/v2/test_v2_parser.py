@@ -41,6 +41,22 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
         dm = dotmotif.Motif(_THREE_CYCLE_NEG_INH)
         self.assertEqual([e[2]["exists"] for e in dm._g.edges(data=True)], [False] * 3)
 
+    def test_can_create_variables(self):
+        dm = dotmotif.Motif("""A -> B""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
+    def test_can_create_variables_with_underscores(self):
+        dm = dotmotif.Motif("""A -> B_""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
+    def test_cannot_create_variables_with_dashes(self):
+        with self.assertRaises(Exception):
+            dm = dotmotif.Motif("""A -> B-""")
+
+    def test_can_create_variables_with_numbers(self):
+        dm = dotmotif.Motif("""A_2 -> B1""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
 
 class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
     def test_macro_not_added(self):
@@ -474,3 +490,84 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         """
         dm = dotmotif.Motif(exp)
         self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
+
+    def test_failed_node_lookup(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B
+        C.radius < B.radius
+        """
+        with self.assertRaises(KeyError):
+            dm = dotmotif.Motif(exp)
+
+
+class TestEdgeAliasConstraints(unittest.TestCase):
+    def test_can_create_aliases(self):
+        dotmotif.Motif("""A -> B as ab""")
+        assert True
+
+    def test_can_create_aliases_with_constraints(self):
+        dotmotif.Motif("""A -> B [type != 1] as ab_2""")
+        assert True
+
+    def test_can_create_alised_edge_constraints_nondynamic(self):
+        dotmotif.Motif(
+            """
+        A -> B [type != 1] as ab_2
+        ab_2.flavor = "excitatory"
+        """
+        )
+        assert True
+
+    def test_can_create_alised_edge_constraints_dynamic(self):
+        dotmotif.Motif(
+            """
+        A -> B [type != 1] as ab_2
+        B -> A as ba
+        ab_2.flavor = ba.flavor
+        """
+        )
+        assert True
+
+    def test_failed_edge_lookup(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B as ab
+        acb.radius = 3
+        """
+        with self.assertRaises(KeyError):
+            dm = dotmotif.Motif(exp)
+
+    def test_quoted_attribute_edge_constraint(self):
+        exp = """\
+        A -> B as ab
+        ab["flavor"] = "excitatory"
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_edge_constraints()), 1)
+        self.assertEqual(
+            dm.list_edge_constraints()[("A", "B")]["flavor"]["="], ["excitatory"]
+        )
+
+    def test_quoted_attribute_dynamic_edge_constraint(self):
+        exp = """\
+        A -> B as ab
+        B -> A as ba
+        ab["flavor"] = ba["flavor"]
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_dynamic_edge_constraints()), 1)
+        self.assertEqual(
+            dm.list_dynamic_edge_constraints()[("A", "B")]["flavor"]["="],
+            ["B", "A", "flavor"],
+        )

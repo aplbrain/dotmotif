@@ -1,5 +1,5 @@
 """
-Copyright 2021 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2022 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,7 +61,9 @@ def _edge_satisfies_constraints(edge_attributes: dict, constraints: dict) -> boo
     return True
 
 
-def _edge_satisfies_many_constraints_for_muligraph_any_edges(edge_attributes: dict, constraints: dict) -> List[Tuple[str, str, str]]:
+def _edge_satisfies_many_constraints_for_muligraph_any_edges(
+    edge_attributes: dict, constraints: dict
+) -> List[Tuple[str, str, str]]:
     """
     Returns a subset of constraints that this edge matches, in the form (key, op, val).
     """
@@ -81,6 +83,7 @@ def _edge_satisfies_many_constraints_for_muligraph_any_edges(edge_attributes: di
                 if operator_success:
                     matched_constraints.append((key, operator, value))
     return matched_constraints
+
 
 def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> bool:
     """
@@ -134,7 +137,10 @@ class NetworkXExecutor(Executor):
         if self.graph.is_multigraph():
             self._host_is_multigraph = True
             self._multigraph_edge_match = kwargs.get("multigraph_edge_match", "any")
-            assert self._multigraph_edge_match in ("all", "any"), "_multigraph_edge_match must be one of 'all' or 'any'."
+            assert self._multigraph_edge_match in (
+                "all",
+                "any",
+            ), "_multigraph_edge_match must be one of 'all' or 'any'."
 
     def _validate_node_constraints(
         self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
@@ -235,6 +241,45 @@ class NetworkXExecutor(Executor):
                 return False
         return True
 
+    def _validate_dynamic_edge_constraints(
+        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+    ):
+        """
+        Validate all edge constraints on a subgraph.
+
+        Constraints are of the form:
+
+        {('A', 'B'): {'weight': {'==': ['A', 'C', 'weight']}}}
+
+        Arguments:
+            node_isomorphism_map (dict[nodename:str, nodeID:str]): A mapping of
+                node names to node IDs (where name comes from the motif and the
+                ID comes from the haystack graph).
+            graph (nx.DiGraph): The haystack graph
+            constraints (dict[(motif_u, motif_v), dict[operator, value]]): Map
+                of constraints on the MOTIF node names.
+
+        Returns:
+            bool: If the isomorphism satisfies the edge constraints
+
+        """
+        for (motif_U, motif_V), constraint_list in constraints.items():
+            for (this_attr, ops) in constraint_list.items():
+                for op, (that_u, that_v, that_attr) in ops.items():
+                    this_graph_u = node_isomorphism_map[motif_U]
+                    this_graph_v = node_isomorphism_map[motif_V]
+                    that_graph_u = node_isomorphism_map[that_u]
+                    that_graph_v = node_isomorphism_map[that_v]
+                    this_edge_attr = graph.get_edge_data(
+                        this_graph_u, this_graph_v
+                    ).get(this_attr)
+                    that_edge_attr = graph.get_edge_data(
+                        that_graph_u, that_graph_v
+                    ).get(that_attr)
+                    if not _OPERATORS[op](this_edge_attr, that_edge_attr):
+                        return False
+        return True
+
     def _validate_multigraph_all_edge_constraints(
         self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
     ):
@@ -283,7 +328,11 @@ class NetworkXExecutor(Executor):
             # Check each edge in graph for constraints
             constraint_list_copy = copy.deepcopy(constraint_list)
             for _, _, edge_attrs in graph.edges((graph_u, graph_v), data=True):
-                matched_constraints = _edge_satisfies_many_constraints_for_muligraph_any_edges(edge_attrs, constraint_list_copy)
+                matched_constraints = (
+                    _edge_satisfies_many_constraints_for_muligraph_any_edges(
+                        edge_attrs, constraint_list_copy
+                    )
+                )
                 if matched_constraints:
                     # Remove matched constraints from the list
                     for constraint in matched_constraints:
@@ -301,7 +350,6 @@ class NetworkXExecutor(Executor):
                 return False
 
         return True
-
 
     def count(self, motif: "dotmotif.Motif", limit: int = None):
         """
@@ -325,7 +373,6 @@ class NetworkXExecutor(Executor):
         # We need to first remove "negative" nodes from the motif, and then
         # filter them out later on. Though this reduces the speed of the graph-
         # matching, NetworkX does not seem to support this out of the box.
-        # TODO: Confirm that networkx does not support this out of the box.
 
         if motif.ignore_direction or not self.graph.is_directed:
             graph_constructor = nx.Graph
@@ -367,19 +414,23 @@ class NetworkXExecutor(Executor):
         ]
 
         _edge_constraint_validator = (
-            self._validate_edge_constraints if not self._host_is_multigraph else (
+            self._validate_edge_constraints
+            if not self._host_is_multigraph
+            else (
                 self._validate_multigraph_all_edge_constraints
                 if self._multigraph_edge_match == "all"
                 else self._validate_multigraph_any_edge_constraints
             )
         )
+        _edge_dynamic_constraint_validator = self._validate_dynamic_edge_constraints
         # Now, filter on attributes:
         res = [
             r
             for r in results
             if (
-                _edge_constraint_validator(
-                    r, self.graph, motif.list_edge_constraints()
+                _edge_constraint_validator(r, self.graph, motif.list_edge_constraints())
+                and _edge_dynamic_constraint_validator(
+                    r, self.graph, motif.list_dynamic_edge_constraints()
                 )
                 and self._validate_node_constraints(
                     r, self.graph, motif.list_node_constraints()
@@ -397,4 +448,4 @@ class NetworkXExecutor(Executor):
                 )
             )
         ]
-        return res
+        return res[:limit] if limit is not None else res

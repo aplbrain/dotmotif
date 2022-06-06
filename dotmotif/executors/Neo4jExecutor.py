@@ -470,6 +470,28 @@ class Neo4jExecutor(Executor):
                             )
                         )
 
+        # Dynamic edge constraints:
+        # Constraints are of the form:
+        # {('A', 'B'): {'weight': {'==': ['A', 'C', 'weight']}}}
+        for (u, v), constraints in motif.list_dynamic_edge_constraints().items():
+            for this_attr, ops in constraints.items():
+                for op, (that_u, that_v, that_attr) in ops.items():
+                    this_edge_name = edge_mapping[(u, v)]
+                    that_edge_name = edge_mapping[(that_u, that_v)]
+                    cypher_edge_constraints.append(
+                        (
+                            "NOT ({}[{}] {} {}[{}])"
+                            if _operator_negation_infix(op)
+                            else "{}[{}] {} {}[{}]"
+                        ).format(
+                            this_edge_name,
+                            _quoted_if_necessary(this_attr),
+                            _remapped_operator(op),
+                            that_edge_name,
+                            _quoted_if_necessary(that_attr),
+                        )
+                    )
+
         conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 
         if count_only:

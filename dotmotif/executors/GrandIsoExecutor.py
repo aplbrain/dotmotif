@@ -93,14 +93,15 @@ class GrandIsoExecutor(NetworkXExecutor):
                 else self._validate_multigraph_any_edge_constraints
             )
         )
+        _edge_dynamic_constraint_validator = self._validate_dynamic_edge_constraints
 
         results = []
         for r in graph_matches:
             if _doesnt_have_any_of_motifs_negative_edges(r) and (
                 _edge_constraint_validator(r, self.graph, motif.list_edge_constraints())
-                # and self._validate_node_constraints(
-                #     r, self.graph, motif.list_node_constraints()
-                # )
+                and _edge_dynamic_constraint_validator(
+                    r, self.graph, motif.list_dynamic_edge_constraints()
+                )
                 and self._validate_dynamic_node_constraints(
                     r, self.graph, motif.list_dynamic_node_constraints()
                 )
