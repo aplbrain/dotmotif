@@ -427,3 +427,49 @@ class TestNamedEdgeConstraints(unittest.TestCase):
         dm = dotmotif.Motif(parser=ParserV2)
         res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparison(self):
+        exp = """\
+        A -> B as ab
+        A -> C as ac
+        ab.type = ac.type
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", type="a")
+        host.add_edge("A", "C", type="b")
+        host.add_edge("A", "D", type="b")
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparisons(self):
+        exp = """\
+        A -> B as ab
+        B -> C as bc
+        C -> D as cd
+
+        ab.length >= bc.length
+        bc.length >= cd.length
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", length=1)
+        host.add_edge("B", "C", length=1)
+        host.add_edge("C", "D", length=1)
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 1)
+
+    def test_aliased_edge_comparisons_with_different_edge_attributes(self):
+        exp = """\
+        B -> C as bc
+        C -> D as cd
+
+        bc.length > cd.weight
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "C", length=2)
+        host.add_edge("B", "C", length=2)
+        host.add_edge("C", "D", length=1, weight=1)
+        res = GrandIsoExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)

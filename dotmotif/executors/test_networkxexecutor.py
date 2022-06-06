@@ -590,3 +590,109 @@ class TestNotInAndNotContains(unittest.TestCase):
 
         res = NetworkXExecutor(graph=host).find(m)
         self.assertEqual(len(res), 1)
+
+
+class TestNamedEdgeConstraints(unittest.TestCase):
+    def test_equality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = NetworkXExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = NetworkXExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+    def test_inequality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = NetworkXExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = NetworkXExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparison(self):
+        exp = """\
+        A -> B as ab
+        A -> C as ac
+        ab.type = ac.type
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", type="a")
+        host.add_edge("A", "C", type="b")
+        host.add_edge("A", "D", type="b")
+        res = NetworkXExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)
+
+    def test_aliased_edge_comparisons(self):
+        exp = """\
+        A -> B as ab
+        B -> C as bc
+        C -> D as cd
+
+        ab.length >= bc.length
+        bc.length >= cd.length
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "B", length=1)
+        host.add_edge("B", "C", length=1)
+        host.add_edge("C", "D", length=1)
+        res = NetworkXExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 1)
+
+    def test_aliased_edge_comparisons_with_different_edge_attributes(self):
+        exp = """\
+        B -> C as bc
+        C -> D as cd
+
+        bc.length > cd.weight
+        """
+        dm = dotmotif.Motif(exp)
+        host = nx.DiGraph()
+        host.add_edge("A", "C", length=2)
+        host.add_edge("B", "C", length=2)
+        host.add_edge("C", "D", length=1, weight=1)
+        res = NetworkXExecutor(graph=host).find(dm)
+        self.assertEqual(len(res), 2)
