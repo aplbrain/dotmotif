@@ -66,7 +66,7 @@ class DotMotifTransformer(Transformer):
                             self.edge_constraints[(u, v)][key][op] = []
                         self.edge_constraints[(u, v)][key][op].extend(values)
             else:
-                raise ValueError(
+                raise KeyError(
                     f"Entity {entity_id} is neither a node nor a named edge in this motif."
                 )
 
@@ -98,7 +98,7 @@ class DotMotifTransformer(Transformer):
                             self.dynamic_edge_constraints[(u, v)][key][op] = []
                         self.dynamic_edge_constraints[(u, v)][key][op].extend(values)
             else:
-                raise ValueError(
+                raise KeyError(
                     f"Entity {entity_id} is neither a node nor a named edge in this motif."
                 )
 
@@ -214,6 +214,8 @@ class DotMotifTransformer(Transformer):
             attrs = {}
         elif len(tup) == 4:
             u, rel, v, attrs = tup
+        else:
+            raise ValueError(f"Invalid edge definition {tup}")
         u = str(u)
         v = str(v)
         for val in self.validators:
@@ -300,8 +302,8 @@ class DotMotifTransformer(Transformer):
             attrs = {}
         elif len(tup) == 4:
             u, rel, v, attrs = tup
-        # else:
-        #     print(tup, len(tup))
+        else:
+            raise ValueError(f"Invalid edge definition {tup} in macro.")
         u = str(u)
         v = str(v)
         return (str(u), rel, str(v), attrs)
@@ -362,6 +364,8 @@ class DotMotifTransformer(Transformer):
                 this_node = args[macro_args.index(this_node)]
                 self.node_constraint((this_node, this_key, op, that_node, that_key))
                 continue
+            else:
+                raise ValueError(f"Invalid macro call. Failed on rule: {rule}")
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg

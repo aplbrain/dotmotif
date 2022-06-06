@@ -491,6 +491,20 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm = dotmotif.Motif(exp)
         self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
 
+    def test_failed_node_lookup(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B
+        C.radius < B.radius
+        """
+        with self.assertRaises(KeyError):
+            dm = dotmotif.Motif(exp)
+
 
 class TestEdgeAliasConstraints(unittest.TestCase):
     def test_can_create_aliases(self):
@@ -519,3 +533,17 @@ class TestEdgeAliasConstraints(unittest.TestCase):
         """
         )
         assert True
+
+    def test_failed_edge_lookup(self):
+        """
+        Test that comparisons may be made between variables, e.g.:
+
+        A.type != B.type
+
+        """
+        exp = """\
+        A -> B as ab
+        acb.radius = 3
+        """
+        with self.assertRaises(KeyError):
+            dm = dotmotif.Motif(exp)
