@@ -26,6 +26,7 @@ class DotMotifTransformer(Transformer):
         self.node_constraints: dict = {}
         self.dynamic_edge_constraints: dict = {}
         self.dynamic_node_constraints: dict = {}
+        self.named_edges: dict = {}
         self.automorphisms: list = []
         super().__init__(*args, **kwargs)
 
@@ -159,6 +160,18 @@ class DotMotifTransformer(Transformer):
         self.G.add_edge(
             u, v, exists=rel["exists"], action=rel["type"], constraints=attrs
         )
+
+    def named_edge(self, tup):
+        if len(tup) == 4:
+            u, rel, v, name = tup
+            attrs = {}
+        elif len(tup) == 5:
+            u, rel, v, attrs, name = tup
+        else:
+            raise ValueError("Something is wrong with the named edge", tup)
+
+        self.named_edges[name] = (u, v, attrs)
+        self.edge(tup[:-1])
 
     def automorphism_notation(self, tup):
         self.automorphisms.append(tup)
@@ -330,8 +343,7 @@ class ParserV2(Parser):
             self.validators = validators
 
     def parse(self, dm: str) -> nx.MultiDiGraph:
-        """
-        """
+        """ """
         G = nx.MultiDiGraph()
 
         tree = dm_parser.parse(dm)
@@ -351,4 +363,3 @@ class ParserV2(Parser):
             dynamic_node_constraints,
             automorphisms,
         )
-

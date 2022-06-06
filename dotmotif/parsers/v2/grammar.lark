@@ -1,24 +1,24 @@
 // See Extended Backus-Naur Form for more details.
-start: comment_or_block+
+start                   : comment_or_block+
 
 
 // Contents may be either comment or block.
-comment_or_block: block
-                | block ";"
+comment_or_block        : block
+                        | block ";"
 
 // Comments are signified by a hash followed by anything. Any line that follows
 // a comment hash is thrown away.
 
-?comment        : "#" COMMENT
+?comment                : "#" COMMENT
 
-// A block may consist of either an edge ("A -> B") or a "macro", which is
-// essentially an alias capability.
-block           : edge
-                | macro
-                | macro_call
-                | node_constraint
-                | automorphism_notation
-                | comment
+// A block may consist of either an edge ("A -> B"), a constraint, or a "macro".
+block                   : edge
+                        | named_edge
+                        | macro
+                        | macro_call
+                        | node_constraint
+                        | automorphism_notation
+                        | comment
 
 
 
@@ -28,27 +28,27 @@ block           : edge
 // is the same as:
 //     A -> B
 // While this is a simple case, this is an immensely powerful tool.
-macro           : variable "(" arglist ")" "{" macro_rules "}"
+macro                   : variable "(" arglist ")" "{" macro_rules "}"
 
 // A series of arguments to a macro
-?arglist        : variable ("," variable)*
+?arglist                : variable ("," variable)*
 
-macro_rules     : macro_block+
+macro_rules             : macro_block+
 
-?macro_block    : edge_macro
-                | macro_call_re
-                | comment
-                | macro_node_constraint
+?macro_block            : edge_macro
+                        | macro_call_re
+                        | comment
+                        | macro_node_constraint
 
 // A "hypothetical" edge that forms a subgraph structure.
-edge_macro      : node_id relation node_id
-                | node_id relation node_id "[" macro_edge_clauses "]"
+edge_macro              : node_id relation node_id
+                        | node_id relation node_id "[" macro_edge_clauses "]"
 
 
 
 // A macro is called like a function: foo(args).
-macro_call      : variable "(" arglist ")"
-?macro_call_re  : variable "(" arglist ")"
+macro_call              : variable "(" arglist ")"
+?macro_call_re          : variable "(" arglist ")"
 
 
 
@@ -56,29 +56,35 @@ macro_call      : variable "(" arglist ")"
 // words, an arbitrary word, a relation between them, and then another node.
 // Edges can also have optional edge attributes, delimited from the original
 // structure with square brackets.
-edge            : node_id relation node_id
-                | node_id relation node_id "[" edge_clauses "]"
+edge                    : node_id relation node_id
+                        | node_id relation node_id "[" edge_clauses "]"
+
+named_edge              : node_id relation node_id "as" edge_alias
+                        | node_id relation node_id "[" edge_clauses "]" "as" edge_alias
+
+// An edge alias is any variable-like token:
+?edge_alias             : variable
 
 // A Node ID is any contiguous (that is, no whitespace) word.
-?node_id        : variable
+?node_id                : variable
 
 // A relation is a bipartite: The first character is an indication of whether
 // the relation exists or not. The following characters indicate if a relation
 // has a type other than the default, positive, and negative types offered
 // by default.
-relation        : relation_exist relation_type
+relation                : relation_exist relation_type
 
 // A "-" means the relation exists; "~" means the relation does not exist.
-relation_exist  : "-"                               -> rel_exist
-                | "~"                               -> rel_nexist
-                | "!"                               -> rel_nexist
+relation_exist          : "-"                               -> rel_exist
+                        | "~"                               -> rel_nexist
+                        | "!"                               -> rel_nexist
 
 // The valid types of relation are single-character, except for the custom
 // relation type which is user-defined and lives inside square brackets.
-relation_type   : ">"                               -> rel_def
-                | "+"                               -> rel_pos
-                | "-"                               -> rel_neg
-                | "|"                               -> rel_neg
+relation_type           : ">"                               -> rel_def
+                        | "+"                               -> rel_pos
+                        | "-"                               -> rel_neg
+                        | "|"                               -> rel_neg
 
 // Edge attributes are separated from the main edge declaration with sqbrackets
 edge_clauses            : edge_clause ("," edge_clause)*
@@ -131,25 +137,25 @@ automorphism_notation: node_id "===" node_id
 ?value_or_quoted_value: WORD | NUMBER | DOUBLE_QUOTED_STRING
 
 
-?key            : WORD | variable
-?flex_key       : WORD | variable | FLEXIBLE_KEY
-?value          : WORD | NUMBER
-?op             : OPERATOR | iter_ops
+?key                    : WORD | variable
+?flex_key               : WORD | variable | FLEXIBLE_KEY
+?value                  : WORD | NUMBER
+?op                     : OPERATOR | iter_ops
 
 
-variable       : NAME
+variable                : NAME
 
-iter_ops        : "contains"                        -> iter_op_contains
-                | "in"                              -> iter_op_in
-                | "!contains"                       -> iter_op_not_contains
-                | "!in"                             -> iter_op_not_in
+iter_ops                : "contains"                        -> iter_op_contains
+                        | "in"                              -> iter_op_in
+                        | "!contains"                       -> iter_op_not_contains
+                        | "!in"                             -> iter_op_not_in
 
-NAME            : /[a-zA-Z_-]\w*/
-FLEXIBLE_KEY    : "\"" /.+?/ /(?<!\\)(\\\\)*?/ "\"" | "'" /.+?/ /(?<!\\)(\\\\)*?/ "'"
-OPERATOR        : /(?:[\!=\>\<][=]?)|(?:\<\>)/
-VAR_SEP         : /[\_\-]/
-COMMENT         : /#[^\n]+/
-DOUBLE_QUOTED_STRING  : /"[^"]*"/
+NAME                    : /[a-zA-Z_-]\w*/
+FLEXIBLE_KEY            : "\"" /.+?/ /(?<!\\)(\\\\)*?/ "\"" | "'" /.+?/ /(?<!\\)(\\\\)*?/ "'"
+OPERATOR                : /(?:[\!=\>\<][=]?)|(?:\<\>)/
+VAR_SEP                 : /[\_\-]/
+COMMENT                 : /#[^\n]+/
+DOUBLE_QUOTED_STRING    : /"[^"]*"/
 %ignore COMMENT
 
 %import common.WORD -> WORD

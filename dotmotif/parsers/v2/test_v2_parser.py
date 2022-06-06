@@ -41,6 +41,22 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
         dm = dotmotif.Motif(_THREE_CYCLE_NEG_INH)
         self.assertEqual([e[2]["exists"] for e in dm._g.edges(data=True)], [False] * 3)
 
+    def test_can_create_variables(self):
+        dm = dotmotif.Motif("""A -> B""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
+    def test_can_create_variables_with_underscores(self):
+        dm = dotmotif.Motif("""A -> B_""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
+    def test_cannot_create_variables_with_dashes(self):
+        with self.assertRaises(Exception):
+            dm = dotmotif.Motif("""A -> B-""")
+
+    def test_can_create_variables_with_numbers(self):
+        dm = dotmotif.Motif("""A_2 -> B1""")
+        self.assertEqual(len(dm._g.nodes()), 2)
+
 
 class TestDotmotif_Parserv2_DM_Macros(unittest.TestCase):
     def test_macro_not_added(self):
@@ -474,3 +490,32 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         """
         dm = dotmotif.Motif(exp)
         self.assertEqual(len(dm.list_dynamic_node_constraints()), 1)
+
+
+class TestEdgeAliasConstraints(unittest.TestCase):
+    def test_can_create_aliases(self):
+        dotmotif.Motif("""A -> B as ab""")
+        assert True
+
+    def test_can_create_aliases_with_constraints(self):
+        dotmotif.Motif("""A -> B [type != 1] as ab_2""")
+        assert True
+
+    def test_can_create_alised_edge_constraints_nondynamic(self):
+        dotmotif.Motif(
+            """
+        A -> B [type != 1] as ab_2
+        ab_2.flavor = "excitatory"
+        """
+        )
+        assert True
+
+    def test_can_create_alised_edge_constraints_dynamic(self):
+        dotmotif.Motif(
+            """
+        A -> B [type != 1] as ab_2
+        B -> A as ba
+        ab_2.flavor = ba.flavor
+        """
+        )
+        assert True
