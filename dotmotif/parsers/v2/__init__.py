@@ -22,6 +22,9 @@ class DotMotifTransformer(Transformer):
         self.validators = validators if validators else []
         self.macros: dict = {}
         self.G = nx.MultiDiGraph()
+        self._constraints = {}
+        self._dynamic_constraints = {}
+
         self.edge_constraints: dict = {}
         self.node_constraints: dict = {}
         self.dynamic_edge_constraints: dict = {}
@@ -32,6 +35,73 @@ class DotMotifTransformer(Transformer):
 
     def transform(self, tree):
         self._transform_tree(tree)
+
+        # Sort _constraints and _dynamic_constraints into edges and nodes.
+        # We need to defer this to the very end of transformation because
+        # we don't require entities to be introduced in any particular order.
+
+        for entity_id, constraints in self._constraints.items():
+            # First check to see if this exists in the graph as a node:
+            if entity_id in self.G.nodes:
+                # This is a node, and will be sorted into the node_constraints
+                if entity_id not in self.node_constraints:
+                    self.node_constraints[entity_id] = {}
+                for key, ops in constraints.items():
+                    if key not in self.node_constraints[entity_id]:
+                        self.node_constraints[entity_id][key] = {}
+                    for op, values in ops.items():
+                        if op not in self.node_constraints[entity_id][key]:
+                            self.node_constraints[entity_id][key][op] = []
+                        self.node_constraints[entity_id][key][op].extend(values)
+            elif entity_id in self.named_edges:
+                # This is a named edge:
+                (u, v, attrs) = self.named_edges[entity_id]
+                if (u, v) not in self.edge_constraints:
+                    self.edge_constraints[(u, v)] = {}
+                for key, ops in constraints.items():
+                    if key not in self.edge_constraints[(u, v)]:
+                        self.edge_constraints[(u, v)][key] = {}
+                    for op, values in ops.items():
+                        if op not in self.edge_constraints[(u, v)][key]:
+                            self.edge_constraints[(u, v)][key][op] = []
+                        self.edge_constraints[(u, v)][key][op].extend(values)
+            else:
+                raise ValueError(
+                    f"Entity {entity_id} is neither a node nor a named edge in this motif."
+                )
+
+        # Now do the same thing for dynamic constraints:
+        for entity_id, constraints in self._dynamic_constraints.items():
+            # First check to see if this exists in the graph as a node:
+            if entity_id in self.G.nodes:
+                # This is a node, and will be sorted into the node_constraints
+                if entity_id not in self.dynamic_node_constraints:
+                    self.dynamic_node_constraints[entity_id] = {}
+                for key, ops in constraints.items():
+                    if key not in self.dynamic_node_constraints[entity_id]:
+                        self.dynamic_node_constraints[entity_id][key] = {}
+                    for op, values in ops.items():
+                        if op not in self.dynamic_node_constraints[entity_id][key]:
+                            self.dynamic_node_constraints[entity_id][key][op] = []
+                        self.dynamic_node_constraints[entity_id][key][op].extend(values)
+
+            elif entity_id in self.named_edges:
+                # This is a named edge:
+                (u, v, attrs) = self.named_edges[entity_id]
+                if (u, v) not in self.dynamic_edge_constraints:
+                    self.dynamic_edge_constraints[(u, v)] = {}
+                for key, ops in constraints.items():
+                    if key not in self.dynamic_edge_constraints[(u, v)]:
+                        self.dynamic_edge_constraints[(u, v)][key] = {}
+                    for op, values in ops.items():
+                        if op not in self.dynamic_edge_constraints[(u, v)][key]:
+                            self.dynamic_edge_constraints[(u, v)][key][op] = []
+                        self.dynamic_edge_constraints[(u, v)][key][op].extend(values)
+            else:
+                raise ValueError(
+                    f"Entity {entity_id} is neither a node nor a named edge in this motif."
+                )
+
         return (
             self.G,
             self.edge_constraints,
@@ -57,6 +127,8 @@ class DotMotifTransformer(Transformer):
         return str(key), str(op), val
 
     def node_constraint(self, tup):
+        # TODO: Should rename this from `node_constraint` to accomodate
+        # the case where this refers to a constraint on a named edge.
 
         if len(tup) == 4:
             # This is of the form "Node.Key [OP] Value"
@@ -65,13 +137,14 @@ class DotMotifTransformer(Transformer):
             key = str(key)
             op = str(op)
             val = untype_string(val)
-            if node_id not in self.node_constraints:
-                self.node_constraints[node_id] = {}
-            if key not in self.node_constraints[node_id]:
-                self.node_constraints[node_id][key] = {}
-            if op not in self.node_constraints[node_id][key]:
-                self.node_constraints[node_id][key][op] = []
-            self.node_constraints[node_id][key][op].append(val)
+
+            if node_id not in self._constraints:
+                self._constraints[node_id] = {}
+            if key not in self._constraints[node_id]:
+                self._constraints[node_id][key] = {}
+            if op not in self._constraints[node_id][key]:
+                self._constraints[node_id][key][op] = []
+            self._constraints[node_id][key][op].append(val)
 
         elif len(tup) == 5:
             # This is of the form "ThisNode.Key [OP] ThatNode.Key"
@@ -83,14 +156,14 @@ class DotMotifTransformer(Transformer):
             that_key = str(that_key)
             op = str(op)
 
-            if this_node_id not in self.dynamic_node_constraints:
-                self.dynamic_node_constraints[this_node_id] = {}
+            if this_node_id not in self._dynamic_constraints:
+                self._dynamic_constraints[this_node_id] = {}
 
-            if this_key not in self.dynamic_node_constraints[this_node_id]:
-                self.dynamic_node_constraints[this_node_id][this_key] = {}
-            if op not in self.dynamic_node_constraints[this_node_id][this_key]:
-                self.dynamic_node_constraints[this_node_id][this_key][op] = []
-            self.dynamic_node_constraints[this_node_id][this_key][op].append(
+            if this_key not in self._dynamic_constraints[this_node_id]:
+                self._dynamic_constraints[this_node_id][this_key] = {}
+            if op not in self._dynamic_constraints[this_node_id][this_key]:
+                self._dynamic_constraints[this_node_id][this_key][op] = []
+            self._dynamic_constraints[this_node_id][this_key][op].append(
                 (that_node_id, that_key)
             )
 
