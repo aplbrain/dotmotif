@@ -473,3 +473,32 @@ class TestNamedEdgeConstraints(unittest.TestCase):
         host.add_edge("C", "D", length=1, weight=1)
         res = GrandIsoExecutor(graph=host).find(dm)
         self.assertEqual(len(res), 2)
+
+
+# class TestEdgeConstraintsInMacros(unittest.TestCase):
+#     def test_edge_comparison_in_macro(self):
+#         host = nx.DiGraph()
+#         host.add_edge("A", "B", foo=1)
+#         host.add_edge("A", "C", foo=2)
+#         host.add_edge("B", "C", foo=0.5)
+#         host.add_edge("C", "D", foo=0.25)
+#         host.add_edge("D", "C", foo=1)
+#         host.add_edge("C", "B", foo=2)
+#         host.add_edge("B", "A", foo=2)
+#         E = GrandIsoExecutor(graph=host)
+
+#         M = Motif(
+#             """
+
+#         descending(a, b, c) {
+#             a -> b as Edge1
+#             b -> c as Edge2
+#             Edge1.foo > Edge2.foo
+#         }
+
+#         descending(a, b, c)
+#         descending(b, c, d)
+
+#         """
+#         )
+#         assert E.count(M) == 1

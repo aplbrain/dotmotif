@@ -215,6 +215,22 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         )
 
 
+class TestDynamicEdgeConstraints(unittest.TestCase):
+    def test_dynamic_constraints_in_cypher(self):
+        dm = dotmotif.Motif(enforce_inequality=True)
+        dm.from_motif(
+            """
+        A -> B as AB
+        A -> C as AC
+        AB.weight >= AC.weight
+        """
+        )
+        self.assertIn(
+            """WHERE A_B["weight"] >= A_C["weight"]""",
+            Neo4jExecutor.motif_to_cypher(dm).strip(),
+        )
+
+
 class BugReports(unittest.TestCase):
     def test_fix_where_clause__github_35(self):
         dm = dotmotif.Motif(enforce_inequality=True)
