@@ -547,3 +547,27 @@ class TestEdgeAliasConstraints(unittest.TestCase):
         """
         with self.assertRaises(KeyError):
             dm = dotmotif.Motif(exp)
+
+    def test_quoted_attribute_edge_constraint(self):
+        exp = """\
+        A -> B as ab
+        ab["flavor"] = "excitatory"
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_edge_constraints()), 1)
+        self.assertEqual(
+            dm.list_edge_constraints()[("A", "B")]["flavor"]["="], ["excitatory"]
+        )
+
+    def test_quoted_attribute_dynamic_edge_constraint(self):
+        exp = """\
+        A -> B as ab
+        B -> A as ba
+        ab["flavor"] = ba["flavor"]
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_dynamic_edge_constraints()), 1)
+        self.assertEqual(
+            dm.list_dynamic_edge_constraints()[("A", "B")]["flavor"]["="],
+            ["B", "A", "flavor"],
+        )

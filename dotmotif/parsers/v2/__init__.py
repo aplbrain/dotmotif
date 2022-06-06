@@ -13,6 +13,17 @@ from ...validators import Validator
 dm_parser = Lark(open(os.path.join(os.path.dirname(__file__), "grammar.lark"), "r"))
 
 
+def _unquote_string(s):
+    """
+    Remove quotes from a string.
+    """
+    if s[0] == '"' and s[-1] == '"':
+        return s[1:-1]
+    if s[0] == "'" and s[-1] == "'":
+        return s[1:-1]
+    return s
+
+
 class DotMotifTransformer(Transformer):
     """
     This transformer converts a parsed Lark tree into a networkx.MultiGraph.
@@ -132,14 +143,12 @@ class DotMotifTransformer(Transformer):
         return str(key), str(op), val
 
     def node_constraint(self, tup):
-        # TODO: Should rename this from `node_constraint` to accomodate
-        # the case where this refers to a constraint on a named edge.
-
         if len(tup) == 4:
             # This is of the form "Node.Key [OP] Value"
             node_id, key, op, val = tup
             node_id = str(node_id)
             key = str(key)
+            key = _unquote_string(key)
             op = str(op)
             val = untype_string(val)
 
@@ -157,8 +166,10 @@ class DotMotifTransformer(Transformer):
 
             this_node_id = str(this_node_id)
             this_key = str(this_key)
+            this_key = _unquote_string(this_key)
             that_node_id = str(that_node_id)
             that_key = str(that_key)
+            that_key = _unquote_string(that_key)
             op = str(op)
 
             if this_node_id not in self._dynamic_constraints:
