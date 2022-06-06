@@ -367,3 +367,63 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         dm = dotmotif.Motif(parser=ParserV2)
         res = GrandIsoExecutor(graph=G).find(dm.from_motif(exp))
         self.assertEqual(len(res), 2)
+
+
+class TestNamedEdgeConstraints(unittest.TestCase):
+    def test_equality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight == A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+    def test_inequality_edge_attributes(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=1)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 0)
+
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("A", "C", weight=2)
+
+        exp = """\
+        A -> B as A_B
+        A -> C as A_C
+        A_B.weight != A_C.weight
+        """
+
+        dm = dotmotif.Motif(parser=ParserV2)
+        res = GrandIsoExecutor(graph=host).find(dm.from_motif(exp))
+        self.assertEqual(len(res), 2)

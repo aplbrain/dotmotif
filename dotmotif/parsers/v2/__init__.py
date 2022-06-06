@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 from typing import List
+import os
 from lark import Lark, Transformer
 import networkx as nx
-import os
 
 from ...utils import untype_string
 from .. import Parser
