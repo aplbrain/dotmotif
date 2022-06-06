@@ -86,7 +86,7 @@ class DotMotifTransformer(Transformer):
                         self.dynamic_node_constraints[entity_id][key][op].extend(values)
 
             elif entity_id in self.named_edges:
-                # This is a named edge:
+                # This is a named edge dynamic correspondence:
                 (u, v, attrs) = self.named_edges[entity_id]
                 if (u, v) not in self.dynamic_edge_constraints:
                     self.dynamic_edge_constraints[(u, v)] = {}
@@ -94,9 +94,14 @@ class DotMotifTransformer(Transformer):
                     if key not in self.dynamic_edge_constraints[(u, v)]:
                         self.dynamic_edge_constraints[(u, v)][key] = {}
                     for op, values in ops.items():
-                        if op not in self.dynamic_edge_constraints[(u, v)][key]:
-                            self.dynamic_edge_constraints[(u, v)][key][op] = []
-                        self.dynamic_edge_constraints[(u, v)][key][op].extend(values)
+                        for value in values:
+                            that_edge, that_attr = value
+                            tu, tv, _ = self.named_edges[that_edge]
+                            if op not in self.dynamic_edge_constraints[(u, v)][key]:
+                                self.dynamic_edge_constraints[(u, v)][key][op] = []
+                            self.dynamic_edge_constraints[(u, v)][key][op].extend(
+                                (tu, tv, that_attr)
+                            )
             else:
                 raise KeyError(
                     f"Entity {entity_id} is neither a node nor a named edge in this motif."
