@@ -521,5 +521,58 @@ class TestEdgeConstraintsInMacros(unittest.TestCase):
 
         """
         )
-        print(E.find(M))
+        assert E.count(M) == 1
+
+    def test_nested_macro_edge_constraints(self):
+        host = nx.DiGraph()
+        M = Motif(
+            """
+        a(a1, b1) {
+            b1 -> a1
+            a1 -> b1 as ab
+        }
+
+        b(a2, b2) {
+            a(a2, b2)
+        }
+
+        c(a3, b3) {
+            b(a3, b3)
+        }
+
+        c(A, B)
+        """
+        )
+
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("B", "A", weight=0.5)
+        E = GrandIsoExecutor(graph=host)
+        assert E.count(M) == 1
+
+    def test_self_edge_constraints(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1, length=2)
+        host.add_edge("B", "A", weight=1, length=1)
+
+        M = Motif(
+            """
+        a(a1, b1) {
+            b1 -> a1
+            a1 -> b1 as ab
+            ab.length > ab.weight
+        }
+
+        b(a2, b2) {
+            a(a2, b2)
+        }
+
+        c(a3, b3) {
+            b(a3, b3)
+        }
+
+        c(A, B)
+        """
+        )
+
+        E = GrandIsoExecutor(graph=host)
         assert E.count(M) == 1
