@@ -19,6 +19,7 @@ from typing import Union, IO
 import copy
 import pickle
 import warnings
+from dotmotif.utils import _deep_merge_constraint_dicts
 
 import networkx as nx
 from networkx.algorithms import isomorphism
@@ -112,6 +113,8 @@ class Motif:
             self._automorphisms,
         ) = result
 
+        self._propagate_automorphic_constraints()
+
         return self
 
     def from_nx(self, graph: nx.DiGraph) -> "Motif":
@@ -172,6 +175,26 @@ class Motif:
                 if k != v:
                     autos.add(tuple(sorted([k, v])))
         return list(autos)
+
+    def _propagate_automorphic_constraints(self):
+        """
+        Take constraints on automorphic nodes and add them to symmetric nodes.
+
+        """
+        # Loop over automorphisms that have been explicitly defined (in the
+        # dotmotif DSL, this is done with the triple-equality === operator.)
+        # Note to future self: We DON'T loop over implicit automorphisms because
+        # there is no guarantee that the user intends for structural symmetries
+        # to also be symmetries in the constraint space.
+        for (u, v) in self._automorphisms:
+            # Add a superset of constraints on the two nodes.
+            # First add attributes on the nodes themselves:
+            constraints = _deep_merge_constraint_dicts(
+                self._node_constraints.get(u, {}),
+                self._node_constraints.get(v, {}),
+            )
+            self._node_constraints[u] = constraints
+            self._node_constraints[v] = constraints
 
     def save(self, fname: Union[str, IO[bytes]]) -> Union[str, IO[bytes]]:
         """

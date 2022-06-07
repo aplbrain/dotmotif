@@ -585,14 +585,14 @@ class TestEdgeConstraintsInMacro(unittest.TestCase):
         dm = dotmotif.Motif(exp)
         self.assertEqual(len(dm.list_edge_constraints()), 1)
 
-    # def test_dynamic_edge_constraint_in_macro(self):
-    #     exp = """\
-    #     macro(A, B) {
-    #         A -> B as ab
-    #         B -> A as ba
-    #         ab.weight > ba.weight
-    #     }
-    #     macro(A, B)
-    #     """
-    #     dm = dotmotif.Motif(exp)
-    #     self.assertEqual(len(dm.list_dynamic_edge_constraints()), 1)
+    def test_dynamic_edge_constraint_in_macro(self):
+        exp = """\
+        macro(A, B) {
+            A -> B as ab
+            B -> A as ba
+            ab.weight > ba.weight
+        }
+        macro(A, B)
+        """
+        dm = dotmotif.Motif(exp)
+        self.assertEqual(len(dm.list_dynamic_edge_constraints()), 1)

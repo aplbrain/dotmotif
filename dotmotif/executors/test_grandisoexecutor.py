@@ -591,6 +591,41 @@ class TestEdgeConstraintsInMacros(unittest.TestCase):
         assert E.count(M) == 1
 
 
+class TestAutomorphismConstraintPropagation(unittest.TestCase):
+    def test_constraints_propagate_multi_auto(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A === B
+        A.radius = 5
+        """
+        )
+        host = nx.DiGraph()
+        host.add_edge("A", "B")
+        host.add_node("A", radius=5)
+        E = GrandIsoExecutor(graph=host)
+        assert E.count(m) == 0
+
+    def test_constraints_propagate_multi_auto2(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A === B
+        A.radius = 5
+        """,
+            exclude_automorphisms=False,
+        )
+        host = nx.DiGraph()
+        host.add_edge("A", "B")
+        host.add_edge("B", "A")
+        host.add_node("A", radius=5)
+        host.add_node("B", radius=5)
+        E = GrandIsoExecutor(graph=host)
+        assert E.count(m) == 2
+
+
 # class TestDeepNestingMacros(unittest.TestCase):
 
 #     def test_nested_macros_with_node_constraint(self):
