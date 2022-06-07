@@ -229,6 +229,34 @@ class TestSmallMotifs(unittest.TestCase):
         res = GrandIsoExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
 
+    def test_nested_macros(self):
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        motif = dotmotif.Motif(
+            """
+            tri(A, B, C) {
+                A -> B
+                B -> C
+                C -> A
+            }
+
+            tri2(A, B, C) {
+                tri(A, B, C)
+            }
+
+            tri3(A, B, C) {
+                tri2(A, B, C)
+            }
+
+            tri3(A, B, C)
+            """
+        )
+        res = GrandIsoExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 3)
+
 
 class TestDynamicNodeConstraints(unittest.TestCase):
     def test_dynamic_constraints_zero_results(self):
@@ -475,30 +503,180 @@ class TestNamedEdgeConstraints(unittest.TestCase):
         self.assertEqual(len(res), 2)
 
 
-# class TestEdgeConstraintsInMacros(unittest.TestCase):
-#     def test_edge_comparison_in_macro(self):
+class TestEdgeConstraintsInMacros(unittest.TestCase):
+    def test_edge_comparison_in_macro(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", foo=1)
+        host.add_edge("B", "C", foo=0.5)
+        host.add_edge("C", "D", foo=0.25)
+        E = GrandIsoExecutor(graph=host)
+
+        M = Motif(
+            """
+
+        descending(a, b) {
+            a -> b as Edge1
+            Edge1.foo >= 1
+        }
+
+        descending(real_a, real_b)
+
+        """
+        )
+        assert E.count(M) == 1
+
+    def test_dynamic_edge_comparison_in_macro(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", foo=1)
+        host.add_edge("B", "C", foo=0.5)
+        host.add_edge("C", "D", foo=0.25)
+        host.add_edge("D", "C", foo=1)
+        host.add_edge("C", "B", foo=2)
+        host.add_edge("B", "A", foo=2)
+        E = GrandIsoExecutor(graph=host)
+
+        M = Motif(
+            """
+
+        descending(a, b, c) {
+            a -> b as Edge1
+            b -> c as Edge2
+            Edge1.foo > Edge2.foo
+        }
+
+        descending(a, b, c)
+        descending(b, c, d)
+
+        """
+        )
+        assert E.count(M) == 1
+
+    def test_nested_macro_edge_constraints(self):
+        host = nx.DiGraph()
+        M = Motif(
+            """
+        a(a1, b1) {
+            b1 -> a1
+            a1 -> b1 as ab
+            ab.weight == 1
+        }
+
+        a(A, B)
+        """
+        )
+
+        host.add_edge("A", "B", weight=1)
+        host.add_edge("B", "A", weight=0.5)
+        E = GrandIsoExecutor(graph=host)
+        assert E.count(M) == 1
+
+    def test_self_edge_constraints(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", weight=1, length=2)
+        host.add_edge("B", "A", weight=1, length=1)
+
+        M = Motif(
+            """
+        a(a1, b1) {
+            b1 -> a1
+            a1 -> b1 as ab
+            ab.length > ab.weight
+        }
+
+        a(A, B)
+        """
+        )
+
+        E = GrandIsoExecutor(graph=host)
+        assert E.count(M) == 1
+
+
+# class TestDeepNestingMacros(unittest.TestCase):
+
+#     def test_nested_macros_with_node_constraint(self):
+#         G = nx.DiGraph()
+#         G.add_edge("A", "B")
+#         G.add_edge("B", "C")
+#         G.add_edge("C", "A")
+#         G.add_node("A", type="foo")
+#         G.add_node("B", type="foo")
+#         G.add_node("C", type="foo")
+
+#         motif = dotmotif.Motif(
+#             """
+#             tri(A, B, C) {
+#                 A -> B
+#                 B -> C
+#                 C -> A
+#                 A.type = "foo"
+#             }
+
+#             tri2(A1, B1, C1) {
+#                 tri(A1, B1, C1)
+#             }
+
+#             tri3(A2, B2, C2) {
+#                 tri2(A2, B2, C2)
+#             }
+
+#             tri3(A3, B3, C3)
+#             """
+#         )
+#         res = GrandIsoExecutor(graph=G).find(motif)
+#         self.assertEqual(len(res), 3)
+
+
+#     def test_deep_nested_macro_edge_constraints(self):
 #         host = nx.DiGraph()
-#         host.add_edge("A", "B", foo=1)
-#         host.add_edge("A", "C", foo=2)
-#         host.add_edge("B", "C", foo=0.5)
-#         host.add_edge("C", "D", foo=0.25)
-#         host.add_edge("D", "C", foo=1)
-#         host.add_edge("C", "B", foo=2)
-#         host.add_edge("B", "A", foo=2)
+#         M = Motif(
+#             """
+#         a(a1, b1) {
+#             b1 -> a1
+#             a1 -> b1 as ab
+#             ab.weight == 1
+#         }
+
+#         b(a2, b2) {
+#             a(a2, b2)
+#         }
+
+#         c(a3, b3) {
+#             b(a3, b3)
+#         }
+
+#         c(A, B)
+#         """
+#         )
+
+#         host.add_edge("A", "B", weight=1)
+#         host.add_edge("B", "A", weight=0.5)
 #         E = GrandIsoExecutor(graph=host)
+#         assert E.count(M) == 1
+
+#     def test_deep_self_edge_constraints(self):
+#         host = nx.DiGraph()
+#         host.add_edge("A", "B", weight=1, length=2)
+#         host.add_edge("B", "A", weight=1, length=1)
 
 #         M = Motif(
 #             """
-
-#         descending(a, b, c) {
-#             a -> b as Edge1
-#             b -> c as Edge2
-#             Edge1.foo > Edge2.foo
+#         a(a1, b1) {
+#             b1 -> a1
+#             a1 -> b1 as ab
+#             ab.length > ab.weight
 #         }
 
-#         descending(a, b, c)
-#         descending(b, c, d)
+#         b(a2, b2) {
+#             a(a2, b2)
+#         }
 
+#         c(a3, b3) {
+#             b(a3, b3)
+#         }
+
+#         c(A, B)
 #         """
 #         )
+
+#         E = GrandIsoExecutor(graph=host)
 #         assert E.count(M) == 1

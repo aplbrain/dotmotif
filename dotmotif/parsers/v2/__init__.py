@@ -2,6 +2,7 @@
 
 from typing import List
 import os
+import uuid
 from lark import Lark, Transformer
 import networkx as nx
 
@@ -264,6 +265,17 @@ class DotMotifTransformer(Transformer):
         self.named_edges[name] = (u, v, attrs)
         self.edge(tup[:-1])
 
+    def named_edge_macro(self, tup):
+        if len(tup) == 4:
+            u, rel, v, name = tup
+            attrs = {}
+        elif len(tup) == 5:
+            u, rel, v, attrs, name = tup
+        else:
+            raise ValueError("Something is wrong with the named edge", tup)
+
+        return ("named_edge", u, rel, v, attrs, name)
+
     def automorphism_notation(self, tup):
         self.automorphisms.append(tup)
 
@@ -360,6 +372,11 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
 
+        # We will now do two passes through the ruleset. The first pass is to
+        # get a list of named edges and simple edges. We will populate the
+        # named_edges lookup, and add the plain edges to the motif.
+        named_edges = {}
+        pending_rules = []
         for rule in all_rules:
             if len(rule) == 3:
                 # This is a structural edge with no constraints.
@@ -368,20 +385,13 @@ class DotMotifTransformer(Transformer):
             elif len(rule) == 4:
                 # This is an edge with attributes.
                 left, rel, right, attrs = rule
-            elif rule[0] == "node_constraint" and len(rule) == 5:
-                # This is a node constraint!
-                _, node, key, op, val = rule
-                node = args[macro_args.index(node)]
-                self.node_constraint((node, key, op, val))
-                continue
-            elif rule[0] == "node_constraint" and len(rule) == 6:
-                # This is a dynamic node constraint!
-                _, this_node, this_key, op, that_node, that_key = rule
-                this_node = args[macro_args.index(this_node)]
-                self.node_constraint((this_node, this_key, op, that_node, that_key))
-                continue
+            elif rule[0] == "named_edge":
+                # This is a named edge.
+                _, left, rel, right, attrs, name = rule
+                named_edges[name] = (left, right, attrs)
             else:
-                raise ValueError(f"Invalid macro call. Failed on rule: {rule}")
+                pending_rules.append(rule)
+                continue
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg
@@ -399,6 +409,88 @@ class DotMotifTransformer(Transformer):
                 else:
                     dict_attrs[k][v] = [a]
             self.edge((left, rel, right, dict_attrs))
+
+        # This is the second pass of the ruleset. Here, we will add constraints
+        # to the motif edges and nodes.
+        for rule in pending_rules:
+            if rule[0] == "node_constraint" and len(rule) == 5:
+                # This is a node constraint or a named edge constraint.
+                _, name, key, op, val = rule
+                # Check to see if name is a named edge.
+                if name in named_edges:
+                    # This is a simple edge constraint.
+                    left, right, named_edge_attrs = named_edges[name]
+                    real_left = args[macro_args.index(left)]
+                    real_right = args[macro_args.index(right)]
+                    # Temporarily add this edge to the motif's named edges,
+                    # with a random name.
+                    random_name = f"{name}_{str(uuid.uuid4())}"
+                    self.named_edges[random_name] = (
+                        real_left,
+                        real_right,
+                        named_edge_attrs,
+                    )
+                    # "Node.Key [OP] Value"
+                    self.node_constraint((random_name, key, op, val))
+
+                else:
+                    # This is an entity constraint. We need to check if this is
+                    # a node constraint or a named edge constraint.
+                    if name in self.named_edges:
+                        pass
+                    else:
+                        name = args[macro_args.index(name)]
+                    self.node_constraint((name, key, op, val))
+                    continue
+            elif rule[0] == "node_constraint" and len(rule) == 6:
+                # This is a dynamic node constraint or it is a dynamic
+                # edge constraint on two named edges.
+                _, this_node, this_key, op, that_node, that_key = rule
+                if this_node in named_edges:
+                    # This is a dynamic edge constraint on two named edges.
+                    if that_node not in named_edges:
+                        raise ValueError(
+                            f"Tried to add dynamic edge constraint on "
+                            f"named edge '{this_node}' but named edge "
+                            f"'{that_node}' does not exist."
+                        )
+                    # We will copy similar behavior from the simple case above,
+                    # by creating a named edge for the motif and then adding
+                    # the constraint to that edge through the node_constraint
+                    # method.
+                    left, right, named_edge_attrs = named_edges[this_node]
+                    real_this_left = args[macro_args.index(left)]
+                    real_this_right = args[macro_args.index(right)]
+                    random_this_name = f"{this_node}_{str(uuid.uuid4())}"
+                    # Now do the same for the that edge:
+                    left, right, named_edge_attrs = named_edges[that_node]
+                    real_that_left = args[macro_args.index(left)]
+                    real_that_right = args[macro_args.index(right)]
+                    random_that_name = f"{that_node}_{str(uuid.uuid4())}"
+                    # Temporarily add these edges to the motif's named edges,
+                    # with random names.
+                    self.named_edges[random_this_name] = (
+                        real_this_left,
+                        real_this_right,
+                        named_edge_attrs,
+                    )
+                    self.named_edges[random_that_name] = (
+                        real_that_left,
+                        real_that_right,
+                        named_edge_attrs,
+                    )
+                    self.node_constraint(
+                        (random_this_name, this_key, op, random_that_name, that_key)
+                    )
+                    continue
+
+                else:
+                    # This is a dynamic node constraint.
+                    this_node = args[macro_args.index(this_node)]
+                    self.node_constraint((this_node, this_key, op, that_node, that_key))
+                    continue
+            else:
+                raise ValueError(f"Invalid macro call. Failed on rule: {rule}")
 
     def macro_call_re(self, tup):
         callname, args = tup
@@ -422,10 +514,91 @@ class DotMotifTransformer(Transformer):
             else:
                 for r in rule:
                     all_rules.append(r)
-        return [
-            (args[macro_args.index(rule[0])], rule[1], args[macro_args.index(rule[2])])
-            for rule in all_rules
-        ]
+
+        return_rules = []
+        # Map local edge name mappings to the actual edge names.
+        edge_name_mappings = {}
+        for rule in all_rules:
+            if rule[0] == "named_edge":
+                # This is a named edge.
+                _, left, rel, right, attrs, name = rule
+                # Rename the nodes in the rule to correspond to the caller:
+                left = str(left)
+                left = args[macro_args.index(left)]
+                right = str(right)
+                right = args[macro_args.index(right)]
+                # Add a temporary named edge to the motif.
+                random_name = f"{name}_{str(uuid.uuid4())}"
+                edge_name_mappings[name] = random_name
+                self.named_edges[random_name] = (left, right, attrs)
+                return_rules.append(("named_edge", left, rel, right, attrs, name))
+
+            elif rule[0] == "node_constraint":
+                # This is a node constraint or edge constraint.
+                # We need to check if this is a node constraint (a tuple of
+                # length 5) or an edge constraint (a tuple of length 6).
+                if len(rule) == 5:
+                    _, name, key, op, val = rule
+                    # Rename the node in the rule to correspond to the caller:
+                    name = str(name)
+                    ## As we do in the "actual" macro calls, we'll need to create
+                    ## an alias for this edge in the motif.
+                    # Get the name from self.named_edges:
+                    if name in edge_name_mappings:
+                        name = edge_name_mappings[name]
+                    return_rules.append(("node_constraint", name, key, op, val))
+                elif len(rule) == 6:
+                    _, this_name, this_key, op, that_name, that_key = rule
+
+                    left, right, named_edge_attrs = self.named_edges[
+                        edge_name_mappings[this_name]
+                    ]
+                    print(left, this_name, args, macro_args)
+                    real_this_left = args[macro_args.index(left)]
+                    real_this_right = args[macro_args.index(right)]
+                    random_this_name = f"{this_name}_{str(uuid.uuid4())}"
+                    # Now do the same for the that edge:
+                    left, right, named_edge_attrs = self.named_edges[
+                        edge_name_mappings[that_name]
+                    ]
+                    real_that_left = args[macro_args.index(left)]
+                    real_that_right = args[macro_args.index(right)]
+                    random_that_name = f"{that_name}_{str(uuid.uuid4())}"
+                    # Temporarily add these edges to the motif's named edges,
+                    # with random names.
+                    self.named_edges[random_this_name] = (
+                        real_this_left,
+                        real_this_right,
+                        named_edge_attrs,
+                    )
+                    self.named_edges[random_that_name] = (
+                        real_that_left,
+                        real_that_right,
+                        named_edge_attrs,
+                    )
+                    # self.node_constraint(
+                    #     ("node_constraint", random_this_name, this_key, op, random_that_name, that_key)
+                    # )
+
+                    return_rules.append(
+                        (
+                            "node_constraint",
+                            this_name,
+                            this_key,
+                            op,
+                            that_name,
+                            that_key,
+                        )
+                    )
+            else:
+                return_rules.append(
+                    (
+                        args[macro_args.index(rule[0])],
+                        rule[1],
+                        args[macro_args.index(rule[2])],
+                    )
+                )
+        return return_rules
 
 
 class ParserV2(Parser):
