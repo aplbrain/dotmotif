@@ -93,3 +93,42 @@ class TestDotmotifFlags(unittest.TestCase):
 
         E = GrandIsoExecutor(graph=G)
         self.assertEqual(len(E.find(dm)), 4)
+
+
+class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
+    def test_automorphisms(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+
+        A === B
+        """
+        )
+        assert len(m.list_automorphisms()) == 1
+
+    def test_constraints_propagate(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A === B
+        A.radius = 5
+        """
+        )
+        assert len(m.list_automorphisms()) == 1
+        assert len(m.list_node_constraints()) == 2
+
+    def test_constraints_propagate_multi_auto(self):
+        m = dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A -> C
+        A === B
+        A === C
+        A.radius = 5
+        """
+        )
+        assert len(m.list_automorphisms()) == 2
+        assert len(m.list_node_constraints()) == 3

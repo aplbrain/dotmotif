@@ -102,3 +102,28 @@ def draw_motif(
     )
     if labels:
         nx.draw_networkx_labels(dm._g, pos=pos)
+
+
+def _deep_merge_constraint_dicts(d1, d2):
+    """
+    Merge two dictionaries recursively.
+
+    Arguments:
+        d1 (dict): The first dictionary
+        d2 (dict): The second dictionary
+
+    Returns:
+        dict: The merged dictionary
+
+    """
+    for k, v in d2.items():
+        if k in d1 and isinstance(d1[k], dict) and isinstance(v, dict):
+            d1[k] = _deep_merge_constraint_dicts(d1[k], v)
+
+        # Concat lists:
+        elif k in d1 and isinstance(d1[k], list) and isinstance(v, list):
+            d1[k] += v
+
+        else:
+            d1[k] = v
+    return d1

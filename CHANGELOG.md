@@ -1,5 +1,8 @@
 # Changelog
 
+-   **?.?.?** (Unreleased)
+    -   Features:
+        -   Introduced propagation of constraints when nodes are explicitly marked as automorphic to one another.
 -   **0.12.0** (June 7 2022)
     -   Housekeeping:
         -   Removed old, deprecated code like the v1 parser (deprecated in `v0.5.0`) and some unused ingest tools (#113)

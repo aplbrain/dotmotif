@@ -1,6 +1,6 @@
 from unittest import TestCase
 import networkx as nx
-from ..utils import untype_string, _hashed_dict
+from ..utils import _deep_merge_constraint_dicts, untype_string, _hashed_dict
 from .. import Motif
 from tempfile import NamedTemporaryFile
 
@@ -49,3 +49,17 @@ class TestHashColor(TestCase):
         assert _hashed_dict({"a": 1, "b": 2}) == _hashed_dict({"b": 2, "a": 1})
         assert _hashed_dict({"a": 1, "b": 2}) != _hashed_dict({"b": 2, "a": 2})
         assert _hashed_dict({"a": 1, "b": 2}) != _hashed_dict({"b": 2, "a": 1, "c": 3})
+
+
+class TestMergeConstraints(TestCase):
+    def test_merging_constraints(self):
+        assert _deep_merge_constraint_dicts(
+            {
+                "a": {"b": [1], "c": [2]},
+            },
+            {
+                "a": {"b": [3], "d": [4]},
+            },
+        ) == {
+            "a": {"b": [1, 3], "c": [2], "d": [4]},
+        }
