@@ -449,8 +449,35 @@ class DotMotifTransformer(Transformer):
                             f"named edge '{this_node}' but named edge "
                             f"'{that_node}' does not exist."
                         )
-                    # left, right, attrs = named_edges[this_node]
-                    # attrs[this_key] = (op, that_node, that_key)
+                    # We will copy similar behavior from the simple case above,
+                    # by creating a named edge for the motif and then adding
+                    # the constraint to that edge through the node_constraint
+                    # method.
+                    left, right, named_edge_attrs = named_edges[this_node]
+                    real_this_left = args[macro_args.index(left)]
+                    real_this_right = args[macro_args.index(right)]
+                    random_this_name = f"{this_node}_{str(uuid.uuid4())}"
+                    # Now do the same for the that edge:
+                    left, right, named_edge_attrs = named_edges[that_node]
+                    real_that_left = args[macro_args.index(left)]
+                    real_that_right = args[macro_args.index(right)]
+                    random_that_name = f"{that_node}_{str(uuid.uuid4())}"
+                    # Temporarily add these edges to the motif's named edges,
+                    # with random names.
+                    self.named_edges[random_this_name] = (
+                        real_this_left,
+                        real_this_right,
+                        named_edge_attrs,
+                    )
+                    self.named_edges[random_that_name] = (
+                        real_that_left,
+                        real_that_right,
+                        named_edge_attrs,
+                    )
+                    self.node_constraint(
+                        (random_this_name, this_key, op, random_that_name, that_key)
+                    )
+
                 else:
                     # This is a dynamic node constraint.
                     this_node = args[macro_args.index(this_node)]
