@@ -229,6 +229,66 @@ class TestSmallMotifs(unittest.TestCase):
         res = GrandIsoExecutor(graph=G).find(motif)
         self.assertEqual(len(res), 1)
 
+    def test_nested_macros(self):
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        motif = dotmotif.Motif(
+            """
+            tri(A, B, C) {
+                A -> B
+                B -> C
+                C -> A
+            }
+
+            tri2(A, B, C) {
+                tri(A, B, C)
+            }
+
+            tri3(A, B, C) {
+                tri2(A, B, C)
+            }
+
+            tri3(A, B, C)
+            """
+        )
+        res = GrandIsoExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 3)
+
+    def test_nested_macros_with_node_constraint(self):
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_node("A", type="foo")
+        G.add_node("B", type="foo")
+        G.add_node("C", type="foo")
+
+        motif = dotmotif.Motif(
+            """
+            tri(A, B, C) {
+                A -> B
+                B -> C
+                C -> A
+                A.type = "foo"
+            }
+
+            tri2(A1, B1, C1) {
+                tri(A1, B1, C1)
+            }
+
+            tri3(A2, B2, C2) {
+                tri2(A2, B2, C2)
+            }
+
+            tri3(A3, B3, C3)
+            """
+        )
+        res = GrandIsoExecutor(graph=G).find(motif)
+        self.assertEqual(len(res), 3)
+
 
 class TestDynamicNodeConstraints(unittest.TestCase):
     def test_dynamic_constraints_zero_results(self):
@@ -530,6 +590,7 @@ class TestEdgeConstraintsInMacros(unittest.TestCase):
         a(a1, b1) {
             b1 -> a1
             a1 -> b1 as ab
+            ab.weight == 1
         }
 
         b(a2, b2) {

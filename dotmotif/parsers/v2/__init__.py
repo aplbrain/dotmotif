@@ -434,7 +434,7 @@ class DotMotifTransformer(Transformer):
                     self.node_constraint((random_name, key, op, val))
 
                 else:
-                    # This is a node constraint. We need to check if this is
+                    # This is an entity constraint. We need to check if this is
                     # a node constraint or a named edge constraint.
                     if name in self.named_edges:
                         pass
@@ -482,6 +482,7 @@ class DotMotifTransformer(Transformer):
                     self.node_constraint(
                         (random_this_name, this_key, op, random_that_name, that_key)
                     )
+                    continue
 
                 else:
                     # This is a dynamic node constraint.
@@ -533,16 +534,62 @@ class DotMotifTransformer(Transformer):
                 return_rules.append(("named_edge", left, rel, right, attrs, name))
 
             elif rule[0] == "node_constraint":
-                # This is a node constraint.
-                _, name, key, op, val = rule
-                # Rename the node in the rule to correspond to the caller:
-                name = str(name)
-                ## As we do in the "actual" macro calls, we'll need to create
-                ## an alias for this edge in the motif.
-                # Get the name from self.named_edges:
-                if name in edge_name_mappings:
-                    name = edge_name_mappings[name]
-                return_rules.append(("node_constraint", name, key, op, val))
+                # This is a node constraint or edge constraint.
+                # We need to check if this is a node constraint (a tuple of
+                # length 5) or an edge constraint (a tuple of length 6).
+                if len(rule) == 5:
+                    _, name, key, op, val = rule
+                    # Rename the node in the rule to correspond to the caller:
+                    name = str(name)
+                    ## As we do in the "actual" macro calls, we'll need to create
+                    ## an alias for this edge in the motif.
+                    # Get the name from self.named_edges:
+                    if name in edge_name_mappings:
+                        name = edge_name_mappings[name]
+                    return_rules.append(("node_constraint", name, key, op, val))
+                elif len(rule) == 6:
+                    _, this_name, this_key, op, that_name, that_key = rule
+
+                    left, right, named_edge_attrs = self.named_edges[
+                        edge_name_mappings[this_name]
+                    ]
+                    print(left, this_name, args, macro_args)
+                    real_this_left = args[macro_args.index(left)]
+                    real_this_right = args[macro_args.index(right)]
+                    random_this_name = f"{this_name}_{str(uuid.uuid4())}"
+                    # Now do the same for the that edge:
+                    left, right, named_edge_attrs = self.named_edges[
+                        edge_name_mappings[that_name]
+                    ]
+                    real_that_left = args[macro_args.index(left)]
+                    real_that_right = args[macro_args.index(right)]
+                    random_that_name = f"{that_name}_{str(uuid.uuid4())}"
+                    # Temporarily add these edges to the motif's named edges,
+                    # with random names.
+                    self.named_edges[random_this_name] = (
+                        real_this_left,
+                        real_this_right,
+                        named_edge_attrs,
+                    )
+                    self.named_edges[random_that_name] = (
+                        real_that_left,
+                        real_that_right,
+                        named_edge_attrs,
+                    )
+                    # self.node_constraint(
+                    #     ("node_constraint", random_this_name, this_key, op, random_that_name, that_key)
+                    # )
+
+                    return_rules.append(
+                        (
+                            "node_constraint",
+                            this_name,
+                            this_key,
+                            op,
+                            that_name,
+                            that_key,
+                        )
+                    )
             else:
                 return_rules.append(
                     (
