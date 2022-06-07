@@ -2,6 +2,7 @@
 
 from typing import List
 import os
+import uuid
 from lark import Lark, Transformer
 import networkx as nx
 
@@ -264,6 +265,17 @@ class DotMotifTransformer(Transformer):
         self.named_edges[name] = (u, v, attrs)
         self.edge(tup[:-1])
 
+    def named_edge_macro(self, tup):
+        if len(tup) == 4:
+            u, rel, v, name = tup
+            attrs = {}
+        elif len(tup) == 5:
+            u, rel, v, attrs, name = tup
+        else:
+            raise ValueError("Something is wrong with the named edge", tup)
+
+        return ("named_edge", u, rel, v, attrs, name)
+
     def automorphism_notation(self, tup):
         self.automorphisms.append(tup)
 
@@ -360,6 +372,11 @@ class DotMotifTransformer(Transformer):
                 for r in rule:
                     all_rules.append(r)
 
+        # We will now do two passes through the ruleset. The first pass is to
+        # get a list of named edges and simple edges. We will populate the
+        # named_edges lookup, and add the plain edges to the motif.
+        named_edges = {}
+        pending_rules = []
         for rule in all_rules:
             if len(rule) == 3:
                 # This is a structural edge with no constraints.
@@ -368,20 +385,13 @@ class DotMotifTransformer(Transformer):
             elif len(rule) == 4:
                 # This is an edge with attributes.
                 left, rel, right, attrs = rule
-            elif rule[0] == "node_constraint" and len(rule) == 5:
-                # This is a node constraint!
-                _, node, key, op, val = rule
-                node = args[macro_args.index(node)]
-                self.node_constraint((node, key, op, val))
-                continue
-            elif rule[0] == "node_constraint" and len(rule) == 6:
-                # This is a dynamic node constraint!
-                _, this_node, this_key, op, that_node, that_key = rule
-                this_node = args[macro_args.index(this_node)]
-                self.node_constraint((this_node, this_key, op, that_node, that_key))
-                continue
+            elif rule[0] == "named_edge":
+                # This is a named edge.
+                _, left, rel, right, attrs, name = rule
+                named_edges[name] = (left, right, attrs)
             else:
-                raise ValueError(f"Invalid macro call. Failed on rule: {rule}")
+                pending_rules.append(rule)
+                continue
             # Get the arguments in-place. For example, if left is A,
             # and A is the first arg in macro["args"], then replace
             # all instances of A in the rules with the first arg
@@ -399,6 +409,56 @@ class DotMotifTransformer(Transformer):
                 else:
                     dict_attrs[k][v] = [a]
             self.edge((left, rel, right, dict_attrs))
+
+        # This is the second pass of the ruleset. Here, we will add constraints
+        # to the motif edges and nodes.
+        for rule in pending_rules:
+            if rule[0] == "node_constraint" and len(rule) == 5:
+                # This is a node constraint or a named edge constraint.
+                _, name, key, op, val = rule
+                # Check to see if name is a named edge.
+                if name in named_edges:
+                    # This is a simple edge constraint.
+                    left, right, named_edge_attrs = named_edges[name]
+                    real_left = args[macro_args.index(left)]
+                    real_right = args[macro_args.index(right)]
+                    # Temporarily add this edge to the motif's named edges,
+                    # with a random name.
+                    random_name = f"{name}_{str(uuid.uuid4())}"
+                    self.named_edges[random_name] = (
+                        real_left,
+                        real_right,
+                        named_edge_attrs,
+                    )
+                    # "Node.Key [OP] Value"
+                    self.node_constraint((random_name, key, op, val))
+
+                else:
+                    name = args[macro_args.index(name)]
+                    self.node_constraint((name, key, op, val))
+                    continue
+            elif rule[0] == "node_constraint" and len(rule) == 6:
+                # This is a dynamic node constraint or it is a dynamic
+                # edge constraint on two named edges.
+                _, this_node, this_key, op, that_node, that_key = rule
+                if this_node in named_edges:
+                    # This is a dynamic edge constraint on two named edges.
+                    if that_node not in named_edges:
+                        raise ValueError(
+                            f"Tried to add dynamic edge constraint on "
+                            f"named edge '{this_node}' but named edge "
+                            f"'{that_node}' does not exist."
+                        )
+                    # left, right, attrs = named_edges[this_node]
+                    # attrs[this_key] = (op, that_node, that_key)
+                else:
+                    # This is a dynamic node constraint.
+                    this_node = args[macro_args.index(this_node)]
+                    self.node_constraint((this_node, this_key, op, that_node, that_key))
+                    continue
+            else:
+                print(self.macros)
+                raise ValueError(f"Invalid macro call. Failed on rule: {rule}")
 
     def macro_call_re(self, tup):
         callname, args = tup

@@ -475,30 +475,51 @@ class TestNamedEdgeConstraints(unittest.TestCase):
         self.assertEqual(len(res), 2)
 
 
-# class TestEdgeConstraintsInMacros(unittest.TestCase):
-#     def test_edge_comparison_in_macro(self):
-#         host = nx.DiGraph()
-#         host.add_edge("A", "B", foo=1)
-#         host.add_edge("A", "C", foo=2)
-#         host.add_edge("B", "C", foo=0.5)
-#         host.add_edge("C", "D", foo=0.25)
-#         host.add_edge("D", "C", foo=1)
-#         host.add_edge("C", "B", foo=2)
-#         host.add_edge("B", "A", foo=2)
-#         E = GrandIsoExecutor(graph=host)
+class TestEdgeConstraintsInMacros(unittest.TestCase):
+    def test_edge_comparison_in_macro(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", foo=1)
+        host.add_edge("B", "C", foo=0.5)
+        host.add_edge("C", "D", foo=0.25)
+        E = GrandIsoExecutor(graph=host)
 
-#         M = Motif(
-#             """
+        M = Motif(
+            """
 
-#         descending(a, b, c) {
-#             a -> b as Edge1
-#             b -> c as Edge2
-#             Edge1.foo > Edge2.foo
-#         }
+        descending(a, b) {
+            a -> b as Edge1
+            Edge1.foo >= 1
+        }
 
-#         descending(a, b, c)
-#         descending(b, c, d)
+        descending(real_a, real_b)
 
-#         """
-#         )
-#         assert E.count(M) == 1
+        """
+        )
+        assert E.count(M) == 1
+
+    def test_dynamic_edge_comparison_in_macro(self):
+        host = nx.DiGraph()
+        host.add_edge("A", "B", foo=1)
+        host.add_edge("B", "C", foo=0.5)
+        host.add_edge("C", "D", foo=0.25)
+        host.add_edge("D", "C", foo=1)
+        host.add_edge("C", "B", foo=2)
+        host.add_edge("B", "A", foo=2)
+        E = GrandIsoExecutor(graph=host)
+
+        M = Motif(
+            """
+
+        descending(a, b, c) {
+            a -> b as Edge1
+            b -> c as Edge2
+            Edge1.foo > Edge2.foo
+        }
+
+        descending(a, b, c)
+        descending(b, c, d)
+
+        """
+        )
+        print(E.find(M))
+        assert E.count(M) == 1

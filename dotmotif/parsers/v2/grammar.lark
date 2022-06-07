@@ -36,6 +36,7 @@ macro                   : variable "(" arglist ")" "{" macro_rules "}"
 macro_rules             : macro_block+
 
 ?macro_block            : edge_macro
+                        | named_edge_macro
                         | macro_call_re
                         | comment
                         | macro_node_constraint
@@ -43,7 +44,6 @@ macro_rules             : macro_block+
 // A "hypothetical" edge that forms a subgraph structure.
 edge_macro              : node_id relation node_id
                         | node_id relation node_id "[" macro_edge_clauses "]"
-
 
 
 // A macro is called like a function: foo(args).
@@ -60,6 +60,9 @@ edge                    : node_id relation node_id
                         | node_id relation node_id "[" edge_clauses "]"
 
 named_edge              : node_id relation node_id "as" edge_alias
+                        | node_id relation node_id "[" edge_clauses "]" "as" edge_alias
+
+named_edge_macro        : node_id relation node_id "as" edge_alias
                         | node_id relation node_id "[" edge_clauses "]" "as" edge_alias
 
 // An edge alias is any variable-like token:
