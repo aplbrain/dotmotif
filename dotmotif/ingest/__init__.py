@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 # Types only:
-from typing import List
+from typing import Iterable, List, Union
 import networkx as nx
 
 
@@ -30,7 +30,7 @@ class EdgelistConverter(NetworkXConverter):
 
     def __init__(
         self,
-        filepath_or_dataframe: str,
+        filepath_or_dataframe: Union[str, pd.DataFrame, Iterable],
         u_id_column: str,
         v_id_column: str,
         directed: bool = True,
@@ -44,6 +44,10 @@ class EdgelistConverter(NetworkXConverter):
                 dtype={u_id_column: str, v_id_column: str},
                 **(file_reader_kwargs or {"sep": ","}),
             )
+        if u_id_column not in data.columns:
+            raise KeyError(f"Dataframe does not contain column {u_id_column}.")
+        if v_id_column not in data.columns:
+            raise KeyError(f"Dataframe does not contain column {v_id_column}.")
         self._graph = nx.DiGraph() if directed else nx.Graph()
         for i, row in data.iterrows():
             self._graph.add_edge(
