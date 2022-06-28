@@ -48,3 +48,14 @@ class TestEdgelistIngest(unittest.TestCase):
                 "MISSING_COLUMN_NAME",
                 "source",
             )
+
+    def test_stringifies_integers_as_long(self):
+        df = pd.DataFrame(
+            [
+                {"source": 648518346349539500, "target": 648518346349539500 + 1},
+                {"source": 648518346349539500, "target": 648518346349539500 + 2},
+            ]
+        )
+        converter = EdgelistConverter(df, "source", "target")
+        graph = converter.to_graph()
+        self.assertEqual(graph.number_of_nodes(), 3)
