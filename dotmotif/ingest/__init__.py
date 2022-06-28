@@ -1,6 +1,7 @@
 # Standard installs:
 import abc
 import os
+import numpy as np
 
 # Non-standard installs:
 import pandas as pd
@@ -35,6 +36,8 @@ class EdgelistConverter(NetworkXConverter):
         v_id_column: str,
         directed: bool = True,
         file_reader_kwargs: dict = None,
+        u_id_column_dtype=str,
+        v_id_column_dtype=str,
     ):
         if isinstance(filepath_or_dataframe, pd.DataFrame):
             data = filepath_or_dataframe
@@ -50,9 +53,16 @@ class EdgelistConverter(NetworkXConverter):
             raise KeyError(f"Dataframe does not contain column {v_id_column}.")
         self._graph = nx.DiGraph() if directed else nx.Graph()
         for i, row in data.iterrows():
-            self._graph.add_edge(
-                str(row[u_id_column]), str(row[v_id_column]), **dict(row)
-            )
+            if u_id_column_dtype != str:
+                u = np.format_float_positional(row[u_id_column])
+            else:
+                u = row[u_id_column]
+
+            if v_id_column_dtype != str:
+                v = np.format_float_positional(row[v_id_column])
+            else:
+                v = row[v_id_column]
+            self._graph.add_edge(u, v, **dict(row))
 
     def to_graph(self):
         return self._graph
