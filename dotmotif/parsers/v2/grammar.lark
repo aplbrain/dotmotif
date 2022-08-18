@@ -93,7 +93,7 @@ relation_type           : ">"                               -> rel_def
 edge_clauses            : edge_clause ("," edge_clause)*
 macro_edge_clauses      : edge_clause ("," edge_clause)*
 
-edge_clause             : key op value
+edge_clause             : key op value_or_quoted_value
 
 
 // Node constraints:
