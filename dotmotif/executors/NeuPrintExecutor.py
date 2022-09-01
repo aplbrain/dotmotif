@@ -19,6 +19,37 @@ _DEFAULT_ENTITY_LABELS = {
     "edge": _LOOKUP,
 }
 
+_ROI_INFO_JSON_ATTRIBUTES = [
+  "SNP(R)",
+  "SMP(R)",
+  "SNP(L)",
+  "SMP(L)",
+  "SIP(L)",
+  "SIP(R)",
+  "INP",
+  "CRE(L)",
+  "CRE(-RUB)(L)",
+  "CRE(R)",
+  "CRE(-ROB,-RUB)(R)",
+  "MB(R)",
+  "b'L(R)",
+  "b'2(R)",
+  "MB(+ACA)(R)",
+  "LX(R)",
+  "LAL(R)",
+  "LAL(-GA)(R)",
+  "ROB(R)",
+  "LX(L)",
+  "LAL(L)",
+  "VLNP(R)",
+  "PVLP(R)",
+  "PLP(R)",
+  "VMNP",
+  "VES(R)",
+  "EPA(R)",
+]
+
+
 
 class NeuPrintExecutor(Neo4jExecutor):
     """
@@ -118,5 +149,19 @@ class NeuPrintExecutor(Neo4jExecutor):
 
         """
         static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
-        return Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
+        cypher = Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
+
+
+        for (u, v), a in motif.list_edge_constraints().items():
+            for key, constraints in a.items():
+                if key in _ROI_INFO_JSON_ATTRIBUTES:
+                    for operator, values in constraints.items():
+                        for value in values:
+                            this_edge = """{}_{}["{}"] {} {}""".format(u, v, key, operator, str(value))
+                            that_edge_pre = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].pre {} {})""".format(u, key, operator, str(value))
+                            that_edge_post = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].post {} {})""".format(v, key, operator, str(value))
+                            cypher = cypher.replace(this_edge, that_edge_pre + " AND " + that_edge_post)
+                else:
+                    print("Unknown edge constraint: {}".format(key))
+        return cypher
 
