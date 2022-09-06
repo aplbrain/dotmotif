@@ -86,7 +86,10 @@ class NeuPrintExecutor(Neo4jExecutor):
 
         """
         qry = self.motif_to_cypher(
-            motif, count_only=True, static_entity_labels=_DEFAULT_ENTITY_LABELS
+            motif,
+            count_only=True,
+            static_entity_labels=_DEFAULT_ENTITY_LABELS,
+            json_attributes=self.rois,
         )
         if limit:
             qry += f" LIMIT {limit}"
