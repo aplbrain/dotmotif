@@ -1,7 +1,6 @@
 import pandas as pd
 from neuprint import Client
 from neuprint import fetch_all_rois
-from . import neuprint_json
 
 from .. import Motif
 from .Neo4jExecutor import Neo4jExecutor
