@@ -56,8 +56,8 @@ if TOKEN:
             motif = Motif().from_motif(
                 """
                 A -> B as AB
-                AB["CRE(L)"] > 10
-                AB["CX"] > 20
+                AB["CRE(L).pre"] > 10
+                AB["CX.post"] > 20
                 """
             )
             E = NeuPrintExecutor(HOST, DATASET, TOKEN)
@@ -67,7 +67,7 @@ if TOKEN:
         def test_edge_constraints_notation2(self):
             motif = Motif().from_motif(
                 """
-                A -> B ["CRE(L)" > 10, "CX" > 20]
+                A -> B ["CRE(L).pre" > 10, "CX.post" > 20]
                 """
             )
             E = NeuPrintExecutor(HOST, DATASET, TOKEN)
