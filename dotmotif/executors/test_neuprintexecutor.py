@@ -52,12 +52,22 @@ if TOKEN:
             print(E.motif_to_cypher(motif))
             self.assertEqual(E.count(motif, limit=50), 35)
 
-        def test_edge_constraints(self):
+        def test_edge_constraints_notation1(self):
             motif = Motif().from_motif(
                 """
                 A -> B as AB
-                AB['CRE(L)'] > 10
-                AB['CX'] > 20
+                AB["CRE(L)"] > 10
+                AB["CX"] > 20
+                """
+            )
+            E = NeuPrintExecutor(HOST, DATASET, TOKEN)
+            print(E.motif_to_cypher(motif))
+            self.assertTrue(len(E.find(motif=motif, limit=5)) == 5)
+
+        def test_edge_constraints_notation2(self):
+            motif = Motif().from_motif(
+                """
+                A -> B ["CRE(L)" > 10, "CX" > 20]
                 """
             )
             E = NeuPrintExecutor(HOST, DATASET, TOKEN)
