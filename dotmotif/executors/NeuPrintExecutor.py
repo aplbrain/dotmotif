@@ -1,6 +1,7 @@
 import pandas as pd
 from neuprint import Client
-from . import NEUPRINT_JSON
+from neuprint import fetch_all_rois
+from . import neuprint_json
 
 from .. import Motif
 from .Neo4jExecutor import Neo4jExecutor
@@ -56,6 +57,7 @@ class NeuPrintExecutor(Neo4jExecutor):
         self.dataset = dataset
         self.token = token
         self.client = Client(host, dataset=self.dataset, token=self.token)
+        self.rois = fetch_all_rois()
 
     def run(self, cypher: str) -> pd.DataFrame:
         """
@@ -103,14 +105,21 @@ class NeuPrintExecutor(Neo4jExecutor):
             pd.DataFrame: The results of the search
 
         """
-        qry = self.motif_to_cypher(motif, static_entity_labels=_DEFAULT_ENTITY_LABELS)
+        qry = self.motif_to_cypher(
+            motif,
+            static_entity_labels=_DEFAULT_ENTITY_LABELS,
+            json_attributes=self.rois,
+        )
         if limit:
             qry += f" LIMIT {limit}"
         return self.client.fetch_custom(qry)
 
     @staticmethod
     def motif_to_cypher(
-            motif: Motif, count_only: bool = False, static_entity_labels: dict = None
+        motif: Motif,
+        count_only: bool = False,
+        static_entity_labels: dict = None,
+        json_attributes: list = None,
     ) -> str:
         """
         Convert a motif to neuprint-flavored Cypher.
@@ -121,21 +130,26 @@ class NeuPrintExecutor(Neo4jExecutor):
         static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
         cypher = Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
 
-        for (u, v), a in motif.list_edge_constraints().items():
-            for key, constraints in a.items():
-                key = key.strip('\"')  # remove quotes if any
-                if key in NEUPRINT_JSON.ATTRIBUTES:
-                    for operator, values in constraints.items():
-                        for value in values:
-                            this_edge = """{}_{}["{}"] {} {}""".format(u, v, key, operator, str(value))
-                            that_edge_pre = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].pre {} {})""".format(u, key,
-                                                                                                                operator,
-                                                                                                                str(value))
-                            that_edge_post = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].post {} {})""".format(v,
-                                                                                                                  key,
-                                                                                                                  operator,
-                                                                                                                  str(value))
-                            cypher = cypher.replace(this_edge, that_edge_pre + " AND " + that_edge_post)
-                else:
-                    print("Unknown JSON edge constraint: {}".format(key))
+        # Replace the JSON attributes with the neuprint-specific ones
+        if json_attributes:
+            for (u, v), a in motif.list_edge_constraints().items():
+                for key, constraints in a.items():
+                    key = key.strip('"')  # remove quotes if any
+                    if key in json_attributes:
+                        for operator, values in constraints.items():
+                            for value in values:
+                                this_edge = """{}_{}["{}"] {} {}""".format(
+                                    u, v, key, operator, str(value)
+                                )
+                                that_edge_pre = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].pre {} {})""".format(
+                                    u, key, operator, str(value)
+                                )
+                                that_edge_post = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].post {} {})""".format(
+                                    v, key, operator, str(value)
+                                )
+                                cypher = cypher.replace(
+                                    this_edge, that_edge_pre + " AND " + that_edge_post
+                                )
+                    else:
+                        print("Unknown JSON edge constraint: {}".format(key))
         return cypher
