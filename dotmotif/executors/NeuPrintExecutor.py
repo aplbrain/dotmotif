@@ -1,5 +1,6 @@
 import pandas as pd
 from neuprint import Client
+from . import NEUPRINT_JSON
 
 from .. import Motif
 from .Neo4jExecutor import Neo4jExecutor
@@ -18,37 +19,6 @@ _DEFAULT_ENTITY_LABELS = {
     "node": "Neuron",
     "edge": _LOOKUP,
 }
-
-_ROI_INFO_JSON_ATTRIBUTES = [
-    "SNP(R)",
-    "SMP(R)",
-    "SNP(L)",
-    "SMP(L)",
-    "SIP(L)",
-    "SIP(R)",
-    "INP",
-    "CRE(L)",
-    "CRE(-RUB)(L)",
-    "CRE(R)",
-    "CRE(-ROB,-RUB)(R)",
-    "MB(R)",
-    "b'L(R)",
-    "b'2(R)",
-    "MB(+ACA)(R)",
-    "LX(R)",
-    "LAL(R)",
-    "LAL(-GA)(R)",
-    "ROB(R)",
-    "LX(L)",
-    "LAL(L)",
-    "VLNP(R)",
-    "PVLP(R)",
-    "PLP(R)",
-    "VMNP",
-    "VES(R)",
-    "EPA(R)",
-    "CX"
-]
 
 
 class NeuPrintExecutor(Neo4jExecutor):
@@ -154,7 +124,7 @@ class NeuPrintExecutor(Neo4jExecutor):
         for (u, v), a in motif.list_edge_constraints().items():
             for key, constraints in a.items():
                 key = key.strip('\"')  # remove quotes if any
-                if key in _ROI_INFO_JSON_ATTRIBUTES:
+                if key in NEUPRINT_JSON.ATTRIBUTES:
                     for operator, values in constraints.items():
                         for value in values:
                             this_edge = """{}_{}["{}"] {} {}""".format(u, v, key, operator, str(value))
