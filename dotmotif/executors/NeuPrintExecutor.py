@@ -1,5 +1,6 @@
 import pandas as pd
 from neuprint import Client
+from neuprint import fetch_all_rois
 
 from .. import Motif
 from .Neo4jExecutor import Neo4jExecutor
@@ -55,6 +56,7 @@ class NeuPrintExecutor(Neo4jExecutor):
         self.dataset = dataset
         self.token = token
         self.client = Client(host, dataset=self.dataset, token=self.token)
+        self.rois = fetch_all_rois()
 
     def run(self, cypher: str) -> pd.DataFrame:
         """
@@ -83,7 +85,10 @@ class NeuPrintExecutor(Neo4jExecutor):
 
         """
         qry = self.motif_to_cypher(
-            motif, count_only=True, static_entity_labels=_DEFAULT_ENTITY_LABELS
+            motif,
+            count_only=True,
+            static_entity_labels=_DEFAULT_ENTITY_LABELS,
+            json_attributes=self.rois,
         )
         if limit:
             qry += f" LIMIT {limit}"
@@ -102,14 +107,21 @@ class NeuPrintExecutor(Neo4jExecutor):
             pd.DataFrame: The results of the search
 
         """
-        qry = self.motif_to_cypher(motif, static_entity_labels=_DEFAULT_ENTITY_LABELS)
+        qry = self.motif_to_cypher(
+            motif,
+            static_entity_labels=_DEFAULT_ENTITY_LABELS,
+            json_attributes=self.rois,
+        )
         if limit:
             qry += f" LIMIT {limit}"
         return self.client.fetch_custom(qry)
 
     @staticmethod
     def motif_to_cypher(
-        motif: Motif, count_only: bool = False, static_entity_labels: dict = None
+        motif: Motif,
+        count_only: bool = False,
+        static_entity_labels: dict = None,
+        json_attributes: list = None,
     ) -> str:
         """
         Convert a motif to neuprint-flavored Cypher.
@@ -118,5 +130,24 @@ class NeuPrintExecutor(Neo4jExecutor):
 
         """
         static_entity_labels = static_entity_labels or _DEFAULT_ENTITY_LABELS
-        return Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
+        cypher = Neo4jExecutor.motif_to_cypher(motif, count_only, static_entity_labels)
 
+        # Replace the JSON attributes with the neuprint-specific ones
+        if json_attributes:
+            for (u, v), a in motif.list_edge_constraints().items():
+                for key, constraints in a.items():
+                    key = key.strip('"')  # remove quotes if any
+                    attribute, sub_attribute = key.split(".")
+                    if attribute in json_attributes:
+                        for operator, values in constraints.items():
+                            for value in values:
+                                this_edge = """{}_{}["{}"] {} {}""".format(
+                                    u, v, key, operator, str(value)
+                                )
+                                that_edge = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].{} {} {})""".format(
+                                    u, attribute, sub_attribute, operator, str(value)
+                                )
+                                cypher = cypher.replace(this_edge, that_edge)
+                    else:
+                        print("Unknown JSON edge constraint: {}".format(key))
+        return cypher
