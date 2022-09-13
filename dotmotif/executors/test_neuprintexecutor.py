@@ -67,7 +67,7 @@ if TOKEN:
         def test_edge_constraints_notation2(self):
             motif = Motif().from_motif(
                 """
-                A -> B ["CRE(L).pre" > 10, "CX.post" > 20]
+                A -> B [weight > 10, "CRE(L).pre" > 10, "CX.post" > 20]
                 """
             )
             E = NeuPrintExecutor(HOST, DATASET, TOKEN)
