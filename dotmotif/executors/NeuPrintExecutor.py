@@ -137,17 +137,19 @@ class NeuPrintExecutor(Neo4jExecutor):
             for (u, v), a in motif.list_edge_constraints().items():
                 for key, constraints in a.items():
                     key = key.strip('"')  # remove quotes if any
-                    attribute, sub_attribute = key.split(".")
-                    if attribute in json_attributes:
-                        for operator, values in constraints.items():
-                            for value in values:
-                                this_edge = """{}_{}["{}"] {} {}""".format(
-                                    u, v, key, operator, str(value)
-                                )
-                                that_edge = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].{} {} {})""".format(
-                                    u, attribute, sub_attribute, operator, str(value)
-                                )
-                                cypher = cypher.replace(this_edge, that_edge)
-                    else:
-                        print("Unknown JSON edge constraint: {}".format(key))
+                    if "." in key:
+                        attribute, sub_attribute = key.split(".")
+                        if attribute in json_attributes:
+                            for operator, values in constraints.items():
+                                for value in values:
+                                    this_edge = """{}_{}["{}"] {} {}""".format(
+                                        u, v, key, operator, str(value)
+                                    )
+                                    that_edge = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].{} {} {})""".format(
+                                        u, attribute, sub_attribute, operator, str(value)
+                                    )
+                                    cypher = cypher.replace(this_edge, that_edge)
+                        else:
+                            print("Unknown JSON edge constraint: {}".format(key))
+
         return cypher
