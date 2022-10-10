@@ -145,8 +145,8 @@ class NeuPrintExecutor(Neo4jExecutor):
                                     this_edge = """{}_{}["{}"] {} {}""".format(
                                         u, v, key, operator, str(value)
                                     )
-                                    that_edge = """(apoc.convert.fromJsonMap({}.roiInfo)["{}"].{} {} {})""".format(
-                                        u, attribute, sub_attribute, operator, str(value)
+                                    that_edge = """(apoc.convert.fromJsonMap({}_{}.roiInfo)["{}"].{} {} {})""".format(
+                                        u, v, attribute, sub_attribute, operator, str(value)
                                     )
                                     cypher = cypher.replace(this_edge, that_edge)
                         else:
