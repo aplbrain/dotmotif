@@ -1,9 +1,10 @@
 # Changelog
 
--   **?.?.?** (Unreleased)
+-   **0.13.0** (October 11 2022)
     -   Features:
         -   Introduced propagation of constraints when nodes are explicitly marked as automorphic to one another.
         -   Nested lookup support for JSON attributes of neuPrint datasets ([thanks @jakobtroidl!](https://github.com/aplbrain/dotmotif/pull/128))
+        -   Allow users to specify EdgelistIngest column data types
 -   **0.12.0** (June 7 2022)
     -   Housekeeping:
         -   Removed old, deprecated code like the v1 parser (deprecated in `v0.5.0`) and some unused ingest tools (#113)
