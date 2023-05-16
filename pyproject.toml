@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "dotmotif"
+version = "0.14.0"
+description = "Find graph motifs using simple, intuitive notation."
+authors = ["Jordan Matelsky <jordan.matelsky@jhuapl.edu>"]
+license = "Apache 2.0"
+readme = "README.md"
+keywords = ["graph", "motif", "network", "pattern", "subgraph"]
+include = ["dotmotif/parsers/v2/grammar.lark"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.24.3"
+lark-parser = "^0.12.0"
+pandas = "^2.0.1"
+grandiso = "^2.1.1"
+networkx = "^3.1"
+tamarind = {version = "^0.2.1", optional = true}
+py2neo = {version = "^2021.2.3", optional = true}
+neuprint-python = {version = "^0.4.25", optional = true}
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.267"
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.extras]
+neo4j = ["tamarind", "py2neo"]
+neuprint = ["neuprint-python", "py2neo"]
+
+
+
