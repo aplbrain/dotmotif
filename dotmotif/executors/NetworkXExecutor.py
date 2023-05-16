@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.`
 """
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 import copy
 import networkx as nx
 
 from .Executor import Executor
 
 if TYPE_CHECKING:
-    from .. import dotmotif
+    from .. import dotmotif  # type: ignore
 
 _OPERATORS = {
     "=": lambda x, y: x == y,
@@ -124,7 +124,7 @@ class NetworkXExecutor(Executor):
 
         """
         if "graph" in kwargs:
-            self.graph = kwargs.get("graph")
+            self.graph: nx.Graph = kwargs["graph"]
         else:
             raise ValueError(
                 "You must pass a graph to the NetworkXExecutor constructor."
@@ -143,7 +143,7 @@ class NetworkXExecutor(Executor):
             ), "_multigraph_edge_match must be one of 'all' or 'any'."
 
     def _validate_node_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ) -> bool:
         """
         Validate nodes against their isomorphism's constraints in the motif.
@@ -162,7 +162,7 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_dynamic_node_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ) -> bool:
         """
         Validate a graph against its dynamic node constraints.
@@ -183,7 +183,7 @@ class NetworkXExecutor(Executor):
             this_node = node_isomorphism_map[motif_U]
             for this_key, operators in constraint_list.items():
                 for operator, that_node_list in operators.items():
-                    for (that_node_V, that_key) in that_node_list:
+                    for that_node_V, that_key in that_node_list:
                         that_node = node_isomorphism_map[that_node_V]
                         if this_key not in graph.nodes[this_node]:
                             return False
@@ -197,7 +197,7 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_edge_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ):
         """
         Validate all edge constraints on a subgraph.
@@ -234,7 +234,7 @@ class NetworkXExecutor(Executor):
             graph_v = node_isomorphism_map[motif_V]
 
             # Check edge in graph for constraints
-            edge_attrs = graph.get_edge_data(graph_u, graph_v)
+            edge_attrs: Dict[Any, Any] = graph.get_edge_data(graph_u, graph_v)  # type: ignore
 
             if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                 # Fail fast
@@ -242,7 +242,7 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_dynamic_edge_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ):
         """
         Validate all edge constraints on a subgraph.
@@ -264,7 +264,7 @@ class NetworkXExecutor(Executor):
 
         """
         for (motif_U, motif_V), constraint_list in constraints.items():
-            for (this_attr, ops) in constraint_list.items():
+            for this_attr, ops in constraint_list.items():
                 for op, (that_u, that_v, that_attr) in ops.items():
                     this_graph_u = node_isomorphism_map[motif_U]
                     this_graph_v = node_isomorphism_map[motif_V]
@@ -281,7 +281,7 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_multigraph_all_edge_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ):
         """
         Reuses logic from the simple _validate_edge_constraints case.
@@ -304,7 +304,7 @@ class NetworkXExecutor(Executor):
         return True
 
     def _validate_multigraph_any_edge_constraints(
-        self, node_isomorphism_map: dict, graph: nx.DiGraph, constraints: dict
+        self, node_isomorphism_map: dict, graph: nx.Graph, constraints: dict
     ):
         """
         Reuses logic from the simple _validate_edge_constraints case.
@@ -351,7 +351,7 @@ class NetworkXExecutor(Executor):
 
         return True
 
-    def count(self, motif: "dotmotif.Motif", limit: int = None):
+    def count(self, motif: "dotmotif.Motif", limit: Optional[int] = None):
         """
         Count the occurrences of a motif in a graph.
 
@@ -359,7 +359,7 @@ class NetworkXExecutor(Executor):
         """
         return len(self.find(motif, limit))
 
-    def find(self, motif: "dotmotif.Motif", limit: int = None):
+    def find(self, motif: "dotmotif.Motif", limit: Optional[int] = None):
         """
         Find a motif in a larger graph.
 

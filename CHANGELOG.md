@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.14.0** (May 16 2023)
+    -   Housekeeping:
+        -   Upgraded the package manager to Poetry, with version-pinning now handled by the `pyproject.toml` file.
 -   **0.13.0** (October 11 2022)
     -   Features:
         -   Introduced propagation of constraints when nodes are explicitly marked as automorphic to one another.

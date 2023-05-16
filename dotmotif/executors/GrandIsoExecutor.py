@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.`
 """
 from functools import lru_cache
+from typing import Optional
 import networkx as nx
 from grandiso import find_motifs_iter
 
@@ -31,7 +32,7 @@ class GrandIsoExecutor(NetworkXExecutor):
 
     """
 
-    def find(self, motif, limit: int = None):
+    def find(self, motif, limit: Optional[int] = None):
         """
         Find a motif in a larger graph.
 
@@ -46,7 +47,7 @@ class GrandIsoExecutor(NetworkXExecutor):
         # We need to first remove "negative" nodes from the motif, and then
         # filter them out later on.
 
-        if motif.ignore_direction or not self.graph.is_directed:
+        if motif.ignore_direction or not self.graph.is_directed:  # type: ignore
             graph_constructor = nx.Graph
         else:
             graph_constructor = nx.DiGraph
@@ -62,7 +63,7 @@ class GrandIsoExecutor(NetworkXExecutor):
 
         def _doesnt_have_any_of_motifs_negative_edges(mapping):
             for u, v in must_not_exist_edges:
-                if self.graph.has_edge(mapping[u], mapping[v]):
+                if self.graph.has_edge(mapping[u], mapping[v]):  # type: ignore
                     return False
             return True
 

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Union, IO
+from typing import List, Optional, Union, IO
 import copy
 import pickle
 import warnings
@@ -25,12 +25,12 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 
 from .parsers.v2 import ParserV2
-from .validators import DisagreeingEdgesValidator
+from .validators import DisagreeingEdgesValidator, Validator
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
 
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 
@@ -46,7 +46,7 @@ class Motif:
     See __init__ documentation for more details.
     """
 
-    def __init__(self, input_motif: str = None, **kwargs):
+    def __init__(self, input_motif: Optional[str] = None, **kwargs):
         """
         Create a new dotmotif object.
 
@@ -74,7 +74,9 @@ class Motif:
         self.pretty_print = kwargs.get("pretty_print", True)
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
-        self.validators = kwargs.get("validators", [DisagreeingEdgesValidator()])
+        self.validators: List[Validator] = kwargs.get(
+            "validators", [DisagreeingEdgesValidator()]
+        )
         self._g = nx.MultiDiGraph()
 
         self._edge_constraints = {}
@@ -186,7 +188,7 @@ class Motif:
         # Note to future self: We DON'T loop over implicit automorphisms because
         # there is no guarantee that the user intends for structural symmetries
         # to also be symmetries in the constraint space.
-        for (u, v) in self._automorphisms:
+        for u, v in self._automorphisms:
             # Add a superset of constraints on the two nodes.
             # First add attributes on the nodes themselves:
             constraints = _deep_merge_constraint_dicts(
