@@ -3,6 +3,9 @@
 -   **0.15.0** (August 21 2024)
     -   Backwards-incompatible changes:
         -   Removed the Docker container provisioning functionality from the `Neo4jExecutor` class. To continue using this functionality, please use the `tamarind` package directly, or install `dotmotif==0.14.0`
+    -   Housekeeping:
+        -   Removed codecov from CI
+        -   Added Python 3.11 to the test matrix
 -   **0.14.0** (May 16 2023)
     -   Housekeeping:
         -   Upgraded the package manager to Poetry, with version-pinning now handled by the `pyproject.toml` file.
