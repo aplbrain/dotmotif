@@ -20,7 +20,7 @@ py2neo = { version = "^2021.2.4", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.267"
-black = "^23.3.0"
+black = ">=23.3,<25.0"
 
 [build-system]
 requires = ["poetry-core"]
