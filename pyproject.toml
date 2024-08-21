@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dotmotif"
-version = "0.14.0"
+version = "0.15.0"
 description = "Find graph motifs using simple, intuitive notation."
 authors = ["Jordan Matelsky <jordan.matelsky@jhuapl.edu>"]
 license = "Apache 2.0"
