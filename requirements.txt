@@ -1,9 +1,7 @@
 networkx>=2.4
 numpy
 lark-parser
-docker
 pandas
 py2neo
-tamarind>=0.2.0
 neuprint-python
 grandiso>=2.1.0
