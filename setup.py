@@ -35,15 +35,14 @@ setup(
         "numpy",
         "lark-parser",
         "pandas",
-        "grandiso>=2.0.0",
+        "grandiso>=2.1.0",
     ],
     extras_require={
         "neo4j": [
-            "docker",
-            "tamarind>=0.1.5",
             "py2neo",
         ],
         "neuprint": [
+            "py2neo",
             "neuprint-python",
         ],
     },

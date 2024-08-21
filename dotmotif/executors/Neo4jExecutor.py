@@ -1,5 +1,5 @@
 """
-Copyright 2022 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2024 The Johns Hopkins University Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@ limitations under the License.`
 """
 
 from itertools import product
-import os
-import time
-from uuid import uuid4
 
-from py2neo import Graph
-import tamarind
+try:
+    from py2neo import Graph
+except ImportError:
+    raise ImportError(
+        "The Neo4jExecutor requires the `py2neo` package. "
+        "You can use `dotmotif[neo4j] or install it with `pip install py2neo`."
+    )
 
 # Types only:
-import networkx as nx
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .. import dotmotif
 
 from .Executor import Executor
-from ..ingest import NetworkXIngester
 
 
 def _remapped_operator(op):
@@ -110,22 +110,28 @@ class Neo4jExecutor(Executor):
     """
     A Neo4j executor that runs Cypher queries against a running Neo4j database.
 
-    .
+    If you have edit/admin privileges on the database, you can create
+    indices on the nodes by calling `create_index` with the attribute name.
+    Note that it is not a good idea to let your query executor log in with an
+    account that has write access to the database in a production environment.
+
     """
 
     def __init__(self, **kwargs) -> None:
         """
         Create a new executor.
 
-        If there is an already-running Neo4j database, you can pass in
-        authentication information and it will connect.
+        Pass in authentication for a Neo4j database (username/pass) along with
+        a db_bolt_uri to connect to an existing database. Alternatively, pass
+        a py2neo.Graph object that has already been authenticated.
 
-        If there is no existing database, you can pass in a graph to ingest
-        and the executor will connect to it automatically.
-
-        If there is no existing database and you do not pass in a graph, you
-        must pass an `import_directory`, which the container will mount as an
-        importable CSV resource.
+        Optionally, you can pass in `entity_labels` that specify the names of
+        the node and edge labels to use in the database. You must pass in a
+        dictionary with the keys "node" and "edge", mapping entity types to
+        labels. For an example, see `_DEFAULT_ENTITY_LABELS` in
+        `Neo4jExecutor.py`, and for an example of how to make this compatible
+        with, say, NeuPrint, see the modified `_DEFAULT_ENTITY_LABELS` used in
+        the `NeuPrintExecutor.py` file.
 
         Arguments:
             db_bolt_uri (str): If connecting to an existing server, the URI
@@ -133,145 +139,35 @@ class Neo4jExecutor(Executor):
             username (str: "neo4j"): The username to use to attach to an
                 existing server.
             password (str): The password to use to attach to an existing server.
-            graph (nx.Graph): If provisioning a new database, the networkx
-                graph to import into the database.
-            import_directory (str): If provisioning a new database, the local
-                directory to crawl for CSVs to import into the Neo4j database.
-                Commonly used when you want to quickly and easily start a new
-                Executor that uses the export from a previous graph.
-            autoremove_container (bool: True): Whether to delete the container
-                when the executor is deconstructed. Set to False if you'd like
-                to be able to connect with other executors after the first one
-                has closed.
-            max_memory (str: "4G"): The maximum amount of memory to provision.
-            initial_memory (str: "2G"): The starting heap-size for the Neo4j
-                container's JVM.
-            max_retries (int: 20): The number of times DotMotif should try to
-                connect to the neo4j container before giving up.
-            wait_for_boot (bool: True): Whether the process should pause to
-                wait for a provisioned Docker container to come online.
             entity_labels (dict: _DEFAULT_ENTITY_LABELS): The set of labels to
-                use for nodes and edges.
+                expect for nodes and edges.
 
         """
-        db_bolt_uri: Optional[str] = kwargs.get("db_bolt_uri", None)
+        db_bolt_uri: str = kwargs.get("db_bolt_uri", None)
         username: str = kwargs.get("username", "neo4j")
         password: Optional[str] = kwargs.get("password", None)
-        self._autoremove_container: bool = kwargs.get("autoremove_container", True)
-        self._wait_for_boot: bool = kwargs.get("wait_for_boot", True)
-        self._max_memory_size: str = kwargs.get("max_memory", "4G")
-        self._initial_heap_size: str = kwargs.get("initial_memory", "2G")
-        self.max_retries: int = kwargs.get("max_retries", 20)
+        graph: Graph = kwargs.get("graph", None)
         self._entity_labels = kwargs.get("entity_labels", _DEFAULT_ENTITY_LABELS)
 
-        graph: nx.Graph = kwargs.get("graph", None)
-        import_directory: Optional[str] = kwargs.get("import_directory", None)
-
-        self._created_container = False
-        self._tamarind_provisioner = None
-
-        if (
-            (db_bolt_uri and graph)
-            or (db_bolt_uri and import_directory)
-            or (import_directory and graph)
-        ):
-            raise ValueError(
-                "Specify EXACTLY ONE of db_bolt_uri/graph/import_directory."
-            )
-
-        if db_bolt_uri:
+        if db_bolt_uri and username and password:
             # Authentication information was provided. Use this to log in and
             # connect to the existing database.
             self._connect_to_existing_graph(db_bolt_uri, username, password)
-
-        elif graph:
-            export_dir = "export-custom-graph"
-            # A networkx graph was provided.
-            # We must export this to a set of CSV files, drop them to disk,
-            # and then we can use the same strategy as `import_directory` to
-            # run a container.
-            nxi = NetworkXIngester(graph, export_dir)
-            try:
-                nxi.ingest()
-            except Exception as e:
-                raise ValueError(f"Could not export graph: {e}")
-
-            self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
-                autoremove_containers=self._autoremove_container,
-                max_memory_size=self._max_memory_size,
-                initial_heap_size=self._initial_heap_size,
-            )
-            self._create_container(export_dir)
-
-        elif import_directory:
-            self._tamarind_provisioner = tamarind.Neo4jDockerProvisioner(
-                autoremove_containers=self._autoremove_container,
-                max_memory_size=self._max_memory_size,
-                initial_heap_size=self._initial_heap_size,
-            )
-            self._create_container(import_directory)
-
+        elif graph and isinstance(graph, Graph):
+            self.G = graph
         else:
             raise ValueError(
-                "You must supply either an existing db or a graph to load."
+                "You must provide either (db_bolt_uri and username and password) "
+                "or `graph` (a py2neo.Graph object)."
             )
-
-    def __del__(self):
-        """
-        Destroy the docker container from the running processes.
-
-        Also will handle (TODO) other teardown actions.
-        """
-        if self._created_container:
-            self._teardown_container()
 
     def _connect_to_existing_graph(
         self, db_bolt_uri: str, username: str, password: str
     ) -> None:
         try:
             self.G = Graph(db_bolt_uri, username=username, password=password)
-        except:
-            raise ValueError(f"Could not connect to graph {db_bolt_uri}.")
-
-    def _create_container(self, import_dir: str):
-        # Create a docker container:
-
-        _run_before = (
-            f"""./bin/neo4j-admin import --id-type STRING --nodes={self._entity_labels['node']}="""
-            + f""""/import/export-neurons-.*.csv" --relationships={self._entity_labels['edge']['DEFAULT']}="""
-            + """"/import/export-synapses-.*.csv" """
-        )
-
-        self._tamarind_container_id = str(uuid4())
-        (
-            self._running_container,
-            self._container_port,
-        ) = self._tamarind_provisioner.start(
-            self._tamarind_container_id,
-            import_path=f"{os.getcwd()}/{import_dir}",
-            run_before=_run_before,
-            wait=self._wait_for_boot,
-            wait_attempt_limit=self.max_retries,
-        )
-        self._created_container = True
-        container_is_ready = False
-        tries = 0
-        while not container_is_ready:
-            try:
-                self.G = self._tamarind_provisioner[self._tamarind_container_id]
-                container_is_ready = True
-            except Exception as e:
-                tries += 1
-                if tries > self.max_retries:
-                    raise IOError(
-                        f"Could not connect to neo4j container {self._running_container}. "
-                        "For more information, see https://github.com/aplbrain/dotmotif/wiki/Troubleshooting-Neo4jExecutor."
-                    )
-                time.sleep(3)
-        self.G = self._tamarind_provisioner[self._tamarind_container_id]
-
-    def _teardown_container(self):
-        self._tamarind_provisioner.stop(self._tamarind_container_id)
+        except Exception as e:
+            raise ValueError(f"Could not connect to graph {db_bolt_uri}.") from e
 
     def create_index(self, attribute_name: str):
         """
