@@ -1,5 +1,11 @@
 # Changelog
 
+-   **0.16.0** (January 08, 2026)
+    -   Housekeeping:
+        -   Migrated from Poetry to uv for package management
+        -   Updated GitHub Actions workflows to use uv and added testing for Python 3.12 through 3.14
+        -   Upgraded from `lark-parser` to `lark` for parsing
+        -   Updated copyright years
 -   **0.15.0** (August 21 2024)
     -   Backwards-incompatible changes:
         -   Removed the Docker container provisioning functionality from the `Neo4jExecutor` class. To continue using this functionality, please use the `tamarind` package directly, or install `dotmotif==0.14.0`

@@ -51,7 +51,7 @@ class TestDotmotif_Parserv2_DM(unittest.TestCase):
 
     def test_cannot_create_variables_with_dashes(self):
         with self.assertRaises(Exception):
-            dm = dotmotif.Motif("""A -> B-""")
+            dotmotif.Motif("""A -> B-""")
 
     def test_can_create_variables_with_numbers(self):
         dm = dotmotif.Motif("""A_2 -> B1""")
@@ -503,7 +503,7 @@ class TestDynamicNodeConstraints(unittest.TestCase):
         C.radius < B.radius
         """
         with self.assertRaises(KeyError):
-            dm = dotmotif.Motif(exp)
+            dotmotif.Motif(exp)
 
 
 class TestEdgeAliasConstraints(unittest.TestCase):
@@ -546,7 +546,7 @@ class TestEdgeAliasConstraints(unittest.TestCase):
         acb.radius = 3
         """
         with self.assertRaises(KeyError):
-            dm = dotmotif.Motif(exp)
+            dotmotif.Motif(exp)
 
     def test_quoted_attribute_edge_constraint(self):
         exp = """\

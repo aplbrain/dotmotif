@@ -248,3 +248,6 @@ class Motif:
         result = pickle.load(f)
         f.close()
         return result
+
+
+__all__ = ["Motif", "MotifError", "NetworkXExecutor", "GrandIsoExecutor"]
