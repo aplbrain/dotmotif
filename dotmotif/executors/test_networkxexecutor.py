@@ -223,6 +223,25 @@ class TestSmallMotifs(unittest.TestCase):
         H.add_edge("z", "x")
         self.assertEqual(len(NetworkXExecutor(graph=H).find(dm)), 3)
 
+    def test_contains_missing_attribute_graceful_failure(self):
+        motif = dotmotif.Motif(
+            """
+            A -> B
+            B.labels contains "Tag"
+            """
+        )
+
+        G = nx.DiGraph()
+        G.add_edge("a", "b")
+        G.add_edge("c", "d")
+
+        # Only one node has the expected labels attribute
+        G.nodes["b"]["labels"] = ["Tag"]
+
+        res = NetworkXExecutor(graph=G).find(motif)
+
+        self.assertEqual({r["B"] for r in res}, {"b"})
+
     def test_edge_attribute_equality(self):
         dm = dotmotif.Motif(
             """
@@ -237,7 +256,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(dm)), 1)
 
     def test_one_instance(self):
-
         H = nx.DiGraph()
         H.add_edge("x", "y", weight=1)
         H.add_edge("y", "z", weight=10)
@@ -287,7 +305,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 2)
 
     def test_mini_example(self):
-
         H = nx.DiGraph()
         H.add_edge("y", "x", ATTRIBUTE=7)
         H.add_edge("y", "z", ATTRIBUTE=7)
@@ -300,7 +317,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 2)
 
     def test_node_and_edge_full_example(self):
-
         H = nx.DiGraph()
         H.add_edge("X", "Y", weight=10)
         H.add_edge("Y", "Z", weight=9)
@@ -329,7 +345,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(NetworkXExecutor(graph=H).find(motif)), 5)
 
     def test_automorphism_reduction(self):
-
         G = nx.DiGraph()
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
@@ -359,7 +374,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(res), 1)
 
     def test_automorphism_auto(self):
-
         G = nx.DiGraph()
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
@@ -375,7 +389,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(res), 1)
 
     def test_automorphism_notauto(self):
-
         G = nx.DiGraph()
         G.add_edge("X", "Z")
         G.add_edge("Y", "Z")
@@ -391,7 +404,6 @@ class TestSmallMotifs(unittest.TestCase):
         self.assertEqual(len(res), 2)
 
     def test_automorphism_flag_triangle(self):
-
         G = nx.DiGraph()
         G.add_edge("A", "B")
         G.add_edge("B", "C")
