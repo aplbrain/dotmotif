@@ -178,3 +178,58 @@ class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
             A.size < B.size
             """
             )
+
+    def test_ge_le_same_value_ok(self):
+        # Non-strict bounds that meet at a point are allowed
+        dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A.size >= 5
+        A.size <= 5
+        """
+        )
+
+    def test_gt_le_strict_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size <= 5
+            """
+            )
+
+    def test_gt_eq_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size = 5
+            """
+            )
+
+    def test_dynamic_ge_le_same_target_ok(self):
+        # Cross-node non-strict sandwich on same target is allowed
+        dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A.size >= B.size
+        A.size <= B.size
+        """
+        )
+
+    def test_dynamic_gt_le_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > B.size
+            A.size <= B.size
+            """
+            )
