@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.17.0** (January 08, 2026) **Unreleased**
+    -   Features:
+        -   Added ImpossibleConstraintValidator to catch logically impossible constraints during motif validation.
 -   **0.16.0** (January 08, 2026)
     -   Housekeeping:
         -   Migrated from Poetry to uv for package management

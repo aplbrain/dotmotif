@@ -1,6 +1,6 @@
 [project]
 name = "dotmotif"
-version = "0.16.0"
+version = "0.17.0"
 description = "Find graph motifs using simple, intuitive notation."
 readme = "README.md"
 authors = [{ name = "Jordan Matelsky", email = "jordan.matelsky@jhuapl.edu" }]
