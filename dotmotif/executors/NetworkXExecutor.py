@@ -93,7 +93,13 @@ def _node_satisfies_constraints(node_attributes: dict, constraints: dict) -> boo
     for key, clist in constraints.items():
         for operator, values in clist.items():
             for value in values:
-                if not _OPERATORS[operator](node_attributes.get(key, None), value):
+                keyvalue_or_none = node_attributes.get(key, None)
+                try:
+                    operator_success = _OPERATORS[operator](keyvalue_or_none, value)
+                except TypeError:
+                    # Comparison cannot succeed if the attribute is missing or not iterable
+                    return False
+                if not operator_success:
                     # Fail fast, if any node attributes fail the test
                     return False
     return True
