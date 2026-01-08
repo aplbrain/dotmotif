@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright 2022 The Johns Hopkins University Applied Physics Laboratory.
+Copyright 2022-2026 The Johns Hopkins Applied Physics Laboratory.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -170,7 +170,20 @@ class Motif:
             return self._automorphisms
 
         g = self.to_nx()
-        res = isomorphism.GraphMatcher(g, g).subgraph_isomorphisms_iter()
+        # Choose the appropriate VF2 matcher depending on directedness
+        # and whether the graph is a multigraph.
+        if g.is_directed():
+            if g.is_multigraph():
+                matcher_cls = isomorphism.MultiDiGraphMatcher
+            else:
+                matcher_cls = isomorphism.DiGraphMatcher
+        else:
+            if g.is_multigraph():
+                matcher_cls = isomorphism.MultiGraphMatcher
+            else:
+                matcher_cls = isomorphism.GraphMatcher
+
+        res = matcher_cls(g, g).subgraph_isomorphisms_iter()
         autos = set()
         for auto in res:
             for k, v in auto.items():
