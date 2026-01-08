@@ -156,3 +156,25 @@ class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
             B.type != 4
             """
             )
+
+    def test_gtlt_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size < 3
+            """
+            )
+
+    def test_gtlt_meta_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > B.size
+            A.size < B.size
+            """
+            )
