@@ -24,7 +24,7 @@ class TestEdgelistIngest(unittest.TestCase):
 
     def test_read_csv(self):
         converter = EdgelistConverter(
-            io.StringIO("source,target\n" "A,B\n" "A,C\n"),
+            io.StringIO("source,target\nA,B\nA,C\n"),
             "source",
             "target",
         )

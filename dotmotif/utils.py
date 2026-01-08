@@ -5,6 +5,7 @@ Utilities for dotmotif.
 
 Requires nx>=2.0
 """
+
 import hashlib
 import json
 import networkx as nx
@@ -13,12 +14,12 @@ import networkx as nx
 def untype_string(string):
     try:
         return eval(string)
-    except:
+    except:  # noqa
         try:
             if int(string) == float(string):
                 return int(string)
             return float(string)
-        except:
+        except:  # noqa
             return str(string)
 
 

@@ -19,8 +19,7 @@ class NetworkXConverter(abc.ABC):
 
     pass
 
-    def to_graph(self) -> nx.Graph:
-        ...
+    def to_graph(self) -> nx.Graph: ...
 
 
 class EdgelistConverter(NetworkXConverter):
@@ -53,12 +52,12 @@ class EdgelistConverter(NetworkXConverter):
             raise KeyError(f"Dataframe does not contain column {v_id_column}.")
         self._graph = nx.DiGraph() if directed else nx.Graph()
         for i, row in data.iterrows():
-            if u_id_column_dtype != str:
+            if u_id_column_dtype is not str:
                 u = np.format_float_positional(row[u_id_column])
             else:
                 u = row[u_id_column]
 
-            if v_id_column_dtype != str:
+            if v_id_column_dtype is not str:
                 v = np.format_float_positional(row[v_id_column])
             else:
                 v = row[v_id_column]

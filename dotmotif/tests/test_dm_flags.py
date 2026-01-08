@@ -77,18 +77,6 @@ class TestDotmotifFlags(unittest.TestCase):
 
         g = nx.Graph()
         g.add_edge("A", "B")
-        dm = dotmotif.Motif().from_nx(g)
-
-        E = GrandIsoExecutor(graph=G)
-        self.assertEqual(len(E.find(dm)), 4)
-
-    def test_from_nx_import(self):
-        G = nx.Graph()
-        G.add_edge("A", "B")
-        G.add_edge("B", "C")
-
-        g = nx.Graph()
-        g.add_edge("A", "B")
         dm = dotmotif.Motif(ignore_direction=True).from_nx(g)
 
         E = GrandIsoExecutor(graph=G)

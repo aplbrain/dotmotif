@@ -1,7 +1,6 @@
 import dotmotif
 from dotmotif.executors.Neo4jExecutor import Neo4jExecutor, _quoted_if_necessary
 import unittest
-import networkx as nx
 
 
 class TestNeo4jExecutor_Automorphisms(unittest.TestCase):
