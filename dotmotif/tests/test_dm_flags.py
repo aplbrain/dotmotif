@@ -1,4 +1,5 @@
 import unittest
+import pytest
 import dotmotif
 import networkx as nx
 from dotmotif.executors.Neo4jExecutor import Neo4jExecutor
@@ -120,3 +121,38 @@ class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
         )
         assert len(m.list_automorphisms()) == 2
         assert len(m.list_node_constraints()) == 3
+
+    def test_conflicting_constraints_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.radius = 5
+            A.radius = 6
+            """
+            )
+
+    def test_conflicting_constraints_on_automorphisms_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A === B
+            A.radius = 5
+            B.radius = 6
+            """
+            )
+
+    def test_conflicting_equality_and_inequality_from_automorphism(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A === B
+            A.type = 4
+            B.type != 4
+            """
+            )

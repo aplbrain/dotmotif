@@ -25,7 +25,11 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 
 from .parsers.v2 import ParserV2
-from .validators import DisagreeingEdgesValidator, Validator
+from .validators import (
+    DisagreeingEdgesValidator,
+    ImpossibleConstraintValidator,
+    Validator,
+)
 
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
@@ -75,7 +79,8 @@ class Motif:
         self.parser = kwargs.get("parser", DEFAULT_MOTIF_PARSER)
         self.exclude_automorphisms = kwargs.get("exclude_automorphisms", False)
         self.validators: List[Validator] = kwargs.get(
-            "validators", [DisagreeingEdgesValidator()]
+            "validators",
+            [DisagreeingEdgesValidator(), ImpossibleConstraintValidator()],
         )
         self._g = nx.MultiDiGraph()
 
@@ -116,6 +121,11 @@ class Motif:
         ) = result
 
         self._propagate_automorphic_constraints()
+
+        # Post-parse validation hooks (e.g., constraint collisions from automorphisms)
+        for val in self.validators:
+            if hasattr(val, "validate_motif"):
+                val.validate_motif(self)
 
         return self
 
