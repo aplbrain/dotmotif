@@ -1,4 +1,5 @@
 import unittest
+import pytest
 import dotmotif
 import networkx as nx
 from dotmotif.executors.Neo4jExecutor import Neo4jExecutor
@@ -120,3 +121,115 @@ class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
         )
         assert len(m.list_automorphisms()) == 2
         assert len(m.list_node_constraints()) == 3
+
+    def test_conflicting_constraints_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.radius = 5
+            A.radius = 6
+            """
+            )
+
+    def test_conflicting_constraints_on_automorphisms_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A === B
+            A.radius = 5
+            B.radius = 6
+            """
+            )
+
+    def test_conflicting_equality_and_inequality_from_automorphism(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A === B
+            A.type = 4
+            B.type != 4
+            """
+            )
+
+    def test_gtlt_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size < 3
+            """
+            )
+
+    def test_gtlt_meta_raise(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > B.size
+            A.size < B.size
+            """
+            )
+
+    def test_ge_le_same_value_ok(self):
+        # Non-strict bounds that meet at a point are allowed
+        dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A.size >= 5
+        A.size <= 5
+        """
+        )
+
+    def test_gt_le_strict_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size <= 5
+            """
+            )
+
+    def test_gt_eq_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > 5
+            A.size = 5
+            """
+            )
+
+    def test_dynamic_ge_le_same_target_ok(self):
+        # Cross-node non-strict sandwich on same target is allowed
+        dotmotif.Motif(
+            """
+        A -> B
+        B -> A
+        A.size >= B.size
+        A.size <= B.size
+        """
+        )
+
+    def test_dynamic_gt_le_conflict(self):
+        with pytest.raises(ValueError):
+            dotmotif.Motif(
+                """
+            A -> B
+            B -> A
+            A.size > B.size
+            A.size <= B.size
+            """
+            )
