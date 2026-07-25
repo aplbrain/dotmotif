@@ -23,7 +23,7 @@ try:
 except ImportError:
     raise ImportError(
         "The Neo4jExecutor requires the `py2neo` package. "
-        "You can use `dotmotif[neo4j] or install it with `pip install py2neo`."
+        "Install it with `uv add 'dotmotif[neo4j]'`."
     )
 
 # Types only:
