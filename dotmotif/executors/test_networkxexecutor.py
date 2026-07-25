@@ -195,6 +195,32 @@ class TestEdgeConstraintsNotSatisfy(unittest.TestCase):
 
 
 class TestSmallMotifs(unittest.TestCase):
+    def test_ignore_direction_with_directed_host(self):
+        motif = dotmotif.Motif("A -> B", ignore_direction=True)
+        host = nx.DiGraph([("x", "y")])
+
+        self.assertEqual(len(NetworkXExecutor(graph=host).find(motif)), 2)
+
+    def test_negative_only_motif(self):
+        motif = dotmotif.Motif("A !> B")
+        host = nx.DiGraph()
+        host.add_nodes_from(["x", "y"])
+
+        self.assertEqual(
+            {tuple(sorted(result.items())) for result in NetworkXExecutor(graph=host).find(motif)},
+            {
+                (("A", "x"), ("B", "y")),
+                (("A", "y"), ("B", "x")),
+            },
+        )
+
+    def test_find_stops_at_limit(self):
+        motif = dotmotif.Motif("A -> B")
+        host = nx.DiGraph((str(i), str(i + 1)) for i in range(10))
+        executor = NetworkXExecutor(graph=host)
+
+        self.assertEqual(len(executor.find(motif, limit=1)), 1)
+
     def test_edgecount_motif(self):
         dm = dotmotif.Motif("""A->B""")
 

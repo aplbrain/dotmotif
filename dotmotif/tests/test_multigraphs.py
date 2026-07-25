@@ -95,6 +95,25 @@ def test_multigraph_basic(executor):
     assert len(results) == 1
 
 
+def test_multigraph_constraints_ignore_reverse_and_incident_edges():
+    haystack = nx.MultiDiGraph()
+    haystack.add_edge("A", "B", size=10)
+    haystack.add_edge("A", "B", size=20)
+    haystack.add_edge("B", "A", size=0)
+    haystack.add_edge("A", "C", size=0)
+    motif = Motif("a -> b [size > 0]")
+
+    all_results = NetworkXExecutor(
+        graph=haystack, multigraph_edge_match="all"
+    ).find(motif)
+    any_results = NetworkXExecutor(
+        graph=haystack, multigraph_edge_match="any"
+    ).find(motif)
+
+    assert all_results == [{"a": "A", "b": "B"}]
+    assert any_results == [{"a": "A", "b": "B"}]
+
+
 @pytest.mark.parametrize("executor", [NetworkXExecutor, GrandIsoExecutor])
 def test_impossible_constraint_works_on_multigraph(executor):
     """
@@ -146,7 +165,7 @@ def test_complex_multigraph(executor):
     )
 
     results = executor(graph=haystack, multigraph_edge_match="any").find(motif)
-    assert len(results) == 2
+    assert len(results) == 1
 
     results = executor(graph=haystack, multigraph_edge_match="all").find(motif)
     assert len(results) == 0
