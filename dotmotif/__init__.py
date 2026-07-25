@@ -35,7 +35,7 @@ from .validators import (
 from .executors.NetworkXExecutor import NetworkXExecutor
 from .executors.GrandIsoExecutor import GrandIsoExecutor
 
-__version__ = "0.14.0"
+__version__ = "0.17.0"
 
 DEFAULT_MOTIF_PARSER = ParserV2
 

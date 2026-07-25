@@ -1,22 +1,41 @@
 [project]
 name = "dotmotif"
-version = "0.17.0"
+dynamic = ["version"]
 description = "Find graph motifs using simple, intuitive notation."
 readme = "README.md"
 authors = [{ name = "Jordan Matelsky", email = "jordan.matelsky@jhuapl.edu" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "grandiso>=2.1.1",
     "lark>=1.3.1",
     "networkx>=3.1",
-    "neuprint-python>=0.4.25",
     "numpy>=1.24.3",
     "pandas>=2.0.1",
-    "py2neo>=2021.2.4",
 ]
 
+[project.optional-dependencies]
+neo4j = ["py2neo>=2021.2.4"]
+neuprint = ["neuprint-python>=0.4.25", "py2neo>=2021.2.4"]
+
 [dependency-groups]
-dev = ["pytest>=8.4.2", "ruff>=0.14.10"]
+dev = [
+    "hatchling",
+    "neuprint-python>=0.4.25",
+    "py2neo>=2021.2.4",
+    "pytest>=8.4.2",
+    "ruff>=0.14.10",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["dotmotif"]
+exclude = ["dotmotif/**/test_*.py", "dotmotif/tests"]
+
+[tool.hatch.build.targets.sdist]
+include = ["dotmotif", "LICENSE", "README.md", "pyproject.toml", "uv.lock"]
+exclude = ["dotmotif/**/test_*.py", "dotmotif/tests"]
+
+[tool.hatch.version]
+path = "dotmotif/__init__.py"
 
 [build-system]
 requires = ["hatchling"]

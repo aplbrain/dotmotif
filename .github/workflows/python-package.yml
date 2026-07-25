@@ -14,36 +14,34 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Cache virtual environment
-        uses: actions/cache@v3
+        uses: astral-sh/setup-uv@v6
         with:
-          path: .venv
-          key: venv-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            venv-${{ matrix.python-version }}-
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
       - name: Set up uv venv and install dependencies
         run: |
           uv sync --locked --group dev
 
       - name: Lint with ruff
-        run: |
-          source .venv/bin/activate
-          ruff check dotmotif
+        run: uv run ruff check dotmotif
 
       - name: Test with pytest
+        run: uv run pytest
+
+      - name: Build distributions
+        if: matrix.python-version == '3.14'
         run: |
-          source .venv/bin/activate
-          pytest
+          rm -rf dist
+          uv build
+          uv venv --clear .wheel-venv
+          uv pip install --python .wheel-venv/bin/python dist/*.whl
+          .wheel-venv/bin/python -c "import dotmotif, importlib.metadata as m; assert dotmotif.__version__ == m.version('dotmotif')"

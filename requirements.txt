@@ -1,7 +1,0 @@
-networkx>=2.4
-numpy
-lark-parser
-pandas
-py2neo
-neuprint-python
-grandiso>=2.1.0
