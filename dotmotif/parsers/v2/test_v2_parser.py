@@ -569,7 +569,22 @@ class TestEdgeAliasConstraints(unittest.TestCase):
         self.assertEqual(len(dm.list_dynamic_edge_constraints()), 1)
         self.assertEqual(
             dm.list_dynamic_edge_constraints()[("A", "B")]["flavor"]["="],
-            ["B", "A", "flavor"],
+            [("B", "A", "flavor")],
+        )
+
+    def test_multiple_dynamic_edge_constraints(self):
+        dm = dotmotif.Motif(
+            """
+        A -> B as ab
+        A -> C as ac
+        ab.weight > ac.weight
+        ab.weight > ac.capacity
+        """
+        )
+
+        self.assertEqual(
+            dm.list_dynamic_edge_constraints()[("A", "B")]["weight"][">"],
+            [("A", "C", "weight"), ("A", "C", "capacity")],
         )
 
 
