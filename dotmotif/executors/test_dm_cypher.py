@@ -230,6 +230,34 @@ class TestDynamicEdgeConstraints(unittest.TestCase):
             Neo4jExecutor.motif_to_cypher(dm).strip(),
         )
 
+    def test_multiple_dynamic_constraints_in_cypher(self):
+        dm = dotmotif.Motif(
+            """
+        A -> B as AB
+        A -> C as AC
+        AB.weight >= AC.weight
+        AB.weight >= AC.capacity
+        """
+        )
+        cypher = Neo4jExecutor.motif_to_cypher(dm)
+
+        self.assertIn('A_B["weight"] >= A_C["weight"]', cypher)
+        self.assertIn('A_B["weight"] >= A_C["capacity"]', cypher)
+
+    def test_parallel_edges_have_unique_variables(self):
+        dm = dotmotif.Motif("A -> B\nA -| B")
+
+        cypher = Neo4jExecutor.motif_to_cypher(dm)
+
+        self.assertIn("[A_B_0:SYN]", cypher)
+        self.assertIn("[A_B_1:INH]", cypher)
+
+    def test_parallel_edge_constraints_are_rejected_as_ambiguous(self):
+        dm = dotmotif.Motif("A -> B [weight > 1]\nA -| B")
+
+        with self.assertRaisesRegex(ValueError, "parallel motif edges"):
+            Neo4jExecutor.motif_to_cypher(dm)
+
 
 class BugReports(unittest.TestCase):
     def test_fix_where_clause__github_35(self):

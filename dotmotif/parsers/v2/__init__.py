@@ -111,7 +111,7 @@ class DotMotifTransformer(Transformer):
                             tu, tv, _ = self.named_edges[that_edge]
                             if op not in self.dynamic_edge_constraints[(u, v)][key]:
                                 self.dynamic_edge_constraints[(u, v)][key][op] = []
-                            self.dynamic_edge_constraints[(u, v)][key][op].extend(
+                            self.dynamic_edge_constraints[(u, v)][key][op].append(
                                 (tu, tv, that_attr)
                             )
             else:

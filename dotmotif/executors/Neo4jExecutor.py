@@ -15,6 +15,8 @@ limitations under the License.`
 """
 
 from itertools import product
+import json
+import math
 
 try:
     from py2neo import Graph
@@ -88,6 +90,24 @@ def _quoted_if_necessary(val: str) -> str:
         return '"' + val + '"'
     else:
         return '"' + val + '"'
+
+
+def _cypher_literal(value) -> str:
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(_cypher_literal(item) for item in value) + "]"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float) and math.isfinite(value):
+        return str(value)
+    raise TypeError(f"Unsupported Cypher literal: {value!r}")
 
 
 _LOOKUP = {
@@ -251,13 +271,40 @@ class Neo4jExecutor(Executor):
 
         # ID that is assigned to it so that it can hold constraints later on.
         edge_mapping = {}
+        edge_counts = {}
+        for u, v in motif_graph.edges():
+            edge_counts[(u, v)] = edge_counts.get((u, v), 0) + 1
 
-        for u, v, a in motif_graph.edges(data=True):
+        constrained_edges = {
+            edge for edge, constraints in motif.list_edge_constraints().items() if constraints
+        } | {
+            edge
+            for edge, constraints in motif.list_dynamic_edge_constraints().items()
+            if constraints
+        }
+        for constraints in motif.list_dynamic_edge_constraints().values():
+            for operators in constraints.values():
+                for targets in operators.values():
+                    constrained_edges.update((u, v) for u, v, _ in targets)
+        ambiguous_edges = {
+            edge for edge in constrained_edges if edge_counts.get(edge, 0) > 1
+        }
+        if ambiguous_edges:
+            raise ValueError(
+                "Cypher generation cannot assign endpoint-based constraints to "
+                f"parallel motif edges: {sorted(ambiguous_edges)}"
+            )
+
+        for u, v, key, a in motif_graph.edges(keys=True, data=True):
             action = static_entity_labels["edge"][
                 a.get("action", static_entity_labels["edge"]["DEFAULT"])
             ]
-            edge_id = "{}_{}".format(u, v)
-            edge_mapping[(u, v)] = edge_id
+            edge_id = (
+                "{}_{}_{}".format(u, v, key)
+                if edge_counts[(u, v)] > 1
+                else "{}_{}".format(u, v)
+            )
+            edge_mapping.setdefault((u, v), edge_id)
             if a["exists"]:
                 es.append(
                     (
@@ -324,7 +371,7 @@ class Neo4jExecutor(Executor):
                                 edge_mapping[(u, v)],
                                 _quoted_if_necessary(key),
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                _cypher_literal(value),
                             )
                         )
 
@@ -343,7 +390,7 @@ class Neo4jExecutor(Executor):
                                 n,
                                 _quoted_if_necessary(key),
                                 _remapped_operator(operator),
-                                f'"{value}"' if isinstance(value, str) else value,
+                                _cypher_literal(value),
                             )
                         )
 
@@ -371,22 +418,23 @@ class Neo4jExecutor(Executor):
         # {('A', 'B'): {'weight': {'==': ['A', 'C', 'weight']}}}
         for (u, v), constraints in motif.list_dynamic_edge_constraints().items():
             for this_attr, ops in constraints.items():
-                for op, (that_u, that_v, that_attr) in ops.items():
-                    this_edge_name = edge_mapping[(u, v)]
-                    that_edge_name = edge_mapping[(that_u, that_v)]
-                    cypher_edge_constraints.append(
-                        (
-                            "NOT ({}[{}] {} {}[{}])"
-                            if _operator_negation_infix(op)
-                            else "{}[{}] {} {}[{}]"
-                        ).format(
-                            this_edge_name,
-                            _quoted_if_necessary(this_attr),
-                            _remapped_operator(op),
-                            that_edge_name,
-                            _quoted_if_necessary(that_attr),
+                for op, targets in ops.items():
+                    for that_u, that_v, that_attr in targets:
+                        this_edge_name = edge_mapping[(u, v)]
+                        that_edge_name = edge_mapping[(that_u, that_v)]
+                        cypher_edge_constraints.append(
+                            (
+                                "NOT ({}[{}] {} {}[{}])"
+                                if _operator_negation_infix(op)
+                                else "{}[{}] {} {}[{}]"
+                            ).format(
+                                this_edge_name,
+                                _quoted_if_necessary(this_attr),
+                                _remapped_operator(op),
+                                that_edge_name,
+                                _quoted_if_necessary(that_attr),
+                            )
                         )
-                    )
 
         conditions.extend([*cypher_node_constraints, *cypher_edge_constraints])
 

@@ -271,19 +271,20 @@ class NetworkXExecutor(Executor):
         """
         for (motif_U, motif_V), constraint_list in constraints.items():
             for this_attr, ops in constraint_list.items():
-                for op, (that_u, that_v, that_attr) in ops.items():
-                    this_graph_u = node_isomorphism_map[motif_U]
-                    this_graph_v = node_isomorphism_map[motif_V]
-                    that_graph_u = node_isomorphism_map[that_u]
-                    that_graph_v = node_isomorphism_map[that_v]
-                    this_edge_attr = graph.get_edge_data(
-                        this_graph_u, this_graph_v
-                    ).get(this_attr)
-                    that_edge_attr = graph.get_edge_data(
-                        that_graph_u, that_graph_v
-                    ).get(that_attr)
-                    if not _OPERATORS[op](this_edge_attr, that_edge_attr):
-                        return False
+                for op, targets in ops.items():
+                    for that_u, that_v, that_attr in targets:
+                        this_graph_u = node_isomorphism_map[motif_U]
+                        this_graph_v = node_isomorphism_map[motif_V]
+                        that_graph_u = node_isomorphism_map[that_u]
+                        that_graph_v = node_isomorphism_map[that_v]
+                        this_edge_attr = graph.get_edge_data(
+                            this_graph_u, this_graph_v
+                        ).get(this_attr)
+                        that_edge_attr = graph.get_edge_data(
+                            that_graph_u, that_graph_v
+                        ).get(that_attr)
+                        if not _OPERATORS[op](this_edge_attr, that_edge_attr):
+                            return False
         return True
 
     def _validate_multigraph_all_edge_constraints(

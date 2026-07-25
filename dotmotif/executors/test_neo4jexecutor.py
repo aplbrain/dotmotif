@@ -1,5 +1,9 @@
 import dotmotif
-from dotmotif.executors.Neo4jExecutor import Neo4jExecutor, _quoted_if_necessary
+from dotmotif.executors.Neo4jExecutor import (
+    Neo4jExecutor,
+    _cypher_literal,
+    _quoted_if_necessary,
+)
 import unittest
 
 
@@ -33,3 +37,12 @@ class TestQuotingIfNecessary(unittest.TestCase):
         self.assertEqual(_quoted_if_necessary("""don't break"""), '''"don't break"'''),
         self.assertEqual(_quoted_if_necessary("foo bar"), '"foo bar"')
         self.assertEqual(_quoted_if_necessary("foo"), '"foo"')
+
+    def test_cypher_string_literal_escaping(self):
+        self.assertEqual(_cypher_literal('say "hi"\nnext\\line'), '"say \\"hi\\"\\nnext\\\\line"')
+
+    def test_unsupported_cypher_literals_are_rejected(self):
+        with self.assertRaises(TypeError):
+            _cypher_literal({"key": "value"})
+        with self.assertRaises(TypeError):
+            _cypher_literal(float("nan"))
