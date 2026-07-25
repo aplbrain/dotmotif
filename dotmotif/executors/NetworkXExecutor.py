@@ -302,8 +302,8 @@ class NetworkXExecutor(Executor):
             graph_u = node_isomorphism_map[motif_U]
             graph_v = node_isomorphism_map[motif_V]
 
-            # Check each edge in graph for constraints
-            for _, _, edge_attrs in graph.edges((graph_u, graph_v), data=True):
+            # Check each parallel edge between the mapped endpoints.
+            for edge_attrs in graph.get_edge_data(graph_u, graph_v).values():
                 if not _edge_satisfies_constraints(edge_attrs, constraint_list):
                     # Fail fast
                     return False
@@ -333,7 +333,7 @@ class NetworkXExecutor(Executor):
 
             # Check each edge in graph for constraints
             constraint_list_copy = copy.deepcopy(constraint_list)
-            for _, _, edge_attrs in graph.edges((graph_u, graph_v), data=True):
+            for edge_attrs in graph.get_edge_data(graph_u, graph_v).values():
                 matched_constraints = (
                     _edge_satisfies_many_constraints_for_muligraph_any_edges(
                         edge_attrs, constraint_list_copy
@@ -380,14 +380,21 @@ class NetworkXExecutor(Executor):
         # filter them out later on. Though this reduces the speed of the graph-
         # matching, NetworkX does not seem to support this out of the box.
 
-        if motif.ignore_direction or not self.graph.is_directed:
+        if motif.ignore_direction:
             graph_constructor = nx.Graph
             graph_matcher = nx.algorithms.isomorphism.GraphMatcher
+            host_graph = self.graph.to_undirected(as_view=True)
+        elif not self.graph.is_directed():
+            graph_constructor = nx.Graph
+            graph_matcher = nx.algorithms.isomorphism.GraphMatcher
+            host_graph = self.graph
         else:
             graph_constructor = nx.DiGraph
             graph_matcher = nx.algorithms.isomorphism.DiGraphMatcher
+            host_graph = self.graph
 
         only_positive_edges_motif = graph_constructor()
+        only_positive_edges_motif.add_nodes_from(motif.to_nx().nodes(data=True))
         must_not_exist_edges = []
         for u, v, attrs in motif.to_nx().edges(data=True):
             if attrs["exists"] is True:
@@ -395,29 +402,13 @@ class NetworkXExecutor(Executor):
             elif attrs["exists"] is False:
                 # Collect a list of neg-edges to check for again in a moment
                 must_not_exist_edges.append((u, v))
-        gm = graph_matcher(self.graph, only_positive_edges_motif)
+        gm = graph_matcher(host_graph, only_positive_edges_motif)
 
         def _doesnt_have_any_of_motifs_negative_edges(mapping):
             for u, v in must_not_exist_edges:
-                if self.graph.has_edge(mapping[u], mapping[v]):
+                if host_graph.has_edge(mapping[u], mapping[v]):
                     return False
             return True
-
-        unfiltered_results = [
-            # Here, `mapping` has keys of self.graph node IDs and values of
-            # motif node names. We need the reverse for pretty much everything
-            # we do from here out, so we reverse the pairs.
-            {v: k for k, v in mapping.items()}
-            # TODO: Use isomorphism here if requested
-            for mapping in gm.subgraph_monomorphisms_iter()
-        ]
-
-        # Now, filter out those that have edges they should not:
-        results = [
-            mapping
-            for mapping in unfiltered_results
-            if _doesnt_have_any_of_motifs_negative_edges(mapping)
-        ]
 
         _edge_constraint_validator = (
             self._validate_edge_constraints
@@ -429,29 +420,38 @@ class NetworkXExecutor(Executor):
             )
         )
         _edge_dynamic_constraint_validator = self._validate_dynamic_edge_constraints
-        # Now, filter on attributes:
-        res = [
-            r
-            for r in results
+        effective_limit = motif.limit if limit is None else limit
+        res = []
+        for mapping in gm.subgraph_monomorphisms_iter():
+            # NetworkX maps host node IDs to motif names; validators use the
+            # reverse mapping.
+            r = {v: k for k, v in mapping.items()}
             if (
-                _edge_constraint_validator(r, self.graph, motif.list_edge_constraints())
-                and _edge_dynamic_constraint_validator(
-                    r, self.graph, motif.list_dynamic_edge_constraints()
-                )
-                and self._validate_node_constraints(
-                    r, self.graph, motif.list_node_constraints()
-                )
-                and self._validate_dynamic_node_constraints(
-                    r, self.graph, motif.list_dynamic_node_constraints()
-                )
-                # by default, networkx returns the automorphism that is left-
-                # sorted, so this comparison is _opposite_ the check that we
-                # use in the other executors. In other words, we usually check
-                # that A >= B; here we check A <= B.
+                _doesnt_have_any_of_motifs_negative_edges(r)
                 and (
-                    (not motif.exclude_automorphisms)
-                    or all(r[a] <= r[b] for (a, b) in motif.list_automorphisms())
+                    _edge_constraint_validator(
+                        r, self.graph, motif.list_edge_constraints()
+                    )
+                    and _edge_dynamic_constraint_validator(
+                        r, self.graph, motif.list_dynamic_edge_constraints()
+                    )
+                    and self._validate_node_constraints(
+                        r, self.graph, motif.list_node_constraints()
+                    )
+                    and self._validate_dynamic_node_constraints(
+                        r, self.graph, motif.list_dynamic_node_constraints()
+                    )
+                    # NetworkX returns the left-sorted automorphism, so this
+                    # comparison is opposite the other executors' check.
+                    and (
+                        (not motif.exclude_automorphisms)
+                        or all(
+                            r[a] <= r[b] for (a, b) in motif.list_automorphisms()
+                        )
+                    )
                 )
-            )
-        ]
-        return res[:limit] if limit is not None else res
+            ):
+                res.append(r)
+                if effective_limit is not None and len(res) >= effective_limit:
+                    break
+        return res
