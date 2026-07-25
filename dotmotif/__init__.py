@@ -17,6 +17,7 @@ limitations under the License.
 
 from typing import List, Optional, Union, IO
 import copy
+import os
 import pickle
 import warnings
 from dotmotif.utils import _deep_merge_constraint_dicts
@@ -148,9 +149,14 @@ class Motif:
             DeprecationWarning,
         )
         self._g = copy.deepcopy(graph)
-        for u, v, edge_attrs in self._g.edges(data=True):
-            if "exists" not in edge_attrs:
-                self._g.edges[u, v]["exists"] = True
+        self._edge_constraints = {}
+        self._node_constraints = {}
+        self._dynamic_edge_constraints = {}
+        self._dynamic_node_constraints = {}
+        self._automorphisms = []
+        for _, _, edge_attrs in self._g.edges(data=True):
+            edge_attrs.setdefault("exists", True)
+            edge_attrs.setdefault("action", "SYN")
         return self
 
     def to_nx(self) -> nx.DiGraph:
@@ -232,11 +238,11 @@ class Motif:
             Pointer to File-like.
 
         """
-        if isinstance(fname, str):
-            f = open(fname, "wb")
+        if isinstance(fname, (str, os.PathLike)):
+            with open(fname, "wb") as f:
+                pickle.dump(self, f)
         else:
-            f = fname
-        pickle.dump(self, f)
+            pickle.dump(self, fname)
         return fname
 
     @staticmethod
@@ -251,13 +257,11 @@ class Motif:
             Pointer to File-like.
 
         """
-        if isinstance(fname, str):
-            f = open(fname, "rb")
+        if isinstance(fname, (str, os.PathLike)):
+            with open(fname, "rb") as f:
+                return pickle.load(f)
         else:
-            f = fname
-        result = pickle.load(f)
-        f.close()
-        return result
+            return pickle.load(fname)
 
 
 __all__ = ["Motif", "MotifError", "NetworkXExecutor", "GrandIsoExecutor"]

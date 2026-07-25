@@ -3,6 +3,8 @@ import networkx as nx
 from ..utils import _deep_merge_constraint_dicts, untype_string, _hashed_dict
 from .. import Motif
 from tempfile import NamedTemporaryFile
+from io import BytesIO
+from pathlib import Path
 
 
 class TestConverter(TestCase):
@@ -37,6 +39,26 @@ class TestSaveLoad(TestCase):
         self.assertEqual(m.enforce_inequality, f.enforce_inequality)
         self.assertEqual(m.pretty_print, f.pretty_print)
         tf.close()
+
+    def test_caller_owned_streams_remain_open(self):
+        motif = Motif("A -> B")
+        stream = BytesIO()
+
+        motif.save(stream)
+        stream.seek(0)
+        loaded = Motif.load(stream)
+
+        self.assertFalse(stream.closed)
+        self.assertTrue(nx.is_isomorphic(motif.to_nx(), loaded.to_nx()))
+
+    def test_pathlike_save_and_load(self):
+        motif = Motif("A -> B")
+        with NamedTemporaryFile() as temporary_file:
+            path = Path(temporary_file.name)
+            motif.save(path)
+            loaded = Motif.load(path)
+
+        self.assertTrue(nx.is_isomorphic(motif.to_nx(), loaded.to_nx()))
 
 
 class TestHashColor(TestCase):
