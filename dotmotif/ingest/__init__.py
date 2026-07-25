@@ -1,7 +1,6 @@
 # Standard installs:
 import abc
 import os
-import numpy as np
 
 # Non-standard installs:
 import pandas as pd
@@ -39,29 +38,42 @@ class EdgelistConverter(NetworkXConverter):
         v_id_column_dtype=str,
     ):
         if isinstance(filepath_or_dataframe, pd.DataFrame):
-            data = filepath_or_dataframe
+            data = filepath_or_dataframe.copy()
         else:
             data = pd.read_table(
                 filepath_or_dataframe,
-                dtype={u_id_column: str, v_id_column: str},
                 **(file_reader_kwargs or {"sep": ","}),
             )
         if u_id_column not in data.columns:
             raise KeyError(f"Dataframe does not contain column {u_id_column}.")
         if v_id_column not in data.columns:
             raise KeyError(f"Dataframe does not contain column {v_id_column}.")
+        if data[[u_id_column, v_id_column]].isna().any().any():
+            raise ValueError("Edgelist endpoint columns cannot contain missing values.")
+
+        def _convert_ids(column, dtype):
+            if dtype is bool or isinstance(dtype, pd.BooleanDtype):
+                values = column.map(
+                    lambda value: {
+                        "true": True,
+                        "1": True,
+                        "false": False,
+                        "0": False,
+                    }.get(str(value).strip().lower(), value)
+                )
+            else:
+                values = column
+            return values.astype(dtype)
+
+        data[u_id_column] = _convert_ids(data[u_id_column], u_id_column_dtype)
+        data[v_id_column] = _convert_ids(data[v_id_column], v_id_column_dtype)
+        if data[[u_id_column, v_id_column]].isna().any().any():
+            raise ValueError("Edgelist endpoint columns cannot contain missing values.")
         self._graph = nx.DiGraph() if directed else nx.Graph()
         for i, row in data.iterrows():
-            if u_id_column_dtype is not str:
-                u = np.format_float_positional(row[u_id_column])
-            else:
-                u = row[u_id_column]
-
-            if v_id_column_dtype is not str:
-                v = np.format_float_positional(row[v_id_column])
-            else:
-                v = row[v_id_column]
-            self._graph.add_edge(u, v, **dict(row))
+            self._graph.add_edge(
+                row[u_id_column], row[v_id_column], **dict(row)
+            )
 
     def to_graph(self):
         return self._graph

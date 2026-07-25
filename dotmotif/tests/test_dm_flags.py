@@ -83,6 +83,27 @@ class TestDotmotifFlags(unittest.TestCase):
         E = GrandIsoExecutor(graph=G)
         self.assertEqual(len(E.find(dm)), 4)
 
+    def test_from_nx_replaces_parsed_state_and_supports_multigraphs(self):
+        dm = dotmotif.Motif("A -> B\nA.radius = 5\nA === B")
+        graph = nx.MultiDiGraph()
+        graph.add_edge("X", "Y")
+        graph.add_edge("X", "Y")
+
+        dm.from_nx(graph)
+
+        self.assertEqual(dm.to_nx().number_of_edges(), 2)
+        self.assertFalse(dm.list_node_constraints())
+        self.assertFalse(dm.list_edge_constraints())
+        self.assertFalse(dm.list_dynamic_node_constraints())
+        self.assertFalse(dm.list_dynamic_edge_constraints())
+        self.assertFalse(dm.list_automorphisms())
+        self.assertTrue(
+            all(
+                attrs["exists"] and attrs["action"] == "SYN"
+                for _, _, attrs in dm.to_nx().edges(data=True)
+            )
+        )
+
 
 class TestPropagationOfAutomorphicConstraints(unittest.TestCase):
     def test_automorphisms(self):
