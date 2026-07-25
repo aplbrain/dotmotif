@@ -1,14 +1,35 @@
 import os
 
+from .. import Motif
+from .NeuPrintExecutor import NeuPrintExecutor
+
 HOST = "neuprint.janelia.org"
 DATASET = "hemibrain:v1.1"
 TOKEN = os.getenv("NEUPRINT_TOKEN")
+
+
+def test_roi_constraints_are_rewritten_after_cypher_encoding():
+    motif = Motif(
+        """
+        A -> B as AB
+        AB["CRE(L).pre"] = "quoted value"
+        AB["CX.post"] != 20
+        """
+    )
+
+    cypher = NeuPrintExecutor.motif_to_cypher(
+        motif, json_attributes=["CRE(L)", "CX"]
+    )
+
+    assert 'A_B["CRE(L).pre"]' not in cypher
+    assert 'A_B["CX.post"]' not in cypher
+    assert 'fromJsonMap(A_B.roiInfo)["CRE(L)"].pre) = "quoted value"' in cypher
+    assert 'fromJsonMap(A_B.roiInfo)["CX"].post) <> 20' in cypher
+
+
 if TOKEN:
 
     import unittest
-
-    from .. import Motif
-    from .NeuPrintExecutor import NeuPrintExecutor
 
     class TestNeuPrintConnection(unittest.TestCase):
         def test_can_get_version(self):
