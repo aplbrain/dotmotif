@@ -40,3 +40,9 @@ class TestQuotingIfNecessary(unittest.TestCase):
 
     def test_cypher_string_literal_escaping(self):
         self.assertEqual(_cypher_literal('say "hi"\nnext\\line'), '"say \\"hi\\"\\nnext\\\\line"')
+
+    def test_unsupported_cypher_literals_are_rejected(self):
+        with self.assertRaises(TypeError):
+            _cypher_literal({"key": "value"})
+        with self.assertRaises(TypeError):
+            _cypher_literal(float("nan"))

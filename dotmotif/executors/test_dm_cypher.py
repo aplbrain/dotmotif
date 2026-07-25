@@ -252,6 +252,12 @@ class TestDynamicEdgeConstraints(unittest.TestCase):
         self.assertIn("[A_B_0:SYN]", cypher)
         self.assertIn("[A_B_1:INH]", cypher)
 
+    def test_parallel_edge_constraints_are_rejected_as_ambiguous(self):
+        dm = dotmotif.Motif("A -> B [weight > 1]\nA -| B")
+
+        with self.assertRaisesRegex(ValueError, "parallel motif edges"):
+            Neo4jExecutor.motif_to_cypher(dm)
+
 
 class BugReports(unittest.TestCase):
     def test_fix_where_clause__github_35(self):

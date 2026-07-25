@@ -16,6 +16,7 @@ limitations under the License.`
 
 from itertools import product
 import json
+import math
 
 try:
     from py2neo import Graph
@@ -102,7 +103,11 @@ def _cypher_literal(value) -> str:
         return json.dumps(value, ensure_ascii=False)
     if isinstance(value, (list, tuple)):
         return "[" + ", ".join(_cypher_literal(item) for item in value) + "]"
-    return str(value)
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float) and math.isfinite(value):
+        return str(value)
+    raise TypeError(f"Unsupported Cypher literal: {value!r}")
 
 
 _LOOKUP = {
@@ -269,6 +274,26 @@ class Neo4jExecutor(Executor):
         edge_counts = {}
         for u, v in motif_graph.edges():
             edge_counts[(u, v)] = edge_counts.get((u, v), 0) + 1
+
+        constrained_edges = {
+            edge for edge, constraints in motif.list_edge_constraints().items() if constraints
+        } | {
+            edge
+            for edge, constraints in motif.list_dynamic_edge_constraints().items()
+            if constraints
+        }
+        for constraints in motif.list_dynamic_edge_constraints().values():
+            for operators in constraints.values():
+                for targets in operators.values():
+                    constrained_edges.update((u, v) for u, v, _ in targets)
+        ambiguous_edges = {
+            edge for edge in constrained_edges if edge_counts.get(edge, 0) > 1
+        }
+        if ambiguous_edges:
+            raise ValueError(
+                "Cypher generation cannot assign endpoint-based constraints to "
+                f"parallel motif edges: {sorted(ambiguous_edges)}"
+            )
 
         for u, v, key, a in motif_graph.edges(keys=True, data=True):
             action = static_entity_labels["edge"][
