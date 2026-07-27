@@ -1,6 +1,16 @@
 # Changelog
 
--   **0.17.0** (January 08, 2026) **Unreleased**
+-   **0.18.0** (July 25, 2026)
+    -   Bugfixes:
+        -   Fixed NetworkX direction-agnostic, negative-edge, multigraph constraint, and result-limit handling.
+        -   Fixed dynamic edge constraint parsing and Cypher generation for escaped values and parallel relationships.
+        -   Fixed neuPrint ROI constraint rewriting.
+        -   Fixed motif graph replacement, save/load stream ownership, and edgelist endpoint dtype handling.
+    -   Housekeeping:
+        -   Completed the uv migration and made `pyproject.toml` and `uv.lock` authoritative.
+        -   Moved Neo4j and neuPrint dependencies into optional extras.
+        -   Unified runtime and distribution version metadata.
+-   **0.17.0** (January 08, 2026)
     -   Features:
         -   Added ImpossibleConstraintValidator to catch logically impossible constraints during motif validation.
 -   **0.16.0** (January 08, 2026)
