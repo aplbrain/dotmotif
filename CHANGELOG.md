@@ -1,5 +1,8 @@
 # Changelog
 
+-   **0.19.0** (September 23, 2026)
+    -   Bugfixes:
+        -   Fixed `exclude_automorphisms` undercounting matches: symmetry detection now respects negative edges, edge actions, and static and dynamic node and edge constraints, and symmetry breaking uses Grochow-Kellis orbit conditions so rotational symmetries such as cycles return one match per subgraph (#170).
 -   **0.18.0** (July 25, 2026)
     -   Bugfixes:
         -   Fixed NetworkX direction-agnostic, negative-edge, multigraph constraint, and result-limit handling.
