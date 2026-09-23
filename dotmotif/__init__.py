@@ -182,9 +182,29 @@ class Motif:
         return self._dynamic_node_constraints
 
     def list_automorphisms(self):
+        """
+        List ordering constraints that pick one match per automorphism class.
+
+        Each entry is a pair (a, b) meaning the host node matched to `a` must
+        sort before the host node matched to `b`.
+
+        When `exclude_automorphisms` is False, this returns only the pairs
+        that were declared explicitly with `===`.
+
+        """
         if not self.exclude_automorphisms:
             return self._automorphisms
+        return _symmetry_breaking_pairs(self._automorphism_group())
 
+    def _automorphism_group(self) -> List[dict]:
+        """
+        Every node permutation that maps the motif onto itself.
+
+        A permutation counts only if it preserves edge existence, edge
+        action, static and dynamic edge constraints, and static and dynamic
+        node constraints, not just the bare edge structure.
+
+        """
         g = self.to_nx()
         # Choose the appropriate VF2 matcher depending on directedness
         # and whether the graph is a multigraph.
@@ -199,13 +219,41 @@ class Motif:
             else:
                 matcher_cls = isomorphism.GraphMatcher
 
-        res = matcher_cls(g, g).subgraph_isomorphisms_iter()
-        autos = set()
-        for auto in res:
-            for k, v in auto.items():
-                if k != v:
-                    autos.add(tuple(sorted([k, v])))
-        return list(autos)
+        edge_match = _multiedge_match if g.is_multigraph() else _edge_match
+        matcher = matcher_cls(g, g, edge_match=edge_match)
+
+        node_constraints = self._node_constraints
+        dyn_node = _canonical(self._dynamic_node_constraints)
+        dyn_edge = _canonical(self._dynamic_edge_constraints)
+
+        group = []
+        for perm in matcher.isomorphisms_iter():
+            if any(
+                _canonical(node_constraints.get(n, {}))
+                != _canonical(node_constraints.get(perm[n], {}))
+                for n in g.nodes
+            ):
+                continue
+            if (
+                _canonical(
+                    _permute_dynamic_node_constraints(
+                        self._dynamic_node_constraints, perm
+                    )
+                )
+                != dyn_node
+            ):
+                continue
+            if (
+                _canonical(
+                    _permute_dynamic_edge_constraints(
+                        self._dynamic_edge_constraints, perm
+                    )
+                )
+                != dyn_edge
+            ):
+                continue
+            group.append(perm)
+        return group
 
     def _propagate_automorphic_constraints(self):
         """
@@ -265,3 +313,77 @@ class Motif:
 
 
 __all__ = ["Motif", "MotifError", "NetworkXExecutor", "GrandIsoExecutor"]
+
+
+def _canonical(obj):
+    """A hashable, order-independent form of a nested constraint structure."""
+    if isinstance(obj, dict):
+        return tuple(sorted((repr(k), _canonical(v)) for k, v in obj.items()))
+    if isinstance(obj, (list, tuple, set)):
+        return tuple(sorted(repr(_canonical(v)) for v in obj))
+    return repr(obj)
+
+
+def _edge_signature(attrs: dict):
+    return (
+        attrs.get("exists", True),
+        attrs.get("action", "SYN"),
+        _canonical(attrs.get("constraints", {})),
+    )
+
+
+def _edge_match(e1: dict, e2: dict) -> bool:
+    return _edge_signature(e1) == _edge_signature(e2)
+
+
+def _multiedge_match(e1: dict, e2: dict) -> bool:
+    return sorted(map(repr, map(_edge_signature, e1.values()))) == sorted(
+        map(repr, map(_edge_signature, e2.values()))
+    )
+
+
+def _permute_dynamic_node_constraints(constraints: dict, perm: dict) -> dict:
+    out: dict = {}
+    for node, attrs in constraints.items():
+        for attr, ops in attrs.items():
+            for op, values in ops.items():
+                out.setdefault(perm[node], {}).setdefault(attr, {}).setdefault(
+                    op, []
+                ).extend((perm[other], other_attr) for other, other_attr in values)
+    return out
+
+
+def _permute_dynamic_edge_constraints(constraints: dict, perm: dict) -> dict:
+    out: dict = {}
+    for (u, v), attrs in constraints.items():
+        for attr, ops in attrs.items():
+            for op, values in ops.items():
+                out.setdefault((perm[u], perm[v]), {}).setdefault(attr, {}).setdefault(
+                    op, []
+                ).extend(
+                    (perm[ou], perm[ov], other_attr) for ou, ov, other_attr in values
+                )
+    return out
+
+
+def _symmetry_breaking_pairs(group: List[dict]) -> List[tuple]:
+    """
+    Ordering constraints that keep exactly one match per automorphism class.
+
+    Follows Grochow and Kellis (2007): pick the node with the largest orbit,
+    require it to sort before every other node in that orbit, then repeat on
+    the subgroup that fixes it. Pairwise constraints drawn from every
+    automorphism at once (the previous approach) only work when the group is
+    made of independent swaps; for a rotation, such as a directed 3-cycle,
+    they drop valid matches.
+
+    """
+    pairs = []
+    while len(group) > 1:
+        nodes = sorted(group[0].keys(), key=repr)
+        orbits = {n: {perm[n] for perm in group} for n in nodes}
+        base = max(nodes, key=lambda n: len(orbits[n]))
+        for other in sorted(orbits[base] - {base}, key=repr):
+            pairs.append((base, other))
+        group = [perm for perm in group if perm[base] == base]
+    return pairs
